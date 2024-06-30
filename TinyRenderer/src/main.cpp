@@ -1,13 +1,18 @@
 #include "tgaimage.h"
+#include "line.h"
 
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red = TGAColor(255, 0, 0, 255);
+const TGAColor red(255, 0, 0, 255);
+const TGAColor white(255, 255, 255, 255);
 
-int main(int argc, char **argv)
+int main()
 {
   TGAImage image(100, 100, TGAImage::RGB);
-  image.set(52, 41, red);
-  image.flip_vertically(); // I want to have the origin at the left bottom corner of the image
+
+  draw_line(13, 20, 80, 40, image, white);
+  draw_line(20, 13, 40, 80, image, red);
+  draw_line(80, 40, 13, 20, image, red);
+
   image.write_tga_file("output.tga");
+
   return 0;
 }
