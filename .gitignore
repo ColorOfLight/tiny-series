@@ -118,3 +118,6 @@ __pycache__/
 
 # bin
 bin/
+
+# Test Output Files
+output.tga
