@@ -115,6 +115,3 @@ __pycache__/
 # Other
 .vcpkg-root
 !cmake-build-debug/
-
-# bin
-bin/
