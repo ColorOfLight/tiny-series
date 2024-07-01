@@ -22,32 +22,8 @@
  * SOFTWARE.
  */
 
-#include <filesystem>
-#include <iostream>
-#include <string>
+#pragma once
 
-#include "./model.h"
-#include "./render.h"
 #include "./tgaimage.h"
 
-const TGAColor red(255, 0, 0, 255);
-const TGAColor white(255, 255, 255, 255);
-
-const int width = 400;
-const int height = 400;
-
-int main() {
-  TGAImage image(width, height, TGAImage::RGB);
-
-  std::string model_path;
-  std::cout << "Enter the model path: ";
-  std::cin >> model_path;
-
-  Model model = Model(model_path.c_str());
-
-  RenderWireframe(model, red, image);
-
-  image.write_tga_file("output.tga");
-
-  return 0;
-}
+void DrawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color);

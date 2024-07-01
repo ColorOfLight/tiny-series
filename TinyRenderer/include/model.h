@@ -35,8 +35,10 @@ class Model {
  public:
   explicit Model(const char *filename);
   ~Model();
-  int nverts();
-  int nfaces();
+  int nverts() const;
+  int nfaces() const;
   Vec3f vert(int i);
+  Vec3f GetConstVert(int i) const;
   std::vector<int> face(int idx);
+  std::vector<int> GetConstFace(int idx) const;
 };

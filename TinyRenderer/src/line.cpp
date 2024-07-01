@@ -26,8 +26,7 @@
 
 #include "./tgaimage.h"
 
-void draw_line(int x0, int y0, int x1, int y1, TGAImage& image,
-               TGAColor color) {
+void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
   int x_diff = abs(x1 - x0);
   int y_diff = abs(y1 - y0);
 
