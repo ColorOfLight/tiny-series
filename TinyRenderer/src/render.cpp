@@ -75,8 +75,8 @@ void RenderRandomColors(const Model& model, TGAImage& image) {
   }
 }
 
-void RenderFloatShading(const Model& model, const geometry::Vec3f& light_dir,
-                        const TGAColor& base_color, TGAImage& image) {
+void RenderFlatShading(const Model& model, const geometry::Vec3f& light_dir,
+                       const TGAColor& base_color, TGAImage& image) {
   int width = image.width();
   int height = image.height();
 

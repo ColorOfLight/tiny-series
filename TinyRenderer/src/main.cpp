@@ -44,7 +44,7 @@ int main() {
 
   Model model("./obj/african_head.obj");
 
-  RenderFloatShading(model, light_dir, white, image);
+  RenderFlatShading(model, light_dir, white, image);
 
   image.write_tga_file("output.tga");
 
