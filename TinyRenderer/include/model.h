@@ -29,7 +29,7 @@
 
 class Model {
  private:
-  std::vector<Vec3f> verts_;
+  std::vector<geometry::Vec3f> verts_;
   std::vector<std::vector<int>> faces_;
 
  public:
@@ -37,8 +37,8 @@ class Model {
   ~Model();
   int nverts() const;
   int nfaces() const;
-  Vec3f vert(int i);
-  Vec3f GetConstVert(int i) const;
+  geometry::Vec3f vert(int i);
+  geometry::Vec3f GetConstVert(int i) const;
   std::vector<int> face(int idx);
   std::vector<int> GetConstFace(int idx) const;
 };

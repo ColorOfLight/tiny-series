@@ -34,8 +34,8 @@ void RenderWireframe(const Model& model, const TGAColor& color,
   for (int i = 0; i < model.nfaces(); i++) {
     std::vector<int> face = model.GetConstFace(i);
     for (int j = 0; j < 3; j++) {
-      Vec3f v0 = model.GetConstVert(face[j]);
-      Vec3f v1 = model.GetConstVert(face[(j + 1) % 3]);
+      geometry::Vec3f v0 = model.GetConstVert(face[j]);
+      geometry::Vec3f v1 = model.GetConstVert(face[(j + 1) % 3]);
       int x0 = (v0.x + 1.) * width / 2.;
       int y0 = (v0.y + 1.) * height / 2.;
       int x1 = (v1.x + 1.) * width / 2.;

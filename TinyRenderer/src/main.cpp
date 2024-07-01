@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 
+#include "./drawing.h"
 #include "./model.h"
 #include "./render.h"
 #include "./tgaimage.h"
@@ -39,13 +40,7 @@ const int height = 400;
 int main() {
   TGAImage image(width, height, TGAImage::RGB);
 
-  std::string model_path;
-  std::cout << "Enter the model path: ";
-  std::cin >> model_path;
-
-  Model model = Model(model_path.c_str());
-
-  RenderWireframe(model, red, image);
+  DrawTriangle(120, 70, 50, 320, 270, 180, image, red);
 
   image.write_tga_file("output.tga");
 

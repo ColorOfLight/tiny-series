@@ -27,6 +27,7 @@
 #include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace geometry {
 
 template <class t>
 struct Vec2 {
@@ -105,3 +106,17 @@ std::ostream &operator<<(std::ostream &s, Vec3<t> &v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
   return s;
 }
+
+template <class t>
+inline Vec2<t> Cross(Vec2<t> &vec1, Vec2<t> &vec2) {
+  return Vec2<t>(vec1.u * vec2.v - vec1.v * vec2.u);
+}
+
+template <class t>
+inline Vec3<t> Cross(Vec3<t> &vec1, Vec3<t> &vec2) {
+  return Vec3<t>(vec1.y * vec2.z - vec1.z * vec2.y,
+                 vec1.z * vec2.x - vec1.x * vec2.z,
+                 vec1.x * vec2.y - vec1.y * vec2.x);
+}
+
+}  // namespace geometry
