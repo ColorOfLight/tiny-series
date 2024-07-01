@@ -73,3 +73,37 @@ void RenderRandomColors(const Model& model, TGAImage& image) {
     DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
   }
 }
+
+void RenderFloatShading(const Model& model, const geometry::Vec3f& light_dir,
+                        const TGAColor& base_color, TGAImage& image) {
+  int width = image.width();
+  int height = image.height();
+
+  for (int i = 0; i < model.nfaces(); i++) {
+    std::vector<int> face = model.GetConstFace(i);
+    geometry::Vec3f v0 = model.GetConstVert(face[0]);
+    geometry::Vec3f v1 = model.GetConstVert(face[1]);
+    geometry::Vec3f v2 = model.GetConstVert(face[2]);
+
+    geometry::Vec3f normal = (v1 - v0) ^ (v2 - v0);
+
+    float intensity =
+        (-1.) * (normal.normalize() * geometry::Vec3f(light_dir).normalize());
+
+    if (intensity <= 0) {
+      // Skip back faces
+      continue;
+    }
+
+    int x0 = static_cast<int>((v0.x + 1.) * width / 2.);
+    int y0 = static_cast<int>((v0.y + 1.) * height / 2.);
+    int x1 = static_cast<int>((v1.x + 1.) * width / 2.);
+    int y1 = static_cast<int>((v1.y + 1.) * height / 2.);
+    int x2 = static_cast<int>((v2.x + 1.) * width / 2.);
+    int y2 = static_cast<int>((v2.y + 1.) * height / 2.);
+
+    TGAColor color = base_color * intensity;
+
+    DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
+  }
+}

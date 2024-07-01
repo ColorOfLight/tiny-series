@@ -34,6 +34,8 @@
 const TGAColor red(255, 0, 0, 255);
 const TGAColor white(255, 255, 255, 255);
 
+const geometry::Vec3f light_dir(0, 0, -1);
+
 const int width = 400;
 const int height = 400;
 
@@ -42,7 +44,7 @@ int main() {
 
   Model model("./obj/african_head.obj");
 
-  RenderRandomColors(model, image);
+  RenderFloatShading(model, light_dir, white, image);
 
   image.write_tga_file("output.tga");
 
