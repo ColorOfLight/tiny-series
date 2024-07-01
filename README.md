@@ -36,3 +36,9 @@ make
 - You can use Xcode Instruments for various profiling.
 - You can profile the execution file.
 - If you need the further information, please refer to [this blog post](https://www.jviotti.com/2024/01/29/using-xcode-instruments-for-cpp-cpu-profiling.html).
+
+## Lint
+
+- Install [cpplint](https://github.com/cpplint/cpplint)
+- Set commands executable: `chmod +x commands/*.sh`
+- Run `lint-all.sh`: `commands/lint-all.sh`
