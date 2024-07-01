@@ -49,9 +49,12 @@ struct TGAColor {
   TGAColor() = default;
   TGAColor(int b, int g, int r, int a);
   TGAColor(int b, int g, int r, int a, int bpp);
+  TGAColor(const TGAColor &c)
+      : bgra{c.bgra[0], c.bgra[1], c.bgra[2], c.bgra[3]} {};
   std::uint8_t bgra[4] = {0, 0, 0, 0};
   std::uint8_t bytespp = 4;
   std::uint8_t &operator[](const int i) { return bgra[i]; }
+  TGAColor operator*(const float intensity) const;
 };
 
 struct TGAImage {

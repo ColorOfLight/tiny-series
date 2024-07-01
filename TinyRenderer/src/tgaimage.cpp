@@ -233,6 +233,15 @@ TGAColor TGAImage::get(const int x, const int y) const {
   return ret;
 }
 
+TGAColor TGAColor::operator*(const float intensity) const {
+  if (intensity < 0) {
+    throw std::runtime_error("intensity must be greater than 0");
+  }
+
+  return TGAColor(bgra[2] * intensity, bgra[1] * intensity, bgra[0] * intensity,
+                  bgra[3] * intensity, bytespp);
+}
+
 void TGAImage::set(int x, int y, const TGAColor &c) {
   if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return;
   memcpy(data.data() + (x + y * w) * bpp, c.bgra, bpp);
