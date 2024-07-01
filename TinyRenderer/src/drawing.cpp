@@ -37,7 +37,7 @@ bool IsPointInTriangle(const geometry::Vec2i& edge1,
   geometry::Vec3i vec_y =
       geometry::Vec3i(edge1.y, edge2.y, origin_from_point.y);
 
-  geometry::Vec3i vec_crossed = geometry::Cross(vec_x, vec_y);
+  geometry::Vec3i vec_crossed = geometry::Vec3i(vec_x) ^ vec_y;
 
   if (vec_crossed.z == 0) {
     return false;

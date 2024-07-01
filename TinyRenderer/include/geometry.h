@@ -42,6 +42,7 @@ struct Vec2 {
   };
   Vec2() : u(0), v(0) {}
   Vec2(t _u, t _v) : u(_u), v(_v) {}
+  Vec2(const Vec2<t> &v) : u(v.u), v(v.v) {}
   inline Vec2<t> operator+(const Vec2<t> &V) const {
     return Vec2<t>(u + V.u, v + V.v);
   }
@@ -49,6 +50,9 @@ struct Vec2 {
     return Vec2<t>(u - V.u, v - V.v);
   }
   inline Vec2<t> operator*(float f) const { return Vec2<t>(u * f, v * f); }
+  inline Vec2<t> operator^(const Vec2<t> &V) const {
+    return Vec2<t>(u * V.v - v * V.u);
+  }
   template <class>
   friend std::ostream &operator<<(std::ostream &s, Vec2<t> &v);
 };
@@ -66,6 +70,7 @@ struct Vec3 {
   };
   Vec3() : x(0), y(0), z(0) {}
   Vec3(t _x, t _y, t _z) : x(_x), y(_y), z(_z) {}
+  Vec3(const Vec3<t> &v) : x(v.x), y(v.y), z(v.z) {}
   inline Vec3<t> operator^(const Vec3<t> &v) const {
     return Vec3<t>(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
   }
@@ -105,18 +110,6 @@ template <class t>
 std::ostream &operator<<(std::ostream &s, Vec3<t> &v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
   return s;
-}
-
-template <class t>
-inline Vec2<t> Cross(Vec2<t> &vec1, Vec2<t> &vec2) {
-  return Vec2<t>(vec1.u * vec2.v - vec1.v * vec2.u);
-}
-
-template <class t>
-inline Vec3<t> Cross(Vec3<t> &vec1, Vec3<t> &vec2) {
-  return Vec3<t>(vec1.y * vec2.z - vec1.z * vec2.y,
-                 vec1.z * vec2.x - vec1.x * vec2.z,
-                 vec1.x * vec2.y - vec1.y * vec2.x);
 }
 
 }  // namespace geometry
