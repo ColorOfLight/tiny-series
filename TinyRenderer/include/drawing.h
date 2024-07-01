@@ -24,9 +24,16 @@
 
 #pragma once
 
+#include <vector>
+
+#include "./geometry.h"
 #include "./tgaimage.h"
 
-void DrawLine(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color);
+void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
 
 void DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                  TGAImage &image, TGAColor color);
+                  TGAImage& image, TGAColor color);
+
+void DrawTriangle(const geometry::Vec3f& v0, const geometry::Vec3f& v1,
+                  const geometry::Vec3f& v2, TGAColor color, TGAImage& image,
+                  std::vector<std::vector<float>>& z_buffer);

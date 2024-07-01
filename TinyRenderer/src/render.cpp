@@ -25,6 +25,7 @@
 #include "./render.h"
 
 #include <random>
+#include <vector>
 
 #include "./drawing.h"
 
@@ -79,6 +80,11 @@ void RenderFloatShading(const Model& model, const geometry::Vec3f& light_dir,
   int width = image.width();
   int height = image.height();
 
+  // height x width z-buffer
+  std::vector<std::vector<float>> z_buffer(
+      height,
+      std::vector<float>(width, -std::numeric_limits<float>::infinity()));
+
   for (int i = 0; i < model.nfaces(); i++) {
     std::vector<int> face = model.GetConstFace(i);
     geometry::Vec3f v0 = model.GetConstVert(face[0]);
@@ -95,15 +101,14 @@ void RenderFloatShading(const Model& model, const geometry::Vec3f& light_dir,
       continue;
     }
 
-    int x0 = static_cast<int>((v0.x + 1.) * width / 2.);
-    int y0 = static_cast<int>((v0.y + 1.) * height / 2.);
-    int x1 = static_cast<int>((v1.x + 1.) * width / 2.);
-    int y1 = static_cast<int>((v1.y + 1.) * height / 2.);
-    int x2 = static_cast<int>((v2.x + 1.) * width / 2.);
-    int y2 = static_cast<int>((v2.y + 1.) * height / 2.);
+    geometry::Vec3f v0_screen = geometry::Vec3f(
+        (v0.x + 1.) * width / 2., (v0.y + 1.) * height / 2., v0.z);
+    geometry::Vec3f v1_screen = geometry::Vec3f(
+        (v1.x + 1.) * width / 2., (v1.y + 1.) * height / 2., v0.z);
+    geometry::Vec3f v2_screen = geometry::Vec3f(
+        (v2.x + 1.) * width / 2., (v2.y + 1.) * height / 2., v0.z);
 
-    TGAColor color = base_color * intensity;
-
-    DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
+    DrawTriangle(v0_screen, v1_screen, v2_screen, base_color * intensity, image,
+                 z_buffer);
   }
 }
