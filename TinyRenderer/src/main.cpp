@@ -40,7 +40,9 @@ const int height = 400;
 int main() {
   TGAImage image(width, height, TGAImage::RGB);
 
-  DrawTriangle(120, 70, 50, 320, 270, 180, image, red);
+  Model model("./obj/african_head.obj");
+
+  RenderRandomColors(model, image);
 
   image.write_tga_file("output.tga");
 

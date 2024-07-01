@@ -24,6 +24,8 @@
 
 #include "./render.h"
 
+#include <random>
+
 #include "./drawing.h"
 
 void RenderWireframe(const Model& model, const TGAColor& color,
@@ -42,5 +44,32 @@ void RenderWireframe(const Model& model, const TGAColor& color,
       int y1 = (v1.y + 1.) * height / 2.;
       DrawLine(x0, y0, x1, y1, image, color);
     }
+  }
+}
+
+void RenderRandomColors(const Model& model, TGAImage& image) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<int> dis(0, 255);
+
+  int width = image.width();
+  int height = image.height();
+
+  for (int i = 0; i < model.nfaces(); i++) {
+    std::vector<int> face = model.GetConstFace(i);
+    geometry::Vec3f v0 = model.GetConstVert(face[0]);
+    geometry::Vec3f v1 = model.GetConstVert(face[1]);
+    geometry::Vec3f v2 = model.GetConstVert(face[2]);
+
+    int x0 = static_cast<int>((v0.x + 1.) * width / 2.);
+    int y0 = static_cast<int>((v0.y + 1.) * height / 2.);
+    int x1 = static_cast<int>((v1.x + 1.) * width / 2.);
+    int y1 = static_cast<int>((v1.y + 1.) * height / 2.);
+    int x2 = static_cast<int>((v2.x + 1.) * width / 2.);
+    int y2 = static_cast<int>((v2.y + 1.) * height / 2.);
+
+    TGAColor color(dis(gen), dis(gen), dis(gen), 255);
+
+    DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
   }
 }

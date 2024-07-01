@@ -29,3 +29,5 @@
 
 void RenderWireframe(const Model& model, const TGAColor& color,
                      TGAImage& image);
+
+void RenderRandomColors(const Model& model, TGAImage& image);
