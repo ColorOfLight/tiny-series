@@ -1,11 +1,10 @@
 #include <filesystem>
+#include <iostream>
 #include <string>
 
 #include "line.h"
 #include "model.h"
 #include "tgaimage.h"
-
-using namespace std;
 
 const TGAColor red(255, 0, 0, 255);
 const TGAColor white(255, 255, 255, 255);
@@ -13,19 +12,14 @@ const TGAColor white(255, 255, 255, 255);
 const int width = 400;
 const int height = 400;
 
-std::string getDirectoryPath(const std::string &filePath) {
-  std::filesystem::path path(filePath);
-  return path.parent_path().string();
-}
-
-const string directoryPath = getDirectoryPath(__FILE__);
-
 int main() {
   TGAImage image(width, height, TGAImage::RGB);
 
-  cout << __FILE__ << endl;
+  std::string model_path;
+  std::cout << "Enter the model path: ";
+  std::cin >> model_path;
 
-  Model *model = new Model((directoryPath + "/obj/african_head.obj").c_str());
+  Model *model = new Model(model_path.c_str());
 
   for (int i = 0; i < model->nfaces(); i++) {
     std::vector<int> face = model->face(i);
