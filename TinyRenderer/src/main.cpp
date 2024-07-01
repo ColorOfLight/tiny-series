@@ -26,9 +26,9 @@
 #include <iostream>
 #include <string>
 
-#include "line.h"
-#include "model.h"
-#include "tgaimage.h"
+#include "./line.h"
+#include "./model.h"
+#include "./tgaimage.h"
 
 const TGAColor red(255, 0, 0, 255);
 const TGAColor white(255, 255, 255, 255);

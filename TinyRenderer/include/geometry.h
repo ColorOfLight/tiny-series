@@ -21,8 +21,7 @@
 // Source:
 // https://github.com/ssloy/tinyrenderer/blob/f6fecb7ad493264ecd15e230411bfb1cca539a12/geometry.h
 
-#ifndef __GEOMETRY_H__
-#define __GEOMETRY_H__
+#pragma once
 
 #include <cmath>
 #include <iostream>
@@ -106,5 +105,3 @@ std::ostream &operator<<(std::ostream &s, Vec3<t> &v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
   return s;
 }
-
-#endif  //__GEOMETRY_H__

@@ -21,7 +21,7 @@
 // source:
 // https://github.com/ssloy/tinyrenderer/blob/f6fecb7ad493264ecd15e230411bfb1cca539a12/model.cpp
 
-#include "model.h"
+#include "./model.h"
 
 #include <fstream>
 #include <iostream>
@@ -59,9 +59,9 @@ Model::Model(const char *filename) : verts_(), faces_() {
 
 Model::~Model() {}
 
-int Model::nverts() { return (int)verts_.size(); }
+int Model::nverts() { return static_cast<int>(verts_.size()); }
 
-int Model::nfaces() { return (int)faces_.size(); }
+int Model::nfaces() { return static_cast<int>(faces_.size()); }
 
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
 

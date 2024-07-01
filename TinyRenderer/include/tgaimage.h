@@ -22,8 +22,10 @@
 // https://github.com/ssloy/tinyrenderer/blob/master/tgaimage.h
 
 #pragma once
+
 #include <cstdint>
 #include <fstream>
+#include <string>
 #include <vector>
 
 #pragma pack(push, 1)

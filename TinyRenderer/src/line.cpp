@@ -24,7 +24,7 @@
 
 #include <math.h>
 
-#include "tgaimage.h"
+#include "./tgaimage.h"
 
 void draw_line(int x0, int y0, int x1, int y1, TGAImage& image,
                TGAColor color) {
@@ -34,7 +34,9 @@ void draw_line(int x0, int y0, int x1, int y1, TGAImage& image,
   int larger_diff = std::max(x_diff, y_diff);
 
   for (int i = 0; i <= larger_diff; ++i) {
-    float t = larger_diff == 0 ? 0.0f : float(i) / float(larger_diff);
+    float t = larger_diff == 0
+                  ? 0.0f
+                  : static_cast<float>(i) / static_cast<float>(larger_diff);
     int x = x0 + (x1 - x0) * t;
     int y = y0 + (y1 - y0) * t;
     image.set(x, y, color);

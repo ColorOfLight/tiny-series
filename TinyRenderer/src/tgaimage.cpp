@@ -21,7 +21,7 @@
 // source:
 // https://github.com/ssloy/tinyrenderer/blob/master/tgaimage.cpp
 
-#include "tgaimage.h"
+#include "./tgaimage.h"
 
 #include <cstring>
 #include <iostream>
@@ -63,7 +63,8 @@ bool TGAImage::read_tga_file(const std::string filename) {
       return false;
     }
   } else {
-    std::cerr << "unknown file format " << (int)header.datatypecode << "\n";
+    std::cerr << "unknown file format " << static_cast<int>(header.datatypecode)
+              << "\n";
     return false;
   }
   if (!(header.imagedescriptor & 0x20)) flip_vertically();
@@ -174,8 +175,8 @@ bool TGAImage::write_tga_file(const std::string filename, const bool vflip,
   return true;
 }
 
-// TODO: it is not necessary to break a raw chunk for two equal pixels (for the
-// matter of the resulting size)
+// TODO(Dmitry V. Sokolov): it is not necessary to break a raw chunk for two
+// equal pixels (for the matter of the resulting size)
 bool TGAImage::unload_rle_data(std::ofstream &out) const {
   const std::uint8_t max_chunk_length = 128;
   size_t npixels = w * h;
@@ -227,7 +228,8 @@ TGAColor TGAImage::get(const int x, const int y) const {
   if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return {};
   TGAColor ret = {0, 0, 0, 0, bpp};
   const std::uint8_t *p = data.data() + (x + y * w) * bpp;
-  for (int i = bpp; i--; ret.bgra[i] = p[i]);
+  for (int i = bpp; i--; ret.bgra[i] = p[i]) {
+  }
   return ret;
 }
 

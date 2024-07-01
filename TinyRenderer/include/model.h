@@ -21,12 +21,11 @@
 // Source:
 // https://github.com/ssloy/tinyrenderer/blob/f6fecb7ad493264ecd15e230411bfb1cca539a12/model.h
 
-#ifndef __MODEL_H__
-#define __MODEL_H__
+#pragma once
 
 #include <vector>
 
-#include "geometry.h"
+#include "./geometry.h"
 
 class Model {
  private:
@@ -34,12 +33,10 @@ class Model {
   std::vector<std::vector<int>> faces_;
 
  public:
-  Model(const char *filename);
+  explicit Model(const char *filename);
   ~Model();
   int nverts();
   int nfaces();
   Vec3f vert(int i);
   std::vector<int> face(int idx);
 };
-
-#endif  //__MODEL_H__
