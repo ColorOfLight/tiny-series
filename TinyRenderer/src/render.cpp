@@ -29,16 +29,16 @@
 
 #include "./drawing.h"
 
-void RenderWireframe(const Model& model, const TGAColor& color,
+void RenderWireframe(const model::Model& model, const TGAColor& color,
                      TGAImage& image) {
   int width = image.width();
   int height = image.height();
 
-  for (int i = 0; i < model.nfaces(); i++) {
-    std::vector<int> face = model.GetConstFace(i);
+  for (int i = 0; i < model.size(); i++) {
+    const auto& face = model.get(i);
     for (int j = 0; j < 3; j++) {
-      geometry::Vec3f v0 = model.GetConstVert(face[j]);
-      geometry::Vec3f v1 = model.GetConstVert(face[(j + 1) % 3]);
+      const geometry::Vec3f& v0 = face[j].position;
+      const geometry::Vec3f& v1 = face[(j + 1) % 3].position;
       int x0 = (v0.x + 1.) * width / 2.;
       int y0 = (v0.y + 1.) * height / 2.;
       int x1 = (v1.x + 1.) * width / 2.;
@@ -48,7 +48,7 @@ void RenderWireframe(const Model& model, const TGAColor& color,
   }
 }
 
-void RenderRandomColors(const Model& model, TGAImage& image) {
+void RenderRandomColors(const model::Model& model, TGAImage& image) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<int> dis(0, 255);
@@ -56,11 +56,11 @@ void RenderRandomColors(const Model& model, TGAImage& image) {
   int width = image.width();
   int height = image.height();
 
-  for (int i = 0; i < model.nfaces(); i++) {
-    std::vector<int> face = model.GetConstFace(i);
-    geometry::Vec3f v0 = model.GetConstVert(face[0]);
-    geometry::Vec3f v1 = model.GetConstVert(face[1]);
-    geometry::Vec3f v2 = model.GetConstVert(face[2]);
+  for (int i = 0; i < model.size(); i++) {
+    const auto& face = model.get(i);
+    const geometry::Vec3f& v0 = face[0].position;
+    const geometry::Vec3f& v1 = face[1].position;
+    const geometry::Vec3f& v2 = face[2].position;
 
     int x0 = static_cast<int>((v0.x + 1.) * width / 2.);
     int y0 = static_cast<int>((v0.y + 1.) * height / 2.);
@@ -75,7 +75,8 @@ void RenderRandomColors(const Model& model, TGAImage& image) {
   }
 }
 
-void RenderFlatShading(const Model& model, const geometry::Vec3f& light_dir,
+void RenderFlatShading(const model::Model& model,
+                       const geometry::Vec3f& light_dir,
                        const TGAColor& base_color, TGAImage& image) {
   int width = image.width();
   int height = image.height();
@@ -85,12 +86,13 @@ void RenderFlatShading(const Model& model, const geometry::Vec3f& light_dir,
       height,
       std::vector<float>(width, -std::numeric_limits<float>::infinity()));
 
-  for (int i = 0; i < model.nfaces(); i++) {
-    std::vector<int> face = model.GetConstFace(i);
-    geometry::Vec3f v0 = model.GetConstVert(face[0]);
-    geometry::Vec3f v1 = model.GetConstVert(face[1]);
-    geometry::Vec3f v2 = model.GetConstVert(face[2]);
+  for (int i = 0; i < model.size(); i++) {
+    auto& face = model.get(i);
+    const geometry::Vec3f& v0 = face[0].position;
+    const geometry::Vec3f& v1 = face[1].position;
+    const geometry::Vec3f& v2 = face[2].position;
 
+    // TODO: use real normal
     geometry::Vec3f normal = (v1 - v0) ^ (v2 - v0);
 
     float intensity =

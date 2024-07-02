@@ -24,13 +24,14 @@
 
 #pragma once
 
-#include "./model.h"
+#include "./model_new.h"
 #include "./tgaimage.h"
 
-void RenderWireframe(const Model& model, const TGAColor& color,
+void RenderWireframe(const model::Model& model, const TGAColor& color,
                      TGAImage& image);
 
-void RenderRandomColors(const Model& model, TGAImage& image);
+void RenderRandomColors(const model::Model& model, TGAImage& image);
 
-void RenderFlatShading(const Model& model, const geometry::Vec3f& light_dir,
+void RenderFlatShading(const model::Model& model,
+                       const geometry::Vec3f& light_dir,
                        const TGAColor& base_color, TGAImage& image);
