@@ -27,34 +27,16 @@
 #include <string>
 #include <vector>
 
+#include "./geometry.h"
+
 namespace model {
-struct Position {
-  float x;
-  float y;
-  float z;
-};
-
-struct Normal {
-  float x;
-  float y;
-  float z;
-};
-
-struct TextureCoords {
-  float u;
-  float v;
-};
 
 struct Vertex {
-  const Position& position;
-  const Normal& normal;
-  const TextureCoords& texture_coords;
+  const geometry::Vec3f& position;
+  const geometry::Vec3f& normal;
+  const geometry::Vec2f& texture_coords;
 };
 
-std::ostream& operator<<(std::ostream& os, const model::Position& position);
-std::ostream& operator<<(std::ostream& os, const model::Normal& normal);
-std::ostream& operator<<(std::ostream& os,
-                         const model::TextureCoords& texture_coords);
 std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex);
 
 class Model {
@@ -67,8 +49,8 @@ class Model {
 
  private:
   std::vector<std::vector<Vertex>> faces_;
-  std::vector<Position> positions_;
-  std::vector<Normal> normals_;
-  std::vector<TextureCoords> texture_coords_;
+  std::vector<geometry::Vec3f> positions_;
+  std::vector<geometry::Vec3f> normals_;
+  std::vector<geometry::Vec2f> texture_coords_;
 };
 }  // namespace model

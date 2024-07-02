@@ -36,9 +36,9 @@ struct VertexIndex {
 };
 
 Model::Model(const std::string& file_name)
-    : positions_(std::vector<model::Position>()),
-      normals_(std::vector<model::Normal>()),
-      texture_coords_(std::vector<model::TextureCoords>()),
+    : positions_(std::vector<geometry::Vec3f>()),
+      normals_(std::vector<geometry::Vec3f>()),
+      texture_coords_(std::vector<geometry::Vec2f>()),
       faces_(std::vector<std::vector<model::Vertex>>()) {
   std::ifstream file(file_name);
   if (!file.is_open()) {
@@ -54,15 +54,15 @@ Model::Model(const std::string& file_name)
     iss >> prefix;
 
     if (prefix == "v") {
-      Position position;
+      geometry::Vec3f position;
       iss >> position.x >> position.y >> position.z;
       positions_.push_back(position);
     } else if (prefix == "vn") {
-      Normal normal;
+      geometry::Vec3f normal;
       iss >> normal.x >> normal.y >> normal.z;
       normals_.push_back(normal);
     } else if (prefix == "vt") {
-      TextureCoords texture_coords;
+      geometry::Vec2f texture_coords;
       iss >> texture_coords.u >> texture_coords.v;
       texture_coords_.push_back(texture_coords);
     } else if (prefix == "f") {
@@ -107,9 +107,10 @@ Model::Model(const std::string& file_name)
             std::to_string(vertex_index.texture_coords_index));
       }
 
-      const Position& position = positions_[vertex_index.position_index - 1];
-      const Normal& normal = normals_[vertex_index.normal_index - 1];
-      const TextureCoords& texture_coords =
+      const geometry::Vec3f& position =
+          positions_[vertex_index.position_index - 1];
+      const geometry::Vec3f& normal = normals_[vertex_index.normal_index - 1];
+      const geometry::Vec2f& texture_coords =
           texture_coords_[vertex_index.texture_coords_index - 1];
       vertices.push_back(Vertex{position, normal, texture_coords});
     }
@@ -121,23 +122,6 @@ Model::~Model() {}
 
 const std::vector<model::Vertex>& Model::get(int index) const {
   return faces_[index];
-}
-
-std::ostream& operator<<(std::ostream& os, const model::Position& position) {
-  os << "Position(" << position.x << ", " << position.y << ", " << position.z
-     << ")";
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const model::Normal& normal) {
-  os << "Normal(" << normal.x << ", " << normal.y << ", " << normal.z << ")";
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const model::TextureCoords& texture_coords) {
-  os << "TextureCoords(" << texture_coords.u << ", " << texture_coords.v << ")";
-  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex) {
