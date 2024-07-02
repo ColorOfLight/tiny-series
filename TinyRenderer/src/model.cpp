@@ -1,72 +1,132 @@
 /*
- * Copyright Dmitry V. Sokolov
+ * MIT License
  *
- * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the authors be held liable for any damages arising from the
- * use of this software. Permission is granted to anyone to use this software
- * for any purpose, including commercial applications, and to alter it and
- * redistribute it freely, subject to the following restrictions:
+ * Copyright (c) 2024 Seongho Park
  *
- * 1. The origin of this software must not be misrepresented; you must not claim
- * that you wrote the original software.
- * If you use this software in a product, an acknowledgment in the product
- * documentation would be appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- * misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Modified by Seongho Park in 2024
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
-
-// source:
-// https://github.com/ssloy/tinyrenderer/blob/f6fecb7ad493264ecd15e230411bfb1cca539a12/model.cpp
 
 #include "./model.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
-#include <vector>
 
-Model::Model(const char *filename) : verts_(), faces_() {
-  std::ifstream in;
-  in.open(filename, std::ifstream::in);
-  if (in.fail()) return;
+namespace model {
+struct VertexIndex {
+  int position_index;
+  int texture_coords_index;
+  int normal_index;
+};
+
+Model::Model(const std::string& file_name)
+    : positions_(std::vector<geometry::Vec3f>()),
+      normals_(std::vector<geometry::Vec3f>()),
+      texture_coords_(std::vector<geometry::Vec2f>()),
+      faces_(std::vector<std::vector<model::Vertex>>()) {
+  std::ifstream file(file_name);
+  if (!file.is_open()) {
+    throw std::runtime_error("Failed to open file: " + file_name);
+  }
+
+  std::vector<std::vector<VertexIndex>> face_vertex_indices;
+
   std::string line;
-  while (!in.eof()) {
-    std::getline(in, line);
-    std::istringstream iss(line.c_str());
-    char trash;
-    if (!line.compare(0, 2, "v ")) {
-      iss >> trash;
-      geometry::Vec3f v;
-      for (int i = 0; i < 3; i++) iss >> v.raw[i];
-      verts_.push_back(v);
-    } else if (!line.compare(0, 2, "f ")) {
-      std::vector<int> f;
-      int itrash, idx;
-      iss >> trash;
-      while (iss >> idx >> trash >> itrash >> trash >> itrash) {
-        idx--;  // in wavefront obj all indices start at 1, not zero
-        f.push_back(idx);
+  while (std::getline(file, line)) {
+    std::istringstream iss(line);
+    std::string prefix;
+    iss >> prefix;
+
+    if (prefix == "v") {
+      geometry::Vec3f position;
+      iss >> position.x >> position.y >> position.z;
+      positions_.push_back(position);
+    } else if (prefix == "vn") {
+      geometry::Vec3f normal;
+      iss >> normal.x >> normal.y >> normal.z;
+      normals_.push_back(normal);
+    } else if (prefix == "vt") {
+      geometry::Vec2f texture_coords;
+      iss >> texture_coords.u >> texture_coords.v;
+      texture_coords_.push_back(texture_coords);
+    } else if (prefix == "f") {
+      std::vector<VertexIndex> vertexIndexes;
+      std::string vertex_str;
+      while (iss >> vertex_str) {
+        std::istringstream vertex_iss(vertex_str);
+        std::string vertex;
+        std::getline(vertex_iss, vertex, '/');
+        int position_index = std::stoi(vertex);
+        std::getline(vertex_iss, vertex, '/');
+        int texture_coords_index = std::stoi(vertex);
+        std::getline(vertex_iss, vertex, '/');
+        int normal_index = std::stoi(vertex);
+
+        VertexIndex vertexIndex = {position_index, texture_coords_index,
+                                   normal_index};
+        vertexIndexes.push_back(vertexIndex);
       }
-      faces_.push_back(f);
+
+      face_vertex_indices.push_back(vertexIndexes);
     }
   }
-  std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << std::endl;
+
+  for (const std::vector<VertexIndex>& face_vertex_index :
+       face_vertex_indices) {
+    std::vector<Vertex> vertices;
+    for (const VertexIndex& vertex_index : face_vertex_index) {
+      if (vertex_index.position_index > positions_.size()) {
+        throw std::runtime_error("Invalid position index: " +
+                                 std::to_string(vertex_index.position_index));
+      }
+
+      if (vertex_index.normal_index > normals_.size()) {
+        throw std::runtime_error("Invalid normal index: " +
+                                 std::to_string(vertex_index.normal_index));
+      }
+
+      if (vertex_index.texture_coords_index > texture_coords_.size()) {
+        throw std::runtime_error(
+            "Invalid texture coords index: " +
+            std::to_string(vertex_index.texture_coords_index));
+      }
+
+      const geometry::Vec3f& position =
+          positions_[vertex_index.position_index - 1];
+      const geometry::Vec3f& normal = normals_[vertex_index.normal_index - 1];
+      const geometry::Vec2f& texture_coords =
+          texture_coords_[vertex_index.texture_coords_index - 1];
+      vertices.push_back(Vertex{position, normal, texture_coords});
+    }
+    faces_.push_back(vertices);
+  }
 }
 
 Model::~Model() {}
 
-int Model::nverts() const { return static_cast<int>(verts_.size()); }
+const std::vector<model::Vertex>& Model::get(int index) const {
+  return faces_[index];
+}
 
-int Model::nfaces() const { return static_cast<int>(faces_.size()); }
-
-std::vector<int> Model::face(int idx) { return faces_[idx]; }
-
-std::vector<int> Model::GetConstFace(int idx) const { return faces_[idx]; }
-
-geometry::Vec3f Model::vert(int i) { return verts_[i]; }
-
-geometry::Vec3f Model::GetConstVert(int i) const { return verts_[i]; }
+std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex) {
+  os << "Vertex(" << vertex.position << ", " << vertex.normal << ", "
+     << vertex.texture_coords << ")";
+  return os;
+}
+}  // namespace model

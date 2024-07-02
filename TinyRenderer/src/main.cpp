@@ -42,7 +42,7 @@ const int height = 400;
 int main() {
   TGAImage image(width, height, TGAImage::RGB);
 
-  Model model("./obj/african_head.obj");
+  model::Model model("./obj/african_head.obj");
 
   RenderFlatShading(model, light_dir, white, image);
 

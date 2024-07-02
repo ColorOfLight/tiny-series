@@ -1,44 +1,56 @@
 /*
- * Copyright Dmitry V. Sokolov
+ * MIT License
  *
- * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the authors be held liable for any damages arising from the
- * use of this software. Permission is granted to anyone to use this software
- * for any purpose, including commercial applications, and to alter it and
- * redistribute it freely, subject to the following restrictions:
+ * Copyright (c) 2024 Seongho Park
  *
- * 1. The origin of this software must not be misrepresented; you must not claim
- * that you wrote the original software.
- * If you use this software in a product, an acknowledgment in the product
- * documentation would be appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- * misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Modified by Seongho Park in 2024
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
-
-// Source:
-// https://github.com/ssloy/tinyrenderer/blob/f6fecb7ad493264ecd15e230411bfb1cca539a12/model.h
 
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "./geometry.h"
 
-class Model {
- private:
-  std::vector<geometry::Vec3f> verts_;
-  std::vector<std::vector<int>> faces_;
+namespace model {
 
- public:
-  explicit Model(const char *filename);
-  ~Model();
-  int nverts() const;
-  int nfaces() const;
-  geometry::Vec3f vert(int i);
-  geometry::Vec3f GetConstVert(int i) const;
-  std::vector<int> face(int idx);
-  std::vector<int> GetConstFace(int idx) const;
+struct Vertex {
+  const geometry::Vec3f& position;
+  const geometry::Vec3f& normal;
+  const geometry::Vec2f& texture_coords;
 };
+
+std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex);
+
+class Model {
+ public:
+  explicit Model(const std::string& file_name);
+  ~Model();
+
+  inline int size() const { return faces_.size(); }
+  const std::vector<Vertex>& get(int index) const;
+
+ private:
+  std::vector<std::vector<Vertex>> faces_;
+  std::vector<geometry::Vec3f> positions_;
+  std::vector<geometry::Vec3f> normals_;
+  std::vector<geometry::Vec2f> texture_coords_;
+};
+}  // namespace model

@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "./model_new.h"
+#include "./model.h"
 #include "./tgaimage.h"
 
 void RenderWireframe(const model::Model& model, const TGAColor& color,
