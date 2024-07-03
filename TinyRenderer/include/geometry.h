@@ -180,6 +180,7 @@ struct Mat4x4 {
     m[3][2] = m32;
     m[3][3] = m33;
   }
+
   static Mat4x4 Perspective(float distance) {
     if (distance == 0) {
       throw std::runtime_error("Division by zero");
@@ -194,6 +195,21 @@ struct Mat4x4 {
     result.m[3][3] = 1;
     return result;
   }
+
+  static Mat4x4 Viewport(int x, int y, int width, int height, int depth) {
+    Mat4x4<t> result;
+
+    result.m[0][0] = static_cast<t>(width) / 2;
+    result.m[0][3] = x + static_cast<t>(width) / 2;
+    result.m[1][1] = static_cast<t>(height) / 2;
+    result.m[1][3] = y + static_cast<t>(height) / 2;
+    result.m[2][2] = static_cast<t>(depth) / 2;
+    result.m[2][3] = static_cast<t>(depth) / 2;
+    result.m[3][3] = 1.0f;
+
+    return result;
+  }
+
   inline Mat4x4<t> &operator*=(t scalar) const {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
@@ -207,7 +223,7 @@ struct Mat4x4 {
     result *= scalar;
     return result;
   }
-  inline Mat4x4<t> &operator*=(const Mat4x4<t> &m2) const {
+  inline Mat4x4<t> &operator*=(const Mat4x4<t> &m2) {
     Mat4x4<t> result;
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
@@ -215,7 +231,8 @@ struct Mat4x4 {
                          m[i][2] * m2.m[2][j] + m[i][3] * m2.m[3][j];
       }
     }
-    return result;
+    *this = result;
+    return *this;
   }
   inline Mat4x4<t> operator*(const Mat4x4<t> &m2) const {
     Mat4x4<t> result = *this;

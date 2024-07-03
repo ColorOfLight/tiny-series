@@ -116,6 +116,8 @@ void RenderFlatShading(const model::Model& model,
   int height = image.height();
 
   geometry::Mat4x4f perspective_mat = geometry::Mat4x4f::Perspective(3);
+  geometry::Mat4x4f viewport_mat =
+      geometry::Mat4x4f::Viewport(0, 0, width, height, 1);
 
   // height x width z-buffer
   std::vector<std::vector<float>> z_buffer(
@@ -126,17 +128,17 @@ void RenderFlatShading(const model::Model& model,
     auto& face = model.get(i);
 
     const geometry::Vec4f& p0_4 =
-        perspective_mat * geometry::Vec4f(face[0].position.x,
-                                          face[0].position.y,
-                                          face[0].position.z, 1);
+        viewport_mat * perspective_mat *
+        geometry::Vec4f(face[0].position.x, face[0].position.y,
+                        face[0].position.z, 1);
     const geometry::Vec4f& p1_4 =
-        perspective_mat * geometry::Vec4f(face[1].position.x,
-                                          face[1].position.y,
-                                          face[1].position.z, 1);
+        viewport_mat * perspective_mat *
+        geometry::Vec4f(face[1].position.x, face[1].position.y,
+                        face[1].position.z, 1);
     const geometry::Vec4f& p2_4 =
-        perspective_mat * geometry::Vec4f(face[2].position.x,
-                                          face[2].position.y,
-                                          face[2].position.z, 1);
+        viewport_mat * perspective_mat *
+        geometry::Vec4f(face[2].position.x, face[2].position.y,
+                        face[2].position.z, 1);
 
     const geometry::Vec3f& p0 = p0_4.ToNDC();
     const geometry::Vec3f& p1 = p1_4.ToNDC();
@@ -150,14 +152,7 @@ void RenderFlatShading(const model::Model& model,
     const geometry::Vec2f& st1 = face[1].texture_coords;
     const geometry::Vec2f& st2 = face[2].texture_coords;
 
-    geometry::Vec3f p0_screen = geometry::Vec3f(
-        (p0.x + 1.) * width / 2., (p0.y + 1.) * height / 2., p0.z);
-    geometry::Vec3f p1_screen = geometry::Vec3f(
-        (p1.x + 1.) * width / 2., (p1.y + 1.) * height / 2., p1.z);
-    geometry::Vec3f p2_screen = geometry::Vec3f(
-        (p2.x + 1.) * width / 2., (p2.y + 1.) * height / 2., p2.z);
-
-    DrawTriangle(p0_screen, p1_screen, p2_screen, n0, n1, n2, st0, st1, st2,
-                 texture, light_dir, image, z_buffer);
+    DrawTriangle(p0, p1, p2, n0, n1, n2, st0, st1, st2, texture, light_dir,
+                 image, z_buffer);
   }
 }
