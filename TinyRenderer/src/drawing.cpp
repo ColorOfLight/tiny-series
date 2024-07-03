@@ -46,8 +46,8 @@ geometry::Vec3f GetBarycentric(const geometry::Vec2f& edge1,
   }
 
   return geometry::Vec3f(1.f - (vec_crossed.x + vec_crossed.y) / vec_crossed.z,
-                         vec_crossed.y / vec_crossed.z,
-                         vec_crossed.x / vec_crossed.z);
+                         vec_crossed.x / vec_crossed.z,
+                         vec_crossed.y / vec_crossed.z);
 }
 
 bool IsPointInTriangle(const geometry::Vec2i& edge1,
