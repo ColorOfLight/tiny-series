@@ -102,13 +102,13 @@ typedef Vec3<int> Vec3i;
 
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec2<t> &v) {
-  s << "(" << v.x << ", " << v.y << ")\n";
+  s << "(" << v.x << ", " << v.y << ")";
   return s;
 }
 
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec3<t> &v) {
-  s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
+  s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   return s;
 }
 
