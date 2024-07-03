@@ -148,12 +148,80 @@ struct Vec4 {
   friend std::ostream &operator<<(std::ostream &s, Vec4<t> &v);
 };
 
+template <class t>
+struct Mat4x4 {
+  // row-major order
+  t m[4][4] = {0};
+  Mat4x4() {}
+  Mat4x4(t m00, t m01, t m02, t m03, t m10, t m11, t m12, t m13, t m20, t m21,
+         t m22, t m23, t m30, t m31, t m32, t m33) {
+    m[0][0] = m00;
+    m[0][1] = m01;
+    m[0][2] = m02;
+    m[0][3] = m03;
+    m[1][0] = m10;
+    m[1][1] = m11;
+    m[1][2] = m12;
+    m[1][3] = m13;
+    m[2][0] = m20;
+    m[2][1] = m21;
+    m[2][2] = m22;
+    m[2][3] = m23;
+    m[3][0] = m30;
+    m[3][1] = m31;
+    m[3][2] = m32;
+    m[3][3] = m33;
+  }
+  inline Mat4x4<t> &operator*=(t scalar) const {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        m[i][j] = m[i][j] * scalar;
+      }
+    }
+    return *this;
+  }
+  inline Mat4x4<t> operator*(t scalar) const {
+    Mat4x4<t> result = *this;
+    result *= scalar;
+    return result;
+  }
+  inline Mat4x4<t> &operator*=(const Mat4x4<t> &m2) const {
+    Mat4x4<t> result;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        result.m[i][j] = m[i][0] * m2.m[0][j] + m[i][1] * m2.m[1][j] +
+                         m[i][2] * m2.m[2][j] + m[i][3] * m2.m[3][j];
+      }
+    }
+    return result;
+  }
+  inline Mat4x4<t> operator*(const Mat4x4<t> &m2) const {
+    Mat4x4<t> result = *this;
+    result *= m2;
+    return result;
+  }
+  inline Vec4<t> operator*(const Vec4<t> &v) const {
+    Vec4<t> result;
+    for (int i = 0; i < 4; i++) {
+      result.raw[i] = v.raw[0] * m[i][0] + v.raw[1] * m[i][1] +
+                      v.raw[2] * m[i][2] + v.raw[3] * m[i][3];
+    }
+    return result;
+  }
+
+  template <class>
+  friend std::ostream &operator<<(std::ostream &s, const Mat4x4<t> &m);
+};
+
 typedef Vec2<float> Vec2f;
 typedef Vec2<int> Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
 typedef Vec4<float> Vec4f;
 typedef Vec4<int> Vec4i;
+
+typedef Mat4x4<float> Mat4x4f;
+typedef Mat4x4<int> Mat4x4i;
 
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec2<t> &v) {
@@ -170,6 +238,26 @@ std::ostream &operator<<(std::ostream &s, const Vec3<t> &v) {
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec4<t> &v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+  return s;
+}
+
+template <class t>
+std::ostream &operator<<(std::ostream &s, const Mat4x4<t> &m) {
+  s << "[";
+  for (int i = 0; i < 4; i++) {
+    s << "[";
+    for (int j = 0; j < 4; j++) {
+      s << m.m[i][j];
+      if (j < 3) {
+        s << ", ";
+      }
+    }
+    s << "]";
+    if (i < 3) {
+      s << std::endl;
+    }
+  }
+  s << "]";
   return s;
 }
 
