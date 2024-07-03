@@ -115,9 +115,8 @@ void RenderFlatShading(const model::Model& model,
   int width = image.width();
   int height = image.height();
 
-  geometry::Mat4x4f perspective_mat = geometry::Mat4x4f::Perspective(3);
-  geometry::Mat4x4f viewport_mat =
-      geometry::Mat4x4f::Viewport(0, 0, width, height, 1);
+  geometry::Mat4x4f perspective_mat = geometry::Perspective(3);
+  geometry::Mat4x4f viewport_mat = geometry::Viewport(0, 0, width, height, 1);
 
   // height x width z-buffer
   std::vector<std::vector<float>> z_buffer(
