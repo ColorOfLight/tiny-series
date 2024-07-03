@@ -107,3 +107,40 @@ void RenderFlatShading(const model::Model& model,
                  light_dir, image, z_buffer);
   }
 }
+
+void RenderFlatShading(const model::Model& model,
+                       const geometry::Vec3f& light_dir,
+                       const TGAImage& texture, TGAImage& image) {
+  int width = image.width();
+  int height = image.height();
+
+  // height x width z-buffer
+  std::vector<std::vector<float>> z_buffer(
+      height,
+      std::vector<float>(width, -std::numeric_limits<float>::infinity()));
+
+  for (int i = 0; i < model.size(); i++) {
+    auto& face = model.get(i);
+    const geometry::Vec3f& p0 = face[0].position;
+    const geometry::Vec3f& p1 = face[1].position;
+    const geometry::Vec3f& p2 = face[2].position;
+
+    const geometry::Vec3f& n0 = face[0].normal;
+    const geometry::Vec3f& n1 = face[1].normal;
+    const geometry::Vec3f& n2 = face[2].normal;
+
+    const geometry::Vec2f& st0 = face[0].texture_coords;
+    const geometry::Vec2f& st1 = face[1].texture_coords;
+    const geometry::Vec2f& st2 = face[2].texture_coords;
+
+    geometry::Vec3f p0_screen = geometry::Vec3f(
+        (p0.x + 1.) * width / 2., (p0.y + 1.) * height / 2., p0.z);
+    geometry::Vec3f p1_screen = geometry::Vec3f(
+        (p1.x + 1.) * width / 2., (p1.y + 1.) * height / 2., p1.z);
+    geometry::Vec3f p2_screen = geometry::Vec3f(
+        (p2.x + 1.) * width / 2., (p2.y + 1.) * height / 2., p2.z);
+
+    DrawTriangle(p0_screen, p1_screen, p2_screen, n0, n1, n2, st0, st1, st2,
+                 texture, light_dir, image, z_buffer);
+  }
+}

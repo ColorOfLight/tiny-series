@@ -55,6 +55,7 @@ struct TGAColor {
   std::uint8_t bytespp = 4;
   std::uint8_t &operator[](const int i) { return bgra[i]; }
   TGAColor operator*(const float intensity) const;
+  TGAColor operator+(const TGAColor &c) const;
 };
 
 struct TGAImage {

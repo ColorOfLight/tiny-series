@@ -77,6 +77,23 @@ bool IsPointInTriangle(const geometry::Vec2i& edge1,
   return false;
 }
 
+TGAColor FindNearestTextureColor(const geometry::Vec2f& st,
+                                 const TGAImage& texture) {
+  if (st.x < 0 || st.x > 1 || st.y < 0 || st.y > 1) {
+    throw std::out_of_range("st should be in range [0, 1]");
+  }
+
+  int width = texture.width();
+  int height = texture.height();
+
+  int x =
+      std::min(static_cast<int>(st.x * static_cast<float>(width)), width - 1);
+  int y =
+      std::min(static_cast<int>(st.y * static_cast<float>(height)), height - 1);
+
+  return texture.get(x, y);
+}
+
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
   int x_diff = abs(x1 - x0);
   int y_diff = abs(y1 - y0);
@@ -190,6 +207,59 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
 
         z_buffer[y][x] = z;
         image.set(x, y, color * intensity);
+      }
+    }
+  }
+}
+
+void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
+                  const geometry::Vec3f& p2, const geometry::Vec3f& n0,
+                  const geometry::Vec3f& n1, const geometry::Vec3f& n2,
+                  const geometry::Vec2f& st0, const geometry::Vec2f& st1,
+                  const geometry::Vec2f& st2, const TGAImage& texture,
+                  const geometry::Vec3f& light_dir, TGAImage& image,
+                  std::vector<std::vector<float>>& z_buffer) {
+  // Give some margin to avoid the edge of the triangle
+  int min_x = std::min(p0.x, std::min(p1.x, p2.x)) - 1;
+  int max_x = std::max(p0.x, std::max(p1.x, p2.x)) + 1;
+  int min_y = std::min(p0.y, std::min(p1.y, p2.y)) - 1;
+  int max_y = std::max(p0.y, std::max(p1.y, p2.y)) + 1;
+
+  // To handle the case where the coord is same with width or height
+  min_x = std::clamp(min_x, 0, static_cast<int>(z_buffer[0].size()) - 1);
+  min_y = std::clamp(min_y, 0, static_cast<int>(z_buffer.size()) - 1);
+  max_x = std::clamp(max_x, 0, static_cast<int>(z_buffer[0].size()) - 1);
+  max_y = std::clamp(max_y, 0, static_cast<int>(z_buffer.size()) - 1);
+
+  geometry::Vec2f edge1_2d = geometry::Vec2f(p1.x - p0.x, p1.y - p0.y);
+  geometry::Vec2f edge2_2d = geometry::Vec2f(p2.x - p0.x, p2.y - p0.y);
+
+  for (int x = min_x; x != max_x; ++x) {
+    for (int y = min_y; y != max_y; ++y) {
+      geometry::Vec3f barycentric = GetBarycentric(
+          edge1_2d, edge2_2d, geometry::Vec2f(p0.x - x, p0.y - y));
+
+      if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
+        continue;
+      }
+
+      if (auto z = barycentric.x * p0.z + barycentric.y * p1.z +
+                   barycentric.z * p2.z;
+          z_buffer[y][x] < z) {
+        geometry::Vec3f normal =
+            n0 * barycentric.x + n1 * barycentric.y + n2 * barycentric.z;
+
+        float intensity =
+            std::max(0., (-1.) * (normal.normalize() *
+                                  geometry::Vec3f(light_dir).normalize()));
+
+        const auto& st =
+            st0 * barycentric.x + st1 * barycentric.y + st2 * barycentric.z;
+
+        const auto& texture_color = FindNearestTextureColor(st, texture);
+
+        z_buffer[y][x] = z;
+        image.set(x, y, texture_color * intensity);
       }
     }
   }

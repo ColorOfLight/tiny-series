@@ -242,6 +242,11 @@ TGAColor TGAColor::operator*(const float intensity) const {
                   bgra[3] * intensity, bytespp);
 }
 
+TGAColor TGAColor::operator+(const TGAColor &c) const {
+  return TGAColor(bgra[2] + c.bgra[2], bgra[1] + c.bgra[1], bgra[0] + c.bgra[0],
+                  bgra[3] + c.bgra[3], bytespp);
+}
+
 void TGAImage::set(int x, int y, const TGAColor &c) {
   if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return;
   memcpy(data.data() + (x + y * w) * bpp, c.bgra, bpp);

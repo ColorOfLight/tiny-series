@@ -35,3 +35,7 @@ void RenderRandomColors(const model::Model& model, TGAImage& image);
 void RenderFlatShading(const model::Model& model,
                        const geometry::Vec3f& light_dir,
                        const TGAColor& base_color, TGAImage& image);
+
+void RenderFlatShading(const model::Model& model,
+                       const geometry::Vec3f& light_dir,
+                       const TGAImage& texture, TGAImage& image);

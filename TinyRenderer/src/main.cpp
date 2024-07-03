@@ -36,15 +36,19 @@ const TGAColor white(255, 255, 255, 255);
 
 const geometry::Vec3f light_dir(0, 0, -1);
 
-const int width = 400;
-const int height = 400;
+const int width = 1600;
+const int height = 1600;
 
 int main() {
   TGAImage image(width, height, TGAImage::RGB);
 
-  model::Model model("./obj/african_head.obj");
+  model::Model model("./assets/african_head.obj");
 
-  RenderFlatShading(model, light_dir, white, image);
+  TGAImage texture;
+  texture.read_tga_file("./assets/african_head_diffuse.tga");
+  texture.flip_vertically();
+
+  RenderFlatShading(model, light_dir, texture, image);
 
   image.write_tga_file("output.tga");
 

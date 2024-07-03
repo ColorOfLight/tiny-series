@@ -44,3 +44,11 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
                   const geometry::Vec3f& n1, const geometry::Vec3f& n2,
                   const TGAColor& color, const geometry::Vec3f& light_dir,
                   TGAImage& image, std::vector<std::vector<float>>& z_buffer);
+
+void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
+                  const geometry::Vec3f& p2, const geometry::Vec3f& n0,
+                  const geometry::Vec3f& n1, const geometry::Vec3f& n2,
+                  const geometry::Vec2f& st0, const geometry::Vec2f& st1,
+                  const geometry::Vec2f& st2, const TGAImage& texture,
+                  const geometry::Vec3f& light_dir, TGAImage& image,
+                  std::vector<std::vector<float>>& z_buffer);
