@@ -257,7 +257,7 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
         const auto& texture_color = FindNearestTextureColor(st, texture);
 
         z_buffer[y][x] = z;
-        image.set(x, y, texture_color);
+        image.set(x, y, texture_color * intensity);
       }
     }
   }
