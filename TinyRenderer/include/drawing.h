@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "./geometry.h"
+#include "./model.h"
 #include "./tgaimage.h"
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
@@ -37,3 +38,9 @@ void DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2,
 void DrawTriangle(const geometry::Vec3f& v0, const geometry::Vec3f& v1,
                   const geometry::Vec3f& v2, TGAColor color, TGAImage& image,
                   std::vector<std::vector<float>>& z_buffer);
+
+void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
+                  const geometry::Vec3f& p2, const geometry::Vec3f& n0,
+                  const geometry::Vec3f& n1, const geometry::Vec3f& n2,
+                  const TGAColor& color, const geometry::Vec3f& light_dir,
+                  TGAImage& image, std::vector<std::vector<float>>& z_buffer);

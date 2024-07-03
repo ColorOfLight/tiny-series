@@ -88,29 +88,22 @@ void RenderFlatShading(const model::Model& model,
 
   for (int i = 0; i < model.size(); i++) {
     auto& face = model.get(i);
-    const geometry::Vec3f& v0 = face[0].position;
-    const geometry::Vec3f& v1 = face[1].position;
-    const geometry::Vec3f& v2 = face[2].position;
+    const geometry::Vec3f& p0 = face[0].position;
+    const geometry::Vec3f& p1 = face[1].position;
+    const geometry::Vec3f& p2 = face[2].position;
 
-    // TODO: use real normal
-    geometry::Vec3f normal = (v1 - v0) ^ (v2 - v0);
+    const geometry::Vec3f& n0 = face[0].normal;
+    const geometry::Vec3f& n1 = face[1].normal;
+    const geometry::Vec3f& n2 = face[2].normal;
 
-    float intensity =
-        (-1.) * (normal.normalize() * geometry::Vec3f(light_dir).normalize());
+    geometry::Vec3f p0_screen = geometry::Vec3f(
+        (p0.x + 1.) * width / 2., (p0.y + 1.) * height / 2., p0.z);
+    geometry::Vec3f p1_screen = geometry::Vec3f(
+        (p1.x + 1.) * width / 2., (p1.y + 1.) * height / 2., p1.z);
+    geometry::Vec3f p2_screen = geometry::Vec3f(
+        (p2.x + 1.) * width / 2., (p2.y + 1.) * height / 2., p2.z);
 
-    if (intensity <= 0) {
-      // Skip back faces
-      continue;
-    }
-
-    geometry::Vec3f v0_screen = geometry::Vec3f(
-        (v0.x + 1.) * width / 2., (v0.y + 1.) * height / 2., v0.z);
-    geometry::Vec3f v1_screen = geometry::Vec3f(
-        (v1.x + 1.) * width / 2., (v1.y + 1.) * height / 2., v0.z);
-    geometry::Vec3f v2_screen = geometry::Vec3f(
-        (v2.x + 1.) * width / 2., (v2.y + 1.) * height / 2., v0.z);
-
-    DrawTriangle(v0_screen, v1_screen, v2_screen, base_color * intensity, image,
-                 z_buffer);
+    DrawTriangle(p0_screen, p1_screen, p2_screen, n0, n1, n2, base_color,
+                 light_dir, image, z_buffer);
   }
 }
