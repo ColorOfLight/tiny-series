@@ -29,6 +29,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace geometry {
 
+const float PI = 3.14159265358979323846f;
+
 template <class t>
 struct Vec2 {
   union {
@@ -139,6 +141,12 @@ struct Vec4 {
   inline t operator*(const Vec4<t> &v) const {
     return x * v.x + y * v.y + z * v.z + w * v.w;
   }
+  Vec3<t> ToNDC() const {
+    if (w == 0) {
+      throw std::runtime_error("Division by zero");
+    }
+    return Vec3<t>(x / w, y / w, z / w);
+  }
   float norm() const { return std::sqrt(x * x + y * y + z * z + w * w); }
   Vec4<t> &normalize(t l = 1) {
     *this = (*this) * (l / norm());
@@ -171,6 +179,20 @@ struct Mat4x4 {
     m[3][1] = m31;
     m[3][2] = m32;
     m[3][3] = m33;
+  }
+  static Mat4x4 Perspective(float distance) {
+    if (distance == 0) {
+      throw std::runtime_error("Division by zero");
+    }
+
+    Mat4x4<t> result;
+
+    result.m[0][0] = 1;
+    result.m[1][1] = 1;
+    result.m[2][2] = 1;
+    result.m[3][2] = -1.0f / distance;
+    result.m[3][3] = 1;
+    return result;
   }
   inline Mat4x4<t> &operator*=(t scalar) const {
     for (int i = 0; i < 4; i++) {

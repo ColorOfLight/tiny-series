@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "./drawing.h"
+#include "./geometry.h"
 
 void RenderWireframe(const model::Model& model, const TGAColor& color,
                      TGAImage& image) {
@@ -114,6 +115,8 @@ void RenderFlatShading(const model::Model& model,
   int width = image.width();
   int height = image.height();
 
+  geometry::Mat4x4f perspective_mat = geometry::Mat4x4f::Perspective(3);
+
   // height x width z-buffer
   std::vector<std::vector<float>> z_buffer(
       height,
@@ -121,9 +124,23 @@ void RenderFlatShading(const model::Model& model,
 
   for (int i = 0; i < model.size(); i++) {
     auto& face = model.get(i);
-    const geometry::Vec3f& p0 = face[0].position;
-    const geometry::Vec3f& p1 = face[1].position;
-    const geometry::Vec3f& p2 = face[2].position;
+
+    const geometry::Vec4f& p0_4 =
+        perspective_mat * geometry::Vec4f(face[0].position.x,
+                                          face[0].position.y,
+                                          face[0].position.z, 1);
+    const geometry::Vec4f& p1_4 =
+        perspective_mat * geometry::Vec4f(face[1].position.x,
+                                          face[1].position.y,
+                                          face[1].position.z, 1);
+    const geometry::Vec4f& p2_4 =
+        perspective_mat * geometry::Vec4f(face[2].position.x,
+                                          face[2].position.y,
+                                          face[2].position.z, 1);
+
+    const geometry::Vec3f& p0 = p0_4.ToNDC();
+    const geometry::Vec3f& p1 = p1_4.ToNDC();
+    const geometry::Vec3f& p2 = p2_4.ToNDC();
 
     const geometry::Vec3f& n0 = face[0].normal;
     const geometry::Vec3f& n1 = face[1].normal;
