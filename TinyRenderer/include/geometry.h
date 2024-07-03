@@ -95,10 +95,65 @@ struct Vec3 {
   friend std::ostream &operator<<(std::ostream &s, Vec3<t> &v);
 };
 
+template <class t>
+struct Vec4 {
+  union {
+    struct {
+      t x, y, z, w;
+    };
+    t raw[4];
+  };
+  Vec4() : x(0), y(0), z(0), w(0) {}
+  Vec4(t _x, t _y, t _z, t _w) : x(_x), y(_y), z(_z), w(_w) {}
+  Vec4(const Vec4<t> &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
+  inline Vec4<t> &operator+=(const Vec4<t> &v) {
+    x += v.x;
+    y += v.y;
+    z += v.z;
+    w += v.w;
+    return *this;
+  }
+  inline Vec4<t> operator+(const Vec4<t> &v) const {
+    return Vec4<t>(x + v.x, y + v.y, z + v.z, w + v.w);
+  }
+  inline Vec4<t> &operator-=(const Vec4<t> &v) {
+    x -= v.x;
+    y -= v.y;
+    z -= v.z;
+    w -= v.w;
+    return *this;
+  }
+  inline Vec4<t> operator-(const Vec4<t> &v) const {
+    return Vec4<t>(x - v.x, y - v.y, z - v.z, w - v.w);
+  }
+  inline Vec4<t> operator*(float f) const {
+    return Vec4<t>(x * f, y * f, z * f, w * f);
+  }
+  inline Vec4<t> &operator*=(const Vec4<t> &v) {
+    x *= v.x;
+    y *= v.y;
+    z *= v.z;
+    w *= v.w;
+    return *this;
+  }
+  inline t operator*(const Vec4<t> &v) const {
+    return x * v.x + y * v.y + z * v.z + w * v.w;
+  }
+  float norm() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+  Vec4<t> &normalize(t l = 1) {
+    *this = (*this) * (l / norm());
+    return *this;
+  }
+  template <class>
+  friend std::ostream &operator<<(std::ostream &s, Vec4<t> &v);
+};
+
 typedef Vec2<float> Vec2f;
 typedef Vec2<int> Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
+typedef Vec4<float> Vec4f;
+typedef Vec4<int> Vec4i;
 
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec2<t> &v) {
@@ -109,6 +164,12 @@ std::ostream &operator<<(std::ostream &s, const Vec2<t> &v) {
 template <class t>
 std::ostream &operator<<(std::ostream &s, const Vec3<t> &v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+  return s;
+}
+
+template <class t>
+std::ostream &operator<<(std::ostream &s, const Vec4<t> &v) {
+  s << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
   return s;
 }
 
