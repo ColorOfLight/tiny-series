@@ -86,10 +86,8 @@ TGAColor FindNearestTextureColor(const geometry::Vec2f& st,
   int width = texture.width();
   int height = texture.height();
 
-  int x =
-      std::min(static_cast<int>(st.x * static_cast<float>(width)), width - 1);
-  int y =
-      std::min(static_cast<int>(st.y * static_cast<float>(height)), height - 1);
+  int x = std::min(static_cast<int>(st.x * width), width - 1);
+  int y = std::min(static_cast<int>(st.y * height), height - 1);
 
   return texture.get(x, y);
 }
@@ -259,7 +257,7 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
         const auto& texture_color = FindNearestTextureColor(st, texture);
 
         z_buffer[y][x] = z;
-        image.set(x, y, texture_color * intensity);
+        image.set(x, y, texture_color);
       }
     }
   }
