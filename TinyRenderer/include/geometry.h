@@ -88,6 +88,7 @@ struct Vec3 {
   inline t operator*(const Vec3<t> &v) const {
     return x * v.x + y * v.y + z * v.z;
   }
+  inline t operator[](int i) const { return raw[i]; }
   float norm() const { return std::sqrt(x * x + y * y + z * z); }
   Vec3<t> &normalize(t l = 1) {
     *this = (*this) * (l / norm());
@@ -141,6 +142,9 @@ struct Vec4 {
   inline t operator*(const Vec4<t> &v) const {
     return x * v.x + y * v.y + z * v.z + w * v.w;
   }
+
+  inline t operator[](int i) const { return raw[i]; }
+
   Vec3<t> ToNDC() const {
     if (w == 0) {
       throw std::runtime_error("Division by zero");
@@ -219,6 +223,10 @@ struct Mat4x4 {
     return result;
   }
 
+  inline Vec4<t> operator[](int i) {
+    return Vec4<t>(m[i][0], m[i][1], m[i][2], m[i][3]);
+  }
+
   template <class>
   friend std::ostream &operator<<(std::ostream &s, const Mat4x4<t> &m);
 };
@@ -271,6 +279,16 @@ std::ostream &operator<<(std::ostream &s, const Mat4x4<t> &m) {
   return s;
 }
 
+inline Mat4x4f Identity() {
+  Mat4x4f result;
+
+  result.m[0][0] = 1;
+  result.m[1][1] = 1;
+  result.m[2][2] = 1;
+  result.m[3][3] = 1;
+  return result;
+}
+
 inline Mat4x4f Perspective(float distance) {
   if (distance == 0) {
     throw std::runtime_error("Division by zero");
@@ -298,6 +316,23 @@ inline Mat4x4f Viewport(int x, int y, int width, int height, int depth) {
   result.m[3][3] = 1.0f;
 
   return result;
+}
+
+inline Mat4x4f ViewMatrix(Vec3f eye, Vec3f center, Vec3f up) {
+  Vec3f z = (eye - center).normalize();
+  Vec3f x = (up ^ z).normalize();
+  Vec3f y = (z ^ x).normalize();
+  Mat4x4f inv_matrix = Identity();
+  Mat4x4f translation = Identity();
+  for (int i = 0; i < 3; i++) {
+    inv_matrix.m[0][i] = x[i];
+    inv_matrix.m[1][i] = y[i];
+    inv_matrix.m[2][i] = z[i];
+    translation.m[i][3] = -center[i];
+  }
+  inv_matrix.m[3][3] = 1;
+  translation.m[3][3] = 1;
+  return inv_matrix * translation;
 }
 
 }  // namespace geometry

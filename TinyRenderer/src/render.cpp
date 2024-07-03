@@ -115,6 +115,9 @@ void RenderFlatShading(const model::Model& model,
   int width = image.width();
   int height = image.height();
 
+  geometry::Mat4x4f view_mat =
+      geometry::ViewMatrix(geometry::Vec3f(1, 1, 3), geometry::Vec3f(0, 0, 0),
+                           geometry::Vec3f(0, 1, 0));
   geometry::Mat4x4f perspective_mat = geometry::Perspective(3);
   geometry::Mat4x4f viewport_mat = geometry::Viewport(0, 0, width, height, 1);
 
@@ -127,15 +130,15 @@ void RenderFlatShading(const model::Model& model,
     auto& face = model.get(i);
 
     const geometry::Vec4f& p0_4 =
-        viewport_mat * perspective_mat *
+        viewport_mat * perspective_mat * view_mat *
         geometry::Vec4f(face[0].position.x, face[0].position.y,
                         face[0].position.z, 1);
     const geometry::Vec4f& p1_4 =
-        viewport_mat * perspective_mat *
+        viewport_mat * perspective_mat * view_mat *
         geometry::Vec4f(face[1].position.x, face[1].position.y,
                         face[1].position.z, 1);
     const geometry::Vec4f& p2_4 =
-        viewport_mat * perspective_mat *
+        viewport_mat * perspective_mat * view_mat *
         geometry::Vec4f(face[2].position.x, face[2].position.y,
                         face[2].position.z, 1);
 
