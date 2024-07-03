@@ -31,9 +31,14 @@
 #include "./geometry.h"
 #include "./tgaimage.h"
 
-geometry::Vec3f GetBarycentric(const geometry::Vec2f& edge1,
-                               const geometry::Vec2f& edge2,
-                               const geometry::Vec2f& origin_from_point) {
+geometry::Vec3f GetBarycentric(const geometry::Vec2f& target,
+                               const geometry::Vec2f& p0,
+                               const geometry::Vec2f& p1,
+                               const geometry::Vec2f& p2) {
+  geometry::Vec2f edge1 = p1 - p0;
+  geometry::Vec2f edge2 = p2 - p0;
+  geometry::Vec2f origin_from_point = p0 - target;
+
   geometry::Vec3f vec_x =
       geometry::Vec3f(edge1.x, edge2.x, origin_from_point.x);
   geometry::Vec3f vec_y =
@@ -142,13 +147,11 @@ void DrawTriangle(const geometry::Vec3f& v0, const geometry::Vec3f& v1,
   max_x = std::clamp(max_x, 0, static_cast<int>(z_buffer[0].size()) - 1);
   max_y = std::clamp(max_y, 0, static_cast<int>(z_buffer.size()) - 1);
 
-  geometry::Vec2f edge1_2d = geometry::Vec2f(v1.x - v0.x, v1.y - v0.y);
-  geometry::Vec2f edge2_2d = geometry::Vec2f(v2.x - v0.x, v2.y - v0.y);
-
   for (int x = min_x; x != max_x; ++x) {
     for (int y = min_y; y != max_y; ++y) {
       geometry::Vec3f barycentric = GetBarycentric(
-          edge1_2d, edge2_2d, geometry::Vec2f(v0.x - x, v0.y - y));
+          geometry::Vec2f(x, y), geometry::Vec2f(v0.x, v0.y),
+          geometry::Vec2f(v1.x, v1.y), geometry::Vec2f(v2.x, v2.y));
 
       if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
         continue;
@@ -187,7 +190,8 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
   for (int x = min_x; x != max_x; ++x) {
     for (int y = min_y; y != max_y; ++y) {
       geometry::Vec3f barycentric = GetBarycentric(
-          edge1_2d, edge2_2d, geometry::Vec2f(p0.x - x, p0.y - y));
+          geometry::Vec2f(x, y), geometry::Vec2f(p0.x, p0.y),
+          geometry::Vec2f(p1.x, p1.y), geometry::Vec2f(p2.x, p2.y));
 
       if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
         continue;
@@ -229,13 +233,11 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
   max_x = std::clamp(max_x, 0, static_cast<int>(z_buffer[0].size()) - 1);
   max_y = std::clamp(max_y, 0, static_cast<int>(z_buffer.size()) - 1);
 
-  geometry::Vec2f edge1_2d = geometry::Vec2f(p1.x - p0.x, p1.y - p0.y);
-  geometry::Vec2f edge2_2d = geometry::Vec2f(p2.x - p0.x, p2.y - p0.y);
-
   for (int x = min_x; x != max_x; ++x) {
     for (int y = min_y; y != max_y; ++y) {
       geometry::Vec3f barycentric = GetBarycentric(
-          edge1_2d, edge2_2d, geometry::Vec2f(p0.x - x, p0.y - y));
+          geometry::Vec2f(x, y), geometry::Vec2f(p0.x, p0.y),
+          geometry::Vec2f(p1.x, p1.y), geometry::Vec2f(p2.x, p2.y));
 
       if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
         continue;
