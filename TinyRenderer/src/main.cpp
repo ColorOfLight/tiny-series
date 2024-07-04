@@ -26,31 +26,52 @@
 #include <iostream>
 #include <string>
 
-#include "./drawing.h"
 #include "./model.h"
-#include "./render.h"
+#include "./our_gl.h"
 #include "./tgaimage.h"
 
 const TGAColor red(255, 0, 0, 255);
 const TGAColor white(255, 255, 255, 255);
 
-const geometry::Vec3f light_dir(0, 0, -1);
+const int width = 800;
+const int height = 800;
 
-const int width = 1600;
-const int height = 1600;
+const geometry::Vec3f light_dir(0, 0, -1);
+const geometry::Mat4x4f view_mat =
+    geometry::ViewMatrix(geometry::Vec3f(1, 1, 3), geometry::Vec3f(0, 0, 0),
+                         geometry::Vec3f(0, 1, 0));
+const geometry::Mat4x4f perspective_mat = geometry::Perspective(3);
+const geometry::Mat4x4f viewport_mat =
+    geometry::Viewport(0, 0, width, height, 255);
 
 int main() {
-  TGAImage image(width, height, TGAImage::RGB);
-
   model::Model model("./assets/african_head.obj");
 
-  TGAImage texture;
-  texture.read_tga_file("./assets/african_head_diffuse.tga");
-  texture.flip_vertically();
+  // TGAImage texture;
+  // texture.read_tga_file("./assets/african_head_diffuse.tga");
+  // texture.flip_vertically();
 
-  RenderFlatShading(model, light_dir, texture, image);
+  TGAImage image(width, height, TGAImage::RGB);
+  TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
+
+  geometry::Mat4x4f shader_mat = viewport_mat * perspective_mat * view_mat;
+
+  our_gl::GouraudShader shader;
+  for (int i = 0; i != model.size(); ++i) {
+    auto face = model.get(i);
+
+    std::vector<our_gl::Vertex> vertices = std::vector<our_gl::Vertex>(3);
+    for (int v_idx = 0; v_idx != 3; ++v_idx) {
+      vertices[v_idx] = shader.ShadeVertex(face[v_idx], shader_mat);
+    }
+
+    our_gl::DrawTriangle(vertices, shader, image, z_buffer);
+  }
+
+  // RenderFlatShading(model, light_dir, texture, image);
 
   image.write_tga_file("output.tga");
+  z_buffer.write_tga_file("z_buffer.tga");
 
   return 0;
 }

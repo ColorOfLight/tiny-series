@@ -27,8 +27,8 @@
 #include <random>
 #include <vector>
 
-#include "./drawing.h"
 #include "./geometry.h"
+#include "./our_gl.h"
 
 void RenderWireframe(const model::Model& model, const TGAColor& color,
                      TGAImage& image) {
@@ -44,7 +44,7 @@ void RenderWireframe(const model::Model& model, const TGAColor& color,
       int y0 = (v0.y + 1.) * height / 2.;
       int x1 = (v1.x + 1.) * width / 2.;
       int y1 = (v1.y + 1.) * height / 2.;
-      DrawLine(x0, y0, x1, y1, image, color);
+      our_gl::DrawLine(x0, y0, x1, y1, image, color);
     }
   }
 }
@@ -72,7 +72,7 @@ void RenderRandomColors(const model::Model& model, TGAImage& image) {
 
     TGAColor color(dis(gen), dis(gen), dis(gen), 255);
 
-    DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
+    our_gl::DrawTriangle(x0, y0, x1, y1, x2, y2, image, color);
   }
 }
 
@@ -104,8 +104,8 @@ void RenderFlatShading(const model::Model& model,
     geometry::Vec3f p2_screen = geometry::Vec3f(
         (p2.x + 1.) * width / 2., (p2.y + 1.) * height / 2., p2.z);
 
-    DrawTriangle(p0_screen, p1_screen, p2_screen, n0, n1, n2, base_color,
-                 light_dir, image, z_buffer);
+    our_gl::DrawTriangle(p0_screen, p1_screen, p2_screen, n0, n1, n2,
+                         base_color, light_dir, image, z_buffer);
   }
 }
 
@@ -154,7 +154,7 @@ void RenderFlatShading(const model::Model& model,
     const geometry::Vec2f& st1 = face[1].texture_coords;
     const geometry::Vec2f& st2 = face[2].texture_coords;
 
-    DrawTriangle(p0, p1, p2, n0, n1, n2, st0, st1, st2, texture, light_dir,
-                 image, z_buffer);
+    our_gl::DrawTriangle(p0, p1, p2, n0, n1, n2, st0, st1, st2, texture,
+                         light_dir, image, z_buffer);
   }
 }

@@ -22,14 +22,26 @@
  * SOFTWARE.
  */
 
-#include "./drawing.h"
+#include "./our_gl.h"
 
 #include <math.h>
 
 #include <algorithm>
 
-#include "./geometry.h"
-#include "./tgaimage.h"
+namespace our_gl {
+
+Vertex GouraudShader::ShadeVertex(model::Vertex model_vertex,
+                                  const geometry::Mat4x4f& mat) const {
+  geometry::Vec3f new_position =
+      (mat * geometry::Vec4f(model_vertex.position.x, model_vertex.position.y,
+                             model_vertex.position.z, 1))
+          .ToNDC();
+
+  return {new_position, model_vertex.normal, model_vertex.texture_coords};
+}
+TGAColor GouraudShader::ShadeFragment(const our_gl::Vertex& vertex) const {
+  return TGAColor(255, 255, 255, 255);
+}
 
 geometry::Vec3f GetBarycentric(const geometry::Vec2f& target,
                                const geometry::Vec2f& p0,
@@ -264,3 +276,62 @@ void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
     }
   }
 }
+
+void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
+                  const IShader& shader, TGAImage& image, TGAImage& z_buffer) {
+  const geometry::Vec3f& p0 = vertices[0].position;
+  const geometry::Vec3f& p1 = vertices[1].position;
+  const geometry::Vec3f& p2 = vertices[2].position;
+
+  // Give some margin to avoid the edge of the triangle
+  int min_x = std::min(p0.x, std::min(p1.x, p2.x)) - 1;
+  int max_x = std::max(p0.x, std::max(p1.x, p2.x)) + 1;
+  int min_y = std::min(p0.y, std::min(p1.y, p2.y)) - 1;
+  int max_y = std::max(p0.y, std::max(p1.y, p2.y)) + 1;
+
+  const int z_buffer_width = z_buffer.width();
+  const int z_buffer_height = z_buffer.height();
+
+  // To handle the case where the coord is same with width or height
+  min_x = std::clamp(min_x, 0, z_buffer_width - 1);
+  min_y = std::clamp(min_y, 0, z_buffer_height - 1);
+  max_x = std::clamp(max_x, 0, z_buffer_width - 1);
+  max_y = std::clamp(max_y, 0, z_buffer_height - 1);
+
+  for (int x = min_x; x != max_x; ++x) {
+    for (int y = min_y; y != max_y; ++y) {
+      geometry::Vec3f barycentric = GetBarycentric(
+          geometry::Vec2f(x, y), geometry::Vec2f(p0.x, p0.y),
+          geometry::Vec2f(p1.x, p1.y), geometry::Vec2f(p2.x, p2.y));
+
+      if (barycentric.x < 0 || barycentric.y < 0 || barycentric.z < 0) {
+        continue;
+      }
+
+      if (auto z = barycentric.x * p0.z + barycentric.y * p1.z +
+                   barycentric.z * p2.z;
+          static_cast<float>(z_buffer.get(x, y)[0] < z)) {
+        geometry::Vec3f position = vertices[0].position * barycentric.x +
+                                   vertices[1].position * barycentric.y +
+                                   vertices[2].position * barycentric.z;
+
+        geometry::Vec3f normal = vertices[0].normal * barycentric.x +
+                                 vertices[1].normal * barycentric.y +
+                                 vertices[2].normal * barycentric.z;
+
+        geometry::Vec2f st = vertices[0].texture_coords * barycentric.x +
+                             vertices[1].texture_coords * barycentric.y +
+                             vertices[2].texture_coords * barycentric.z;
+
+        TGAColor fragment_color =
+            shader.ShadeFragment(our_gl::Vertex{position, normal, st});
+
+        z_buffer.set(
+            x, y, TGAColor(static_cast<int>(z), 0, 0, 0, TGAImage::GRAYSCALE));
+        image.set(x, y, fragment_color);
+      }
+    }
+  }
+}
+
+}  // namespace our_gl

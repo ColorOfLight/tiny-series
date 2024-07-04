@@ -228,7 +228,13 @@ TGAColor TGAImage::get(const int x, const int y) const {
   if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return {};
   TGAColor ret = {0, 0, 0, 0, bpp};
   const std::uint8_t *p = data.data() + (x + y * w) * bpp;
-  for (int i = bpp; i--; ret.bgra[i] = p[i]) {
+  if (bpp == 1) {  // Grayscale image
+    ret.bgra[0] = ret.bgra[1] = ret.bgra[2] =
+        p[0];           // Set R, G, B to the grayscale value
+    ret.bgra[3] = 255;  // Full opacity
+  } else {
+    for (int i = bpp; i--; ret.bgra[i] = p[i]) {
+    }
   }
   return ret;
 }
@@ -249,7 +255,12 @@ TGAColor TGAColor::operator+(const TGAColor &c) const {
 
 void TGAImage::set(int x, int y, const TGAColor &c) {
   if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return;
-  memcpy(data.data() + (x + y * w) * bpp, c.bgra, bpp);
+  if (bpp == 1) {  // Grayscale image
+    data[(x + y * w) * bpp] =
+        c.bgra[0];  // Use the red channel value for grayscale
+  } else {
+    memcpy(data.data() + (x + y * w) * bpp, c.bgra, bpp);
+  }
 }
 
 void TGAImage::flip_horizontally() {
