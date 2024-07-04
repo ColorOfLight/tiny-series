@@ -249,8 +249,10 @@ TGAColor TGAColor::operator*(const float intensity) const {
 }
 
 TGAColor TGAColor::operator+(const TGAColor &c) const {
-  return TGAColor(bgra[2] + c.bgra[2], bgra[1] + c.bgra[1], bgra[0] + c.bgra[0],
-                  bgra[3] + c.bgra[3], bytespp);
+  return TGAColor(std::min(bgra[2] + c.bgra[2], 255),
+                  std::min(bgra[1] + c.bgra[1], 255),
+                  std::min(bgra[0] + c.bgra[0], 255),
+                  std::min(bgra[3] + c.bgra[3], 255), bytespp);
 }
 
 void TGAImage::set(int x, int y, const TGAColor &c) {
