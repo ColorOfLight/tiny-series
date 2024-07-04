@@ -49,6 +49,7 @@ class FirstShader : public IShader {
 
   geometry::Mat4x4f u_vpm_mat;  // view * projection * model
   geometry::Vec3f u_light_dir;
+  TGAImage u_texture;
 
   our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override;
   TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override;

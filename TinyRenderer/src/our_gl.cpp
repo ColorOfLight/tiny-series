@@ -28,26 +28,7 @@
 
 #include <algorithm>
 
-namespace our_gl {
-
-Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
-  geometry::Vec3f new_position =
-      (g_viewport_mat * u_vpm_mat *
-       geometry::Vec4f(model_vertex.position.x, model_vertex.position.y,
-                       model_vertex.position.z, 1))
-          .ToNDC();
-
-  return {new_position, model_vertex.normal, model_vertex.texture_coords};
-}
-TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
-  geometry::Vec3f normal = vertex.normal;
-  geometry::Vec3f light_dir = u_light_dir;
-
-  float intensity =
-      std::max(0., (-1.) * (normal.normalize() * light_dir.normalize()));
-
-  return TGAColor(255, 255, 255, 255) * intensity;
-}
+// Internal functions
 
 geometry::Vec3f GetBarycentric(const geometry::Vec2f& target,
                                const geometry::Vec2f& p0,
@@ -113,6 +94,30 @@ TGAColor FindNearestTextureColor(const geometry::Vec2f& st,
   int y = std::min(static_cast<int>(st.y * height), height - 1);
 
   return texture.get(x, y);
+}
+
+namespace our_gl {
+
+Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
+  geometry::Vec3f new_position =
+      (g_viewport_mat * u_vpm_mat *
+       geometry::Vec4f(model_vertex.position.x, model_vertex.position.y,
+                       model_vertex.position.z, 1))
+          .ToNDC();
+
+  return {new_position, model_vertex.normal, model_vertex.texture_coords};
+}
+TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
+  geometry::Vec3f normal = vertex.normal;
+  geometry::Vec3f light_dir = u_light_dir;
+
+  float intensity =
+      std::max(0., (-1.) * (normal.normalize() * light_dir.normalize()));
+
+  TGAColor texture_color =
+      FindNearestTextureColor(vertex.texture_coords, u_texture);
+
+  return texture_color * intensity;
 }
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {

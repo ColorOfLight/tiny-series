@@ -47,9 +47,9 @@ const geometry::Mat4x4f viewport_mat =
 int main() {
   model::Model model("./assets/african_head.obj");
 
-  // TGAImage texture;
-  // texture.read_tga_file("./assets/african_head_diffuse.tga");
-  // texture.flip_vertically();
+  TGAImage texture;
+  texture.read_tga_file("./assets/african_head_diffuse.tga");
+  texture.flip_vertically();
 
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
@@ -58,6 +58,7 @@ int main() {
   shader.u_vpm_mat = perspective_mat * view_mat;
   shader.g_viewport_mat = viewport_mat;
   shader.u_light_dir = light_dir;
+  shader.u_texture = texture;
 
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
