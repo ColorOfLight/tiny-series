@@ -40,7 +40,13 @@ Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
   return {new_position, model_vertex.normal, model_vertex.texture_coords};
 }
 TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
-  return TGAColor(255, 255, 255, 255);
+  geometry::Vec3f normal = vertex.normal;
+  geometry::Vec3f light_dir = u_light_dir;
+
+  float intensity =
+      std::max(0., (-1.) * (normal.normalize() * light_dir.normalize()));
+
+  return TGAColor(255, 255, 255, 255) * intensity;
 }
 
 geometry::Vec3f GetBarycentric(const geometry::Vec2f& target,

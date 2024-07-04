@@ -57,6 +57,7 @@ int main() {
   our_gl::FirstShader shader;
   shader.u_vpm_mat = perspective_mat * view_mat;
   shader.g_viewport_mat = viewport_mat;
+  shader.u_light_dir = light_dir;
 
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
