@@ -310,7 +310,7 @@ void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
 
       if (auto z = barycentric.x * p0.z + barycentric.y * p1.z +
                    barycentric.z * p2.z;
-          static_cast<float>(z_buffer.get(x, y)[0] < z)) {
+          static_cast<float>(z_buffer.get(x, y).bgra[0]) < z) {
         geometry::Vec3f position = vertices[0].position * barycentric.x +
                                    vertices[1].position * barycentric.y +
                                    vertices[2].position * barycentric.z;
@@ -326,8 +326,9 @@ void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
         TGAColor fragment_color =
             shader.ShadeFragment(our_gl::Vertex{position, normal, st});
 
-        z_buffer.set(
-            x, y, TGAColor(static_cast<int>(z), 0, 0, 0, TGAImage::GRAYSCALE));
+        z_buffer.set(x, y,
+                     TGAColor(static_cast<int>(z), static_cast<int>(z),
+                              static_cast<int>(z), 255, TGAImage::GRAYSCALE));
         image.set(x, y, fragment_color);
       }
     }
