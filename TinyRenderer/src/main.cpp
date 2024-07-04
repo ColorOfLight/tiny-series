@@ -36,10 +36,12 @@ const TGAColor white(255, 255, 255, 255);
 const int width = 800;
 const int height = 800;
 
+const geometry::Vec3f eye(1, 1, 3);
+const geometry::Vec3f center(0, 0, 0);
+const geometry::Vec3f up(0, 1, 0);
 const geometry::Vec3f light_dir(0, 0, -1);
-const geometry::Mat4x4f view_mat =
-    geometry::ViewMatrix(geometry::Vec3f(1, 1, 3), geometry::Vec3f(0, 0, 0),
-                         geometry::Vec3f(0, 1, 0));
+
+const geometry::Mat4x4f view_mat = geometry::ViewMatrix(eye, center, up);
 const geometry::Mat4x4f perspective_mat = geometry::Perspective(3);
 const geometry::Mat4x4f viewport_mat =
     geometry::Viewport(0, 0, width, height, 255);
@@ -59,6 +61,7 @@ int main() {
   shader.g_viewport_mat = viewport_mat;
   shader.u_light_dir = light_dir;
   shader.u_texture = texture;
+  shader.u_view_vector = eye - center;
 
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);

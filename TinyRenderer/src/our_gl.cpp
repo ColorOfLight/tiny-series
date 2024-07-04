@@ -96,6 +96,24 @@ TGAColor FindNearestTextureColor(const geometry::Vec2f& st,
   return texture.get(x, y);
 }
 
+TGAColor GetPhongColor(const geometry::Vec3f& normal,
+                       const geometry::Vec3f& view_vector,
+                       const geometry::Vec3f& light_dir,
+                       const TGAColor& texture_color, float diffuse = 1,
+                       float specular = 0.5, float alpha = 16) {
+  geometry::Vec3f light_vec = geometry::Vec3f(light_dir).normalize() * (-1);
+  geometry::Vec3f reflection = geometry::Reflect(light_vec, normal);
+  geometry::Vec3f normalized_view = geometry::Vec3f(view_vector).normalize();
+
+  TGAColor diffuse_color =
+      texture_color * (diffuse * std::max(0.f, normal * light_vec));
+  TGAColor specular_color =
+      TGAColor(255, 255, 255, 255) *
+      (specular * pow(std::max(0.f, reflection * normalized_view), alpha));
+
+  return diffuse_color + specular_color;
+}
+
 namespace our_gl {
 
 Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
@@ -111,13 +129,13 @@ TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
   geometry::Vec3f normal = vertex.normal;
   geometry::Vec3f light_dir = u_light_dir;
 
-  float intensity =
-      std::max(0., (-1.) * (normal.normalize() * light_dir.normalize()));
-
   TGAColor texture_color =
       FindNearestTextureColor(vertex.texture_coords, u_texture);
 
-  return texture_color * intensity;
+  TGAColor phong_color =
+      GetPhongColor(normal, u_view_vector, light_dir, texture_color);
+
+  return phong_color;
 }
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
