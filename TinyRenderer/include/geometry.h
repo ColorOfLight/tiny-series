@@ -335,4 +335,8 @@ inline Mat4x4f ViewMatrix(Vec3f eye, Vec3f center, Vec3f up) {
   return inv_matrix * translation;
 }
 
+inline Vec3f Reflect(const Vec3f &I, const Vec3f &N) {
+  return (I - N * 2 * (I * N)) * (-1);
+}
+
 }  // namespace geometry
