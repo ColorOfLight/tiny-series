@@ -39,15 +39,16 @@ struct Vertex {
 
 class IShader {
  public:
-  virtual our_gl::Vertex ShadeVertex(model::Vertex model_vertex,
-                                     const geometry::Mat4x4f& mat) const = 0;
+  virtual our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const = 0;
   virtual TGAColor ShadeFragment(const our_gl::Vertex& vertex) const = 0;
 };
 
-class GouraudShader : public IShader {
+class FirstShader : public IShader {
  public:
-  our_gl::Vertex ShadeVertex(model::Vertex model_vertex,
-                             const geometry::Mat4x4f& mat) const override;
+  geometry::Mat4x4f u_vpm_mat;  // view * projection * model
+  geometry::Mat4x4f g_viewport_mat;
+
+  our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override;
   TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override;
 };
 

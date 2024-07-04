@@ -30,16 +30,16 @@
 
 namespace our_gl {
 
-Vertex GouraudShader::ShadeVertex(model::Vertex model_vertex,
-                                  const geometry::Mat4x4f& mat) const {
+Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
   geometry::Vec3f new_position =
-      (mat * geometry::Vec4f(model_vertex.position.x, model_vertex.position.y,
-                             model_vertex.position.z, 1))
+      (g_viewport_mat * u_vpm_mat *
+       geometry::Vec4f(model_vertex.position.x, model_vertex.position.y,
+                       model_vertex.position.z, 1))
           .ToNDC();
 
   return {new_position, model_vertex.normal, model_vertex.texture_coords};
 }
-TGAColor GouraudShader::ShadeFragment(const our_gl::Vertex& vertex) const {
+TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
   return TGAColor(255, 255, 255, 255);
 }
 

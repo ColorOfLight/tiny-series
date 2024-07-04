@@ -54,15 +54,16 @@ int main() {
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
 
-  geometry::Mat4x4f shader_mat = viewport_mat * perspective_mat * view_mat;
+  our_gl::FirstShader shader;
+  shader.u_vpm_mat = perspective_mat * view_mat;
+  shader.g_viewport_mat = viewport_mat;
 
-  our_gl::GouraudShader shader;
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
 
     std::vector<our_gl::Vertex> vertices = std::vector<our_gl::Vertex>(3);
     for (int v_idx = 0; v_idx != 3; ++v_idx) {
-      vertices[v_idx] = shader.ShadeVertex(face[v_idx], shader_mat);
+      vertices[v_idx] = shader.ShadeVertex(face[v_idx]);
     }
 
     our_gl::DrawTriangle(vertices, shader, image, z_buffer);
