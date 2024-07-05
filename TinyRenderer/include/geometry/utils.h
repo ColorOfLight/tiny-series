@@ -91,4 +91,28 @@ inline Mat<4, 4, float> Viewport(int x, int y, int width, int height,
   return viewport;
 }
 
+inline Mat<3, 3, float> Inverse(const Mat<3, 3, float> mat) {
+  float det =
+      mat[0][0] * mat[1][1] * mat[2][2] + mat[0][1] * mat[1][2] * mat[2][0] +
+      mat[0][2] * mat[1][0] * mat[2][1] - mat[0][2] * mat[1][1] * mat[2][0] -
+      mat[0][1] * mat[1][0] * mat[2][2] - mat[0][0] * mat[1][2] * mat[2][1];
+
+  if (det == 0) {
+    throw std::runtime_error("Determinant is zero");
+  }
+
+  Mat<3, 3, float> result;
+  result[0][0] = (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1]) / det;
+  result[0][1] = (mat[0][2] * mat[2][1] - mat[0][1] * mat[2][2]) / det;
+  result[0][2] = (mat[0][1] * mat[1][2] - mat[0][2] * mat[1][1]) / det;
+  result[1][0] = (mat[1][2] * mat[2][0] - mat[1][0] * mat[2][2]) / det;
+  result[1][1] = (mat[0][0] * mat[2][2] - mat[0][2] * mat[2][0]) / det;
+  result[1][2] = (mat[0][2] * mat[1][0] - mat[0][0] * mat[1][2]) / det;
+  result[2][0] = (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]) / det;
+  result[2][1] = (mat[0][1] * mat[2][0] - mat[0][0] * mat[2][1]) / det;
+  result[2][2] = (mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0]) / det;
+
+  return result;
+}
+
 }  // namespace geometry
