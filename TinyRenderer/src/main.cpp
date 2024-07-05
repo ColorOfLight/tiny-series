@@ -43,6 +43,7 @@ const geometry::Vec<3, float> eye{1, 1, 3};
 const geometry::Vec<3, float> center{0, 0, 0};
 const geometry::Vec<3, float> up{0, 1, 0};
 const geometry::Vec<3, float> light_dir{0, 0, -1};
+const geometry::Vec<3, float> light_position{0, 0, 1};
 
 const geometry::Mat<4, 4, float> view_mat =
     geometry::ViewMatrix(eye, center, up);
@@ -55,10 +56,12 @@ class Shader : public our_gl::IShader {
   geometry::Mat<4, 4, float> g_viewport_mat;
 
   geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  geometry::Mat<4, 4, float> u_light_vpm_mat;
   geometry::Vec<3, float> u_light_dir;
   geometry::Vec<3, float> u_view_vector;
   TGAImage u_texture;
   TGAImage u_tangent_normal_map;
+  TGAImage u_shadow_depth_map;
 
   our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
                                   int vertex_index) override {
@@ -115,7 +118,7 @@ class Shader : public our_gl::IShader {
                                           normal * tangent_normal[2];
     real_normal.Normalize();
 
-        geometry::Vec<3, float> light_dir = u_light_dir;
+    geometry::Vec<3, float> light_dir = u_light_dir;
 
     TGAColor texture_color =
         our_gl::FindNearestTextureColor(texture_coords, u_texture);
@@ -132,6 +135,32 @@ class Shader : public our_gl::IShader {
   geometry::Mat<3, 3, float> varying_normals;
 };
 
+class DepthShader : public our_gl::IShader {
+ public:
+  geometry::Mat<4, 4, float> g_viewport_mat;
+
+  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+
+  our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
+                                  int vertex_index) override {
+    geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
+        {model_vertex.position[0], model_vertex.position[1],
+         model_vertex.position[2], 1});
+
+    geometry::Vec<4, float> new_position = u_vpm_mat * pos_4;
+
+    return geometry::GetNDC(g_viewport_mat * new_position);
+  }
+
+  our_gl::gl_Fragment ShadeFragment(
+      const geometry::Vec<3, float> barycentric) const override {
+    return TGAColor(255, 255, 255, 255);
+  }
+
+ private:
+  geometry::Mat<3, 3, float> varying_positions;
+};
+
 int main() {
   model::Model model("./assets/african_head.obj");
 
@@ -144,17 +173,43 @@ int main() {
   tangent_normal_map.flip_vertically();
 
   TGAImage image(width, height, TGAImage::RGB);
+  TGAImage null_image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
+  TGAImage shadow_depth_buffer(width, height, TGAImage::GRAYSCALE);
 
   Shader shader;
+  DepthShader depth_shader;
+
+  geometry::Mat<4, 4, float> light_view_matrix =
+      geometry::ViewMatrix(light_position - light_dir, light_position, up);
+  geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(2);
+  geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
   shader.g_viewport_mat = viewport_mat;
 
   shader.u_vpm_mat = perspective_mat * view_mat;
+  shader.u_light_vpm_mat = light_vpm;
   shader.u_light_dir = light_dir;
   shader.u_view_vector = eye - center;
   shader.u_texture = texture;
   shader.u_tangent_normal_map = tangent_normal_map;
+  shader.u_shadow_depth_map = shadow_depth_buffer;
+
+  depth_shader.g_viewport_mat = viewport_mat;
+
+  depth_shader.u_vpm_mat = light_vpm;
+
+  for (int i = 0; i != model.size(); ++i) {
+    auto face = model.get(i);
+
+    std::array<our_gl::gl_Position, 3> gl_Positions;
+    for (int v_idx = 0; v_idx != 3; ++v_idx) {
+      gl_Positions[v_idx] = depth_shader.ShadeVertex(face[v_idx], v_idx);
+    }
+
+    our_gl::DrawTriangle(gl_Positions, depth_shader, null_image,
+                         shadow_depth_buffer);
+  }
 
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
@@ -169,6 +224,7 @@ int main() {
 
   image.write_tga_file("output.tga");
   z_buffer.write_tga_file("z_buffer.tga");
+  shadow_depth_buffer.write_tga_file("shadow_depth_buffer.tga");
 
   return 0;
 }
