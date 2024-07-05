@@ -24,41 +24,45 @@
 
 #pragma once
 
-#include <vector>
+#include <array>
 
 #include "./geometry_new/vec.h"
 
 namespace geometry_new {
 
-template <int n, int m, class t>
+template <size_t n, int m, class t>
 class Mat {
   // row-first order
 
  public:
-  Mat() : data(std::vector<std::vector<t>>(n, std::vector<t>(m, 0))) {}
+  Mat() : data(std::array<std::array<t, m>, n>{0}) {}
   Mat(const std::initializer_list<std::initializer_list<t>> &list) {
     if (list.size() != n) {
       throw std::invalid_argument("Invalid initializer list size");
     }
 
-    data.resize(n);
-
-    auto row_it = list.begin();
-    for (int i = 0; i < n; ++i, ++row_it) {
-      if (row_it->size() != m) {
+    int i = 0;
+    for (const auto &row : list) {
+      if (row.size() != m) {
         throw std::invalid_argument("Invalid initializer list size");
       }
-      data[i] = *row_it;
+
+      int j = 0;
+      for (const auto &elem : row) {
+        data[i][j] = elem;
+        j++;
+      }
+      i++;
     }
   }
 
-  std::vector<t> &operator[](int i) {
+  std::array<t, n> &operator[](int i) {
     if (i < 0 || i >= n) {
       throw std::out_of_range("Index out of range");
     }
     return data[i];
   }
-  const std::vector<t> &operator[](int i) const {
+  const std::array<t, n> &operator[](int i) const {
     if (i < 0 || i >= n) {
       throw std::out_of_range("Index out of range");
     }
@@ -121,10 +125,10 @@ class Mat {
   }
 
  private:
-  std::vector<std::vector<t>> data;
+  std::array<std::array<t, m>, n> data;
 };
 
-template <int n, int m, class t>
+template <size_t n, int m, class t>
 std::ostream &operator<<(std::ostream &s, const Mat<n, m, t> &mat) {
   if (n == 1) {
     s << "[ ";
