@@ -62,6 +62,8 @@ TGAColor GetPhongColor(const geometry::Vec<3, float>& normal,
 TGAColor FindNearestTextureColor(const geometry::Vec<2, float>& st,
                                  const TGAImage& texture);
 
+geometry::Vec<3, float> ConvertColorToVec(const TGAColor& color);
+
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
 
 void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,

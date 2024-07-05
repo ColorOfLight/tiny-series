@@ -184,4 +184,11 @@ void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
   }
 }
 
+geometry::Vec<3, float> ConvertColorToVec(const TGAColor& color) {
+  return geometry::Vec<3, float>(
+      {static_cast<float>(color.bgra[2]) / 255.f - .5f,
+       static_cast<float>(color.bgra[1]) / 255.f - .5f,
+       static_cast<float>(color.bgra[0]) / 255.f - .5f});
+}
+
 }  // namespace our_gl
