@@ -78,6 +78,19 @@ inline Mat<4, 4, float> Perspective(float distance) {
   return perspective;
 }
 
+inline Mat<4, 4, float> Orthographic(float distance) {
+  if (distance == 0) {
+    throw std::runtime_error("Distance cannot be zero");
+  }
+
+  Mat<4, 4, float> projection_matrix = geometry::GetIdentityMat<4, float>();
+
+  projection_matrix[2][2] = 2.0f / distance;
+  projection_matrix[2][3] = 1.0f;
+
+  return projection_matrix;
+}
+
 inline Mat<4, 4, float> Viewport(int x, int y, int width, int height,
                                  int depth) {
   Mat<4, 4, float> viewport;
