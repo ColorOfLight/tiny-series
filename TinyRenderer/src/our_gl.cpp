@@ -31,7 +31,7 @@
 
 #include "./geometry_new/utils.h"
 
-// Internal functions
+// -- Internal functions -- //
 
 geometry_new::Vec<3, float> GetBarycentric(
     const geometry_new::Vec<2, float>& target,
@@ -118,6 +118,8 @@ TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
 
   return diffuse_color + specular_color;
 }
+
+// -- Internal functions (end) -- //
 
 namespace our_gl {
 
