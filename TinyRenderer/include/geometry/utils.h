@@ -91,15 +91,15 @@ inline Mat<4, 4, float> Orthographic(float distance) {
   return projection_matrix;
 }
 
-inline Mat<4, 4, float> Viewport(int x, int y, int width, int height,
-                                 int depth) {
+inline Mat<4, 4, float> Viewport(float x, float y, float width, float height,
+                                 float depth) {
   Mat<4, 4, float> viewport;
-  viewport[0][0] = static_cast<float>(width) / 2;
-  viewport[0][3] = x + static_cast<float>(width) / 2;
-  viewport[1][1] = static_cast<float>(height) / 2;
-  viewport[1][3] = y + static_cast<float>(height) / 2;
-  viewport[2][2] = static_cast<float>(depth) / 2;
-  viewport[2][3] = static_cast<float>(depth) / 2;
+  viewport[0][0] = width / 2;
+  viewport[0][3] = x + width / 2;
+  viewport[1][1] = height / 2;
+  viewport[1][3] = y + height / 2;
+  viewport[2][2] = depth / 2;
+  viewport[2][3] = depth / 2;
   viewport[3][3] = 1.0f;
   return viewport;
 }

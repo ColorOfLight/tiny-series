@@ -61,7 +61,7 @@ class Shader : public our_gl::IShader {
   geometry::Vec<3, float> u_view_vector;
   TGAImage u_texture;
   TGAImage u_tangent_normal_map;
-  TGAImage u_shadow_depth_map;
+  TGAImage* u_shadow_depth_map;
 
   our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
                                   int vertex_index) override {
@@ -71,7 +71,7 @@ class Shader : public our_gl::IShader {
 
     geometry::Vec<4, float> new_position = u_vpm_mat * pos_4;
 
-    varying_positions.SetColumn(vertex_index, geometry::GetNDC(new_position));
+    varying_positions.SetColumn(vertex_index, geometry::GetNDC(pos_4));
     varying_texcoords.SetColumn(vertex_index, model_vertex.texture_coords);
     varying_normals.SetColumn(vertex_index, model_vertex.normal);
 
@@ -79,9 +79,9 @@ class Shader : public our_gl::IShader {
   }
   our_gl::gl_Fragment ShadeFragment(
       const geometry::Vec<3, float> barycentric) const override {
+    geometry::Vec<3, float> position = varying_positions * barycentric;
     geometry::Vec<3, float> normal = varying_normals * barycentric;
     normal.Normalize();
-
     geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
 
     // Get Darboux Basis
@@ -125,6 +125,24 @@ class Shader : public our_gl::IShader {
 
     TGAColor phong_color = our_gl::GetPhongColor(real_normal, u_view_vector,
                                                  light_dir, texture_color);
+
+    // Get shadow
+    geometry::Mat<4, 4, float> shadow_depth_viewport =
+        geometry::Viewport(0.f, 0.f, 1.f, 1.f, 255.f);
+
+    geometry::Vec<4, float> screen_coord_from_light =
+        (shadow_depth_viewport * u_light_vpm_mat *
+         geometry::Vec<4, float>({position[0], position[1], position[2], 1}));
+
+    TGAColor shadow_depth = our_gl::FindNearestTextureColor(
+        geometry::Vec<2, float>(
+            {screen_coord_from_light[0] / screen_coord_from_light[3],
+             screen_coord_from_light[1] / screen_coord_from_light[3]}),
+        *u_shadow_depth_map);
+
+    if (screen_coord_from_light[2] + 0.01 * 255 < shadow_depth.bgra[0]) {
+      return phong_color * 0.1;
+    }
 
     return phong_color;
   }
@@ -193,7 +211,7 @@ int main() {
   shader.u_view_vector = eye - center;
   shader.u_texture = texture;
   shader.u_tangent_normal_map = tangent_normal_map;
-  shader.u_shadow_depth_map = shadow_depth_buffer;
+  shader.u_shadow_depth_map = &shadow_depth_buffer;
 
   depth_shader.g_viewport_mat = viewport_mat;
 
