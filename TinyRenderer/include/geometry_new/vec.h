@@ -25,25 +25,25 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
-#include <vector>
 
 namespace geometry_new {
 
 const float kPi = 3.14159265358979323846f;
 
-template <int n, class t>
+template <size_t n, class t>
 class Vec {
  public:
-  Vec() : data(std::vector<t>(n, 0)) {}
+  Vec() : data(std::array<t, n>{0}) {}
   Vec(const std::initializer_list<t> &list) {
     if (list.size() != n) {
       throw std::invalid_argument("Invalid initializer list size");
     }
 
-    data = std::vector<t>(list);
+    std::copy(list.begin(), list.end(), data.begin());
   }
 
   t &operator[](int i) {
@@ -120,17 +120,17 @@ class Vec {
 
   // Specialization for cross product when n == 3
   Vec<3, t> &operator^=(const Vec<3, t> &v) {
-    *this = Vec<3, t>{data[1] * v.data[2] - data[2] * v.data[1],
-                      data[2] * v.data[0] - data[0] * v.data[2],
-                      data[0] * v.data[1] - data[1] * v.data[0]};
+    *this = Vec<3, t>{data[1] * v[2] - data[2] * v[1],
+                      data[2] * v[0] - data[0] * v[2],
+                      data[0] * v[1] - data[1] * v[0]};
     return *this;
   }
 
   // Specialization for cross product when n == 3
   Vec<3, t> operator^(const Vec<3, t> &v) const {
-    return Vec<3, t>{data[1] * v.data[2] - data[2] * v.data[1],
-                     data[2] * v.data[0] - data[0] * v.data[2],
-                     data[0] * v.data[1] - data[1] * v.data[0]};
+    return Vec<3, t>{data[1] * v[2] - data[2] * v[1],
+                     data[2] * v[0] - data[0] * v[2],
+                     data[0] * v[1] - data[1] * v[0]};
   }
 
   float length() const {
@@ -162,10 +162,10 @@ class Vec {
   friend std::ostream &operator<<(std::ostream &s, const Vec<n, t> &m);
 
  private:
-  std::vector<t> data;
+  std::array<t, n> data;
 };
 
-template <int n, class t>
+template <size_t n, class t>
 std::ostream &operator<<(std::ostream &s, const Vec<n, t> &v) {
   for (int i = 0; i < n; i++) {
     s << v[i] << " ";
