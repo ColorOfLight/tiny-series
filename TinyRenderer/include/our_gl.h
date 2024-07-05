@@ -26,16 +26,16 @@
 
 #include <vector>
 
-#include "./geometry_new/mat.h"
-#include "./geometry_new/vec.h"
+#include "./geometry/mat.h"
+#include "./geometry/vec.h"
 #include "./model.h"
 #include "./tgaimage.h"
 
 namespace our_gl {
 struct Vertex {
-  geometry_new::Vec<3, float> position;
-  geometry_new::Vec<3, float> normal;
-  geometry_new::Vec<2, float> texture_coords;
+  geometry::Vec<3, float> position;
+  geometry::Vec<3, float> normal;
+  geometry::Vec<2, float> texture_coords;
 };
 
 class IShader {
@@ -44,23 +44,22 @@ class IShader {
   virtual TGAColor ShadeFragment(const our_gl::Vertex& vertex) const = 0;
 };
 
-geometry_new::Vec<3, float> GetBarycentric(
-    const geometry_new::Vec<2, float>& target,
-    const geometry_new::Vec<2, float>& p0,
-    const geometry_new::Vec<2, float>& p1,
-    const geometry_new::Vec<2, float>& p2);
+geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
+                                       const geometry::Vec<2, float>& p0,
+                                       const geometry::Vec<2, float>& p1,
+                                       const geometry::Vec<2, float>& p2);
 
-bool IsPointInTriangle(const geometry_new::Vec<2, int>& edge1,
-                       const geometry_new::Vec<2, int>& edge2,
-                       const geometry_new::Vec<2, int>& origin_from_point);
+bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
+                       const geometry::Vec<2, int>& edge2,
+                       const geometry::Vec<2, int>& origin_from_point);
 
-TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
-                       const geometry_new::Vec<3, float>& view_vector,
-                       const geometry_new::Vec<3, float>& light_dir,
+TGAColor GetPhongColor(const geometry::Vec<3, float>& normal,
+                       const geometry::Vec<3, float>& view_vector,
+                       const geometry::Vec<3, float>& light_dir,
                        const TGAColor& texture_color, float diffuse = 1,
                        float specular = 0.5, float alpha = 16);
 
-TGAColor FindNearestTextureColor(const geometry_new::Vec<2, float>& st,
+TGAColor FindNearestTextureColor(const geometry::Vec<2, float>& st,
                                  const TGAImage& texture);
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);

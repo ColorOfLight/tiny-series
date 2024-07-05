@@ -30,7 +30,7 @@
 #include <initializer_list>
 #include <iostream>
 
-namespace geometry_new {
+namespace geometry {
 
 const float kPi = 3.14159265358979323846f;
 
@@ -174,4 +174,4 @@ std::ostream &operator<<(std::ostream &s, const Vec<n, t> &v) {
   return s;
 }
 
-}  // namespace geometry_new
+}  // namespace geometry

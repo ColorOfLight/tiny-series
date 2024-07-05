@@ -29,42 +29,41 @@
 #include <algorithm>
 #include <initializer_list>
 
-#include "./geometry_new/utils.h"
+#include "./geometry/utils.h"
 
 namespace our_gl {
 
-geometry_new::Vec<3, float> GetBarycentric(
-    const geometry_new::Vec<2, float>& target,
-    const geometry_new::Vec<2, float>& p0,
-    const geometry_new::Vec<2, float>& p1,
-    const geometry_new::Vec<2, float>& p2) {
-  geometry_new::Vec<2, float> edge1 = p1 - p0;
-  geometry_new::Vec<2, float> edge2 = p2 - p0;
-  geometry_new::Vec<2, float> origin_from_point = p0 - target;
+geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
+                                       const geometry::Vec<2, float>& p0,
+                                       const geometry::Vec<2, float>& p1,
+                                       const geometry::Vec<2, float>& p2) {
+  geometry::Vec<2, float> edge1 = p1 - p0;
+  geometry::Vec<2, float> edge2 = p2 - p0;
+  geometry::Vec<2, float> origin_from_point = p0 - target;
 
-  geometry_new::Vec<3, float> vec_x{edge1[0], edge2[0], origin_from_point[0]};
-  geometry_new::Vec<3, float> vec_y{edge1[1], edge2[1], origin_from_point[1]};
+  geometry::Vec<3, float> vec_x{edge1[0], edge2[0], origin_from_point[0]};
+  geometry::Vec<3, float> vec_y{edge1[1], edge2[1], origin_from_point[1]};
 
-  geometry_new::Vec<3, float> vec_crossed = vec_x ^ vec_y;
+  geometry::Vec<3, float> vec_crossed = vec_x ^ vec_y;
 
   if (vec_crossed[2] == 0) {
-    return geometry_new::Vec<3, float>({-1, 1, 1});
+    return geometry::Vec<3, float>({-1, 1, 1});
   }
 
-  return geometry_new::Vec<3, float>(
+  return geometry::Vec<3, float>(
       {1.f - (vec_crossed[0] + vec_crossed[1]) / vec_crossed[2],
        vec_crossed[0] / vec_crossed[2], vec_crossed[1] / vec_crossed[2]});
 }
 
-bool IsPointInTriangle(const geometry_new::Vec<2, int>& edge1,
-                       const geometry_new::Vec<2, int>& edge2,
-                       const geometry_new::Vec<2, int>& origin_from_point) {
-  geometry_new::Vec<3, int> vec_x =
-      geometry_new::Vec<3, int>({edge1[0], edge2[0], origin_from_point[0]});
-  geometry_new::Vec<3, int> vec_y =
-      geometry_new::Vec<3, int>({edge1[1], edge2[1], origin_from_point[1]});
+bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
+                       const geometry::Vec<2, int>& edge2,
+                       const geometry::Vec<2, int>& origin_from_point) {
+  geometry::Vec<3, int> vec_x =
+      geometry::Vec<3, int>({edge1[0], edge2[0], origin_from_point[0]});
+  geometry::Vec<3, int> vec_y =
+      geometry::Vec<3, int>({edge1[1], edge2[1], origin_from_point[1]});
 
-  geometry_new::Vec<3, int> vec_crossed = vec_x ^ vec_y;
+  geometry::Vec<3, int> vec_crossed = vec_x ^ vec_y;
 
   if (vec_crossed[2] == 0) {
     return false;
@@ -83,7 +82,7 @@ bool IsPointInTriangle(const geometry_new::Vec<2, int>& edge1,
   return false;
 }
 
-TGAColor FindNearestTextureColor(const geometry_new::Vec<2, float>& st,
+TGAColor FindNearestTextureColor(const geometry::Vec<2, float>& st,
                                  const TGAImage& texture) {
   if (st[0] < 0 || st[0] > 1 || st[1] < 0 || st[1] > 1) {
     throw std::out_of_range("st should be in range [0, 1]");
@@ -98,17 +97,16 @@ TGAColor FindNearestTextureColor(const geometry_new::Vec<2, float>& st,
   return texture.get(x, y);
 }
 
-TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
-                       const geometry_new::Vec<3, float>& view_vector,
-                       const geometry_new::Vec<3, float>& light_dir,
+TGAColor GetPhongColor(const geometry::Vec<3, float>& normal,
+                       const geometry::Vec<3, float>& view_vector,
+                       const geometry::Vec<3, float>& light_dir,
                        const TGAColor& texture_color, float diffuse,
                        float specular, float alpha) {
-  geometry_new::Vec<3, float> light_vec =
-      geometry_new::Vec<3, float>(light_dir).Normalize() * (-1);
-  geometry_new::Vec<3, float> reflection =
-      geometry_new::Reflect(light_vec, normal);
-  geometry_new::Vec<3, float> normalized_view =
-      geometry_new::Vec<3, float>(view_vector).Normalize();
+  geometry::Vec<3, float> light_vec =
+      geometry::Vec<3, float>(light_dir).Normalize() * (-1);
+  geometry::Vec<3, float> reflection = geometry::Reflect(light_vec, normal);
+  geometry::Vec<3, float> normalized_view =
+      geometry::Vec<3, float>(view_vector).Normalize();
 
   TGAColor diffuse_color =
       texture_color * (diffuse * std::max(0.f, normal * light_vec));
@@ -137,9 +135,9 @@ void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
 
 void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
                   const IShader& shader, TGAImage& image, TGAImage& z_buffer) {
-  const geometry_new::Vec<3, float>& p0 = vertices[0].position;
-  const geometry_new::Vec<3, float>& p1 = vertices[1].position;
-  const geometry_new::Vec<3, float>& p2 = vertices[2].position;
+  const geometry::Vec<3, float>& p0 = vertices[0].position;
+  const geometry::Vec<3, float>& p1 = vertices[1].position;
+  const geometry::Vec<3, float>& p2 = vertices[2].position;
 
   // Give some margin to avoid the edge of the triangle
   int min_x = std::min(p0[0], std::min(p1[0], p2[0])) - 1;
@@ -158,15 +156,15 @@ void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
 
   for (int x = min_x; x != max_x; ++x) {
     for (int y = min_y; y != max_y; ++y) {
-      geometry_new::Vec<3, float> barycentric = GetBarycentric(
-          geometry_new::Vec<2, float>(
-              {static_cast<float>(x), static_cast<float>(y)}),
-          geometry_new::Vec<2, float>(
-              {static_cast<float>(p0[0]), static_cast<float>(p0[1])}),
-          geometry_new::Vec<2, float>(
-              {static_cast<float>(p1[0]), static_cast<float>(p1[1])}),
-          geometry_new::Vec<2, float>(
-              {static_cast<float>(p2[0]), static_cast<float>(p2[1])}));
+      geometry::Vec<3, float> barycentric =
+          GetBarycentric(geometry::Vec<2, float>(
+                             {static_cast<float>(x), static_cast<float>(y)}),
+                         geometry::Vec<2, float>({static_cast<float>(p0[0]),
+                                                  static_cast<float>(p0[1])}),
+                         geometry::Vec<2, float>({static_cast<float>(p1[0]),
+                                                  static_cast<float>(p1[1])}),
+                         geometry::Vec<2, float>({static_cast<float>(p2[0]),
+                                                  static_cast<float>(p2[1])}));
 
       if (barycentric[0] < 0 || barycentric[1] < 0 || barycentric[2] < 0) {
         continue;
@@ -175,17 +173,16 @@ void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           static_cast<float>(z_buffer.get(x, y).bgra[0]) < z) {
-        geometry_new::Vec<3, float> position =
+        geometry::Vec<3, float> position =
             vertices[0].position * barycentric[0] +
             vertices[1].position * barycentric[1] +
             vertices[2].position * barycentric[2];
 
-        geometry_new::Vec<3, float> normal =
-            vertices[0].normal * barycentric[0] +
-            vertices[1].normal * barycentric[1] +
-            vertices[2].normal * barycentric[2];
+        geometry::Vec<3, float> normal = vertices[0].normal * barycentric[0] +
+                                         vertices[1].normal * barycentric[1] +
+                                         vertices[2].normal * barycentric[2];
 
-        geometry_new::Vec<2, float> st =
+        geometry::Vec<2, float> st =
             vertices[0].texture_coords * barycentric[0] +
             vertices[1].texture_coords * barycentric[1] +
             vertices[2].texture_coords * barycentric[2];

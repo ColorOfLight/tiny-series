@@ -24,10 +24,10 @@
 
 #pragma once
 
-#include "./geometry_new/mat.h"
-#include "./geometry_new/vec.h"
+#include "./geometry/mat.h"
+#include "./geometry/vec.h"
 
-namespace geometry_new {
+namespace geometry {
 
 inline Vec<3, float> GetNDC(const Vec<4, float>& vec) {
   if (vec[3] == 0) {
@@ -91,4 +91,4 @@ inline Mat<4, 4, float> Viewport(int x, int y, int width, int height,
   return viewport;
 }
 
-}  // namespace geometry_new
+}  // namespace geometry

@@ -26,9 +26,9 @@
 #include <iostream>
 #include <string>
 
-#include "./geometry_new/mat.h"
-#include "./geometry_new/utils.h"
-#include "./geometry_new/vec.h"
+#include "./geometry/mat.h"
+#include "./geometry/utils.h"
+#include "./geometry/vec.h"
 #include "./model.h"
 #include "./our_gl.h"
 #include "./tgaimage.h"
@@ -39,40 +39,39 @@ const TGAColor white(255, 255, 255, 255);
 const int width = 800;
 const int height = 800;
 
-const geometry_new::Vec<3, float> eye{1, 1, 3};
-const geometry_new::Vec<3, float> center{0, 0, 0};
-const geometry_new::Vec<3, float> up{0, 1, 0};
-const geometry_new::Vec<3, float> light_dir{0, 0, -1};
+const geometry::Vec<3, float> eye{1, 1, 3};
+const geometry::Vec<3, float> center{0, 0, 0};
+const geometry::Vec<3, float> up{0, 1, 0};
+const geometry::Vec<3, float> light_dir{0, 0, -1};
 
-const geometry_new::Mat<4, 4, float> view_mat =
-    geometry_new::ViewMatrix(eye, center, up);
-const geometry_new::Mat<4, 4, float> perspective_mat =
-    geometry_new::Perspective(3);
-const geometry_new::Mat<4, 4, float> viewport_mat =
-    geometry_new::Viewport(0, 0, width, height, 255);
+const geometry::Mat<4, 4, float> view_mat =
+    geometry::ViewMatrix(eye, center, up);
+const geometry::Mat<4, 4, float> perspective_mat = geometry::Perspective(3);
+const geometry::Mat<4, 4, float> viewport_mat =
+    geometry::Viewport(0, 0, width, height, 255);
 
 class Shader : public our_gl::IShader {
  public:
-  geometry_new::Mat<4, 4, float> g_viewport_mat;
+  geometry::Mat<4, 4, float> g_viewport_mat;
 
-  geometry_new::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
-  geometry_new::Vec<3, float> u_light_dir;
-  geometry_new::Vec<3, float> u_view_vector;
+  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  geometry::Vec<3, float> u_light_dir;
+  geometry::Vec<3, float> u_view_vector;
   TGAImage u_texture;
 
   our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override {
-    geometry_new::Vec<4, float> pos_4 = geometry_new::Vec<4, float>(
+    geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
         {model_vertex.position[0], model_vertex.position[1],
          model_vertex.position[2], 1});
 
-    geometry_new::Vec<3, float> new_position =
+    geometry::Vec<3, float> new_position =
         GetNDC(g_viewport_mat * u_vpm_mat * pos_4);
 
     return {new_position, model_vertex.normal, model_vertex.texture_coords};
   }
   TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override {
-    geometry_new::Vec<3, float> normal = vertex.normal;
-    geometry_new::Vec<3, float> light_dir = u_light_dir;
+    geometry::Vec<3, float> normal = vertex.normal;
+    geometry::Vec<3, float> light_dir = u_light_dir;
 
     TGAColor texture_color =
         our_gl::FindNearestTextureColor(vertex.texture_coords, u_texture);
@@ -95,8 +94,10 @@ int main() {
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
 
   Shader shader;
-  shader.u_vpm_mat = perspective_mat * view_mat;
+
   shader.g_viewport_mat = viewport_mat;
+
+  shader.u_vpm_mat = perspective_mat * view_mat;
   shader.u_light_dir = light_dir;
   shader.u_texture = texture;
   shader.u_view_vector = eye - center;

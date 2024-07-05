@@ -26,9 +26,9 @@
 
 #include <array>
 
-#include "./geometry_new/vec.h"
+#include "./geometry/vec.h"
 
-namespace geometry_new {
+namespace geometry {
 
 template <size_t n, int m, class t>
 class Mat {
@@ -166,4 +166,4 @@ std::ostream &operator<<(std::ostream &s, const Mat<n, m, t> &mat) {
   return s;
 }
 
-}  // namespace geometry_new
+}  // namespace geometry
