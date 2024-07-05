@@ -40,7 +40,7 @@ class IShader {
  public:
   virtual gl_Position ShadeVertex(model::Vertex model_vertex,
                                   int vertex_index) = 0;
-  virtual TGAColor ShadeFragment(
+  virtual gl_Fragment ShadeFragment(
       const geometry::Vec<3, float> barycentric) const = 0;
 };
 
