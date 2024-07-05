@@ -30,7 +30,7 @@
 
 namespace geometry {
 
-template <size_t n, int m, class t>
+template <size_t n, size_t m, class t>
 class Mat {
   // row-first order
 
@@ -97,7 +97,7 @@ class Mat {
     return result;
   }
 
-  template <int l>
+  template <size_t l>
   inline Mat<n, l, t> operator*(const Mat<m, l, t> &mat) const {
     Mat<n, l, t> result;
 
@@ -124,11 +124,29 @@ class Mat {
     return result;
   }
 
+  inline const std::array<t, n> &GetColumn(int j) const {
+    if (j < 0 || j >= m) {
+      throw std::out_of_range("Index out of range");
+    }
+
+    std::array<t, n> column;
+    for (int i = 0; i < n; i++) {
+      column[i] = data[i][j];
+    }
+    return column;
+  }
+
+  inline void SetColumn(int j, const Vec<n, t> &vec) {
+    for (int i = 0; i < n; i++) {
+      data[i][j] = vec[i];
+    }
+  }
+
  private:
   std::array<std::array<t, m>, n> data;
 };
 
-template <size_t n, int m, class t>
+template <size_t n, size_t m, class t>
 std::ostream &operator<<(std::ostream &s, const Mat<n, m, t> &mat) {
   if (n == 1) {
     s << "[ ";
