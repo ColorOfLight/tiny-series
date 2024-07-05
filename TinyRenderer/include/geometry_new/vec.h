@@ -24,24 +24,26 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
+#include <vector>
 
 namespace geometry_new {
 
-const float PI = 3.14159265358979323846f;
+const float kPi = 3.14159265358979323846f;
 
 template <int n, class t>
 class Vec {
  public:
-  Vec() : data({0}) {}
+  Vec() : data(std::vector<int>(n, 0)) {}
   Vec(std::initializer_list<t> list) {
     if (list.size() != n) {
       throw std::invalid_argument("Invalid initializer list size");
     }
 
-    std::copy(list.begin(), list.end(), data);
+    data = std::vector<t>(list);
   }
 
   t &operator[](int i) {
@@ -181,7 +183,7 @@ class Vec {
   friend std::ostream &operator<<(std::ostream &s, const Vec<n, t> &m);
 
  private:
-  t data[n];
+  std::vector<t> data;
 };
 
 template <class t>
