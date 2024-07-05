@@ -51,6 +51,39 @@ const geometry_new::Mat<4, 4, float> perspective_mat =
 const geometry_new::Mat<4, 4, float> viewport_mat =
     geometry_new::Viewport(0, 0, width, height, 255);
 
+class Shader : public our_gl::IShader {
+ public:
+  geometry_new::Mat<4, 4, float> g_viewport_mat;
+
+  geometry_new::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  geometry_new::Vec<3, float> u_light_dir;
+  geometry_new::Vec<3, float> u_view_vector;
+  TGAImage u_texture;
+
+  our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override {
+    geometry_new::Vec<4, float> pos_4 = geometry_new::Vec<4, float>(
+        {model_vertex.position[0], model_vertex.position[1],
+         model_vertex.position[2], 1});
+
+    geometry_new::Vec<3, float> new_position =
+        GetNDC(g_viewport_mat * u_vpm_mat * pos_4);
+
+    return {new_position, model_vertex.normal, model_vertex.texture_coords};
+  }
+  TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override {
+    geometry_new::Vec<3, float> normal = vertex.normal;
+    geometry_new::Vec<3, float> light_dir = u_light_dir;
+
+    TGAColor texture_color =
+        our_gl::FindNearestTextureColor(vertex.texture_coords, u_texture);
+
+    TGAColor phong_color =
+        our_gl::GetPhongColor(normal, u_view_vector, light_dir, texture_color);
+
+    return phong_color;
+  }
+};
+
 int main() {
   model::Model model("./assets/african_head.obj");
 
@@ -61,7 +94,7 @@ int main() {
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
 
-  our_gl::FirstShader shader;
+  Shader shader;
   shader.u_vpm_mat = perspective_mat * view_mat;
   shader.g_viewport_mat = viewport_mat;
   shader.u_light_dir = light_dir;

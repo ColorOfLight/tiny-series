@@ -44,18 +44,24 @@ class IShader {
   virtual TGAColor ShadeFragment(const our_gl::Vertex& vertex) const = 0;
 };
 
-class FirstShader : public IShader {
- public:
-  geometry_new::Mat<4, 4, float> g_viewport_mat;
+geometry_new::Vec<3, float> GetBarycentric(
+    const geometry_new::Vec<2, float>& target,
+    const geometry_new::Vec<2, float>& p0,
+    const geometry_new::Vec<2, float>& p1,
+    const geometry_new::Vec<2, float>& p2);
 
-  geometry_new::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
-  geometry_new::Vec<3, float> u_light_dir;
-  geometry_new::Vec<3, float> u_view_vector;
-  TGAImage u_texture;
+bool IsPointInTriangle(const geometry_new::Vec<2, int>& edge1,
+                       const geometry_new::Vec<2, int>& edge2,
+                       const geometry_new::Vec<2, int>& origin_from_point);
 
-  our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override;
-  TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override;
-};
+TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
+                       const geometry_new::Vec<3, float>& view_vector,
+                       const geometry_new::Vec<3, float>& light_dir,
+                       const TGAColor& texture_color, float diffuse = 1,
+                       float specular = 0.5, float alpha = 16);
+
+TGAColor FindNearestTextureColor(const geometry_new::Vec<2, float>& st,
+                                 const TGAImage& texture);
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
 

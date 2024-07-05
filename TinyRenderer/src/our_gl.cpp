@@ -31,7 +31,7 @@
 
 #include "./geometry_new/utils.h"
 
-// -- Internal functions -- //
+namespace our_gl {
 
 geometry_new::Vec<3, float> GetBarycentric(
     const geometry_new::Vec<2, float>& target,
@@ -101,8 +101,8 @@ TGAColor FindNearestTextureColor(const geometry_new::Vec<2, float>& st,
 TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
                        const geometry_new::Vec<3, float>& view_vector,
                        const geometry_new::Vec<3, float>& light_dir,
-                       const TGAColor& texture_color, float diffuse = 1,
-                       float specular = 0.5, float alpha = 16) {
+                       const TGAColor& texture_color, float diffuse,
+                       float specular, float alpha) {
   geometry_new::Vec<3, float> light_vec =
       geometry_new::Vec<3, float>(light_dir).Normalize() * (-1);
   geometry_new::Vec<3, float> reflection =
@@ -117,33 +117,6 @@ TGAColor GetPhongColor(const geometry_new::Vec<3, float>& normal,
       (specular * pow(std::max(0.f, reflection * normalized_view), alpha));
 
   return diffuse_color + specular_color;
-}
-
-// -- Internal functions (end) -- //
-
-namespace our_gl {
-
-Vertex FirstShader::ShadeVertex(model::Vertex model_vertex) const {
-  geometry_new::Vec<4, float> pos_4 = geometry_new::Vec<4, float>(
-      {model_vertex.position[0], model_vertex.position[1],
-       model_vertex.position[2], 1});
-
-  geometry_new::Vec<3, float> new_position =
-      GetNDC(g_viewport_mat * u_vpm_mat * pos_4);
-
-  return {new_position, model_vertex.normal, model_vertex.texture_coords};
-}
-TGAColor FirstShader::ShadeFragment(const our_gl::Vertex& vertex) const {
-  geometry_new::Vec<3, float> normal = vertex.normal;
-  geometry_new::Vec<3, float> light_dir = u_light_dir;
-
-  TGAColor texture_color =
-      FindNearestTextureColor(vertex.texture_coords, u_texture);
-
-  TGAColor phong_color =
-      GetPhongColor(normal, u_view_vector, light_dir, texture_color);
-
-  return phong_color;
 }
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
