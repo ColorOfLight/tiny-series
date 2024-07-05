@@ -37,8 +37,8 @@ const float kPi = 3.14159265358979323846f;
 template <int n, class t>
 class Vec {
  public:
-  Vec() : data(std::vector<int>(n, 0)) {}
-  Vec(std::initializer_list<t> list) {
+  Vec() : data(std::vector<t>(n, 0)) {}
+  Vec(const std::initializer_list<t> &list) {
     if (list.size() != n) {
       throw std::invalid_argument("Invalid initializer list size");
     }
@@ -71,22 +71,6 @@ class Vec {
     }
     return *this;
   }
-  inline Vec<n, t> &operator*=(const Vec<n, t> &v) {
-    for (int i = 0; i < n; i++) {
-      data[i] *= v.data[i];
-    }
-    return *this;
-  }
-  inline Vec<n, t> &operator/=(const Vec<n, t> &v) {
-    for (int i = 0; i < n; i++) {
-      if (v.data[i] == 0) {
-        throw std::runtime_error("Division by zero");
-      }
-
-      data[i] /= v.data[i];
-    }
-    return *this;
-  }
 
   inline Vec<n, t> &operator*=(t f) {
     for (int i = 0; i < n; i++) {
@@ -115,14 +99,11 @@ class Vec {
     result -= v;
     return result;
   }
-  inline Vec<n, t> operator*(const Vec<n, t> &v) const {
-    Vec<n, t> result = *this;
-    result *= v;
-    return result;
-  }
-  inline Vec<n, t> operator/(const Vec<n, t> &v) const {
-    Vec<n, t> result = *this;
-    result /= v;
+  inline t operator*(const Vec<n, t> &v) const {
+    t result = 0;
+    for (int i = 0; i < n; i++) {
+      result += data[i] * v.data[i];
+    }
     return result;
   }
 
@@ -138,8 +119,7 @@ class Vec {
   }
 
   // Specialization for cross product when n == 3
-  typename std::enable_if<n == 3, Vec<3, t>>::type operator^=(
-      const Vec<3, t> &v) {
+  Vec<3, t> &operator^=(const Vec<3, t> &v) {
     *this = Vec<3, t>{data[1] * v.data[2] - data[2] * v.data[1],
                       data[2] * v.data[0] - data[0] * v.data[2],
                       data[0] * v.data[1] - data[1] * v.data[0]};
@@ -147,8 +127,7 @@ class Vec {
   }
 
   // Specialization for cross product when n == 3
-  typename std::enable_if<n == 3, Vec<3, t>>::type operator^(
-      const Vec<3, t> &v) const {
+  Vec<3, t> operator^(const Vec<3, t> &v) const {
     return Vec<3, t>{data[1] * v.data[2] - data[2] * v.data[1],
                      data[2] * v.data[0] - data[0] * v.data[2],
                      data[0] * v.data[1] - data[1] * v.data[0]};
@@ -185,14 +164,6 @@ class Vec {
  private:
   std::vector<t> data;
 };
-
-template <class t>
-Vec<3, t> GetNDC(const Vec<4, t> &vec) {
-  if (vec[2] == 0) {
-    throw std::runtime_error("Division by zero");
-  }
-  return Vec<3, t>({vec[0] / vec[3], vec[1] / vec[3], vec[2] / vec[3]});
-}
 
 template <int n, class t>
 std::ostream &operator<<(std::ostream &s, const Vec<n, t> &v) {

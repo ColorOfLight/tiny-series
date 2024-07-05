@@ -26,15 +26,16 @@
 
 #include <vector>
 
-#include "./geometry.h"
+#include "./geometry_new/mat.h"
+#include "./geometry_new/vec.h"
 #include "./model.h"
 #include "./tgaimage.h"
 
 namespace our_gl {
 struct Vertex {
-  geometry::Vec3f position;
-  geometry::Vec3f normal;
-  geometry::Vec2f texture_coords;
+  geometry_new::Vec<3, float> position;
+  geometry_new::Vec<3, float> normal;
+  geometry_new::Vec<2, float> texture_coords;
 };
 
 class IShader {
@@ -45,11 +46,11 @@ class IShader {
 
 class FirstShader : public IShader {
  public:
-  geometry::Mat4x4f g_viewport_mat;
+  geometry_new::Mat<4, 4, float> g_viewport_mat;
 
-  geometry::Mat4x4f u_vpm_mat;  // view * projection * model
-  geometry::Vec3f u_light_dir;
-  geometry::Vec3f u_view_vector;
+  geometry_new::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  geometry_new::Vec<3, float> u_light_dir;
+  geometry_new::Vec<3, float> u_view_vector;
   TGAImage u_texture;
 
   our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override;
@@ -57,27 +58,6 @@ class FirstShader : public IShader {
 };
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
-
-void DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                  TGAImage& image, TGAColor color);
-
-void DrawTriangle(const geometry::Vec3f& v0, const geometry::Vec3f& v1,
-                  const geometry::Vec3f& v2, TGAColor color, TGAImage& image,
-                  std::vector<std::vector<float>>& z_buffer);
-
-void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
-                  const geometry::Vec3f& p2, const geometry::Vec3f& n0,
-                  const geometry::Vec3f& n1, const geometry::Vec3f& n2,
-                  const TGAColor& color, const geometry::Vec3f& light_dir,
-                  TGAImage& image, std::vector<std::vector<float>>& z_buffer);
-
-void DrawTriangle(const geometry::Vec3f& p0, const geometry::Vec3f& p1,
-                  const geometry::Vec3f& p2, const geometry::Vec3f& n0,
-                  const geometry::Vec3f& n1, const geometry::Vec3f& n2,
-                  const geometry::Vec2f& st0, const geometry::Vec2f& st1,
-                  const geometry::Vec2f& st2, const TGAImage& texture,
-                  const geometry::Vec3f& light_dir, TGAImage& image,
-                  std::vector<std::vector<float>>& z_buffer);
 
 void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
                   const IShader& shader, TGAImage& image, TGAImage& z_buffer);

@@ -36,9 +36,9 @@ struct VertexIndex {
 };
 
 Model::Model(const std::string& file_name)
-    : positions_(std::vector<geometry::Vec3f>()),
-      normals_(std::vector<geometry::Vec3f>()),
-      texture_coords_(std::vector<geometry::Vec2f>()),
+    : positions_(std::vector<geometry_new::Vec<3, float>>()),
+      normals_(std::vector<geometry_new::Vec<3, float>>()),
+      texture_coords_(std::vector<geometry_new::Vec<2, float>>()),
       faces_(std::vector<std::vector<model::Vertex>>()) {
   std::ifstream file(file_name);
   if (!file.is_open()) {
@@ -54,16 +54,16 @@ Model::Model(const std::string& file_name)
     iss >> prefix;
 
     if (prefix == "v") {
-      geometry::Vec3f position;
-      iss >> position.x >> position.y >> position.z;
+      geometry_new::Vec<3, float> position;
+      iss >> position[0] >> position[1] >> position[2];
       positions_.push_back(position);
     } else if (prefix == "vn") {
-      geometry::Vec3f normal;
-      iss >> normal.x >> normal.y >> normal.z;
+      geometry_new::Vec<3, float> normal;
+      iss >> normal[0] >> normal[1] >> normal[2];
       normals_.push_back(normal);
     } else if (prefix == "vt") {
-      geometry::Vec2f texture_coords;
-      iss >> texture_coords.u >> texture_coords.v;
+      geometry_new::Vec<2, float> texture_coords;
+      iss >> texture_coords[0] >> texture_coords[1];
       texture_coords_.push_back(texture_coords);
     } else if (prefix == "f") {
       std::vector<VertexIndex> vertexIndexes;
@@ -107,10 +107,11 @@ Model::Model(const std::string& file_name)
             std::to_string(vertex_index.texture_coords_index));
       }
 
-      const geometry::Vec3f& position =
+      const geometry_new::Vec<3, float>& position =
           positions_[vertex_index.position_index - 1];
-      const geometry::Vec3f& normal = normals_[vertex_index.normal_index - 1];
-      const geometry::Vec2f& texture_coords =
+      const geometry_new::Vec<3, float>& normal =
+          normals_[vertex_index.normal_index - 1];
+      const geometry_new::Vec<2, float>& texture_coords =
           texture_coords_[vertex_index.texture_coords_index - 1];
       vertices.push_back(Vertex{position, normal, texture_coords});
     }

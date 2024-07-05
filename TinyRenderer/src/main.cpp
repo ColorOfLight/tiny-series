@@ -26,6 +26,9 @@
 #include <iostream>
 #include <string>
 
+#include "./geometry_new/mat.h"
+#include "./geometry_new/utils.h"
+#include "./geometry_new/vec.h"
 #include "./model.h"
 #include "./our_gl.h"
 #include "./tgaimage.h"
@@ -36,15 +39,17 @@ const TGAColor white(255, 255, 255, 255);
 const int width = 800;
 const int height = 800;
 
-const geometry::Vec3f eye(1, 1, 3);
-const geometry::Vec3f center(0, 0, 0);
-const geometry::Vec3f up(0, 1, 0);
-const geometry::Vec3f light_dir(0, 0, -1);
+const geometry_new::Vec<3, float> eye{1, 1, 3};
+const geometry_new::Vec<3, float> center{0, 0, 0};
+const geometry_new::Vec<3, float> up{0, 1, 0};
+const geometry_new::Vec<3, float> light_dir{0, 0, -1};
 
-const geometry::Mat4x4f view_mat = geometry::ViewMatrix(eye, center, up);
-const geometry::Mat4x4f perspective_mat = geometry::Perspective(3);
-const geometry::Mat4x4f viewport_mat =
-    geometry::Viewport(0, 0, width, height, 255);
+const geometry_new::Mat<4, 4, float> view_mat =
+    geometry_new::ViewMatrix(eye, center, up);
+const geometry_new::Mat<4, 4, float> perspective_mat =
+    geometry_new::Perspective(3);
+const geometry_new::Mat<4, 4, float> viewport_mat =
+    geometry_new::Viewport(0, 0, width, height, 255);
 
 int main() {
   model::Model model("./assets/african_head.obj");
@@ -73,8 +78,6 @@ int main() {
 
     our_gl::DrawTriangle(vertices, shader, image, z_buffer);
   }
-
-  // RenderFlatShading(model, light_dir, texture, image);
 
   image.write_tga_file("output.tga");
   z_buffer.write_tga_file("z_buffer.tga");

@@ -26,6 +26,8 @@
 
 #include <vector>
 
+#include "./geometry_new/vec.h"
+
 namespace geometry_new {
 
 template <int n, int m, class t>
@@ -100,6 +102,18 @@ class Mat {
         for (int k = 0; k < m; k++) {
           result[i][j] += data[i][k] * mat[k][j];
         }
+      }
+    }
+
+    return result;
+  }
+
+  inline Vec<n, t> operator*(const Vec<m, t> &vec) const {
+    Vec<n, t> result;
+
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < m; j++) {
+        result[i] += data[i][j] * vec[j];
       }
     }
 
