@@ -56,13 +56,13 @@ class Mat {
     }
   }
 
-  std::array<t, n> &operator[](int i) {
+  std::array<t, m> &operator[](int i) {
     if (i < 0 || i >= n) {
       throw std::out_of_range("Index out of range");
     }
     return data[i];
   }
-  const std::array<t, n> &operator[](int i) const {
+  const std::array<t, m> &operator[](int i) const {
     if (i < 0 || i >= n) {
       throw std::out_of_range("Index out of range");
     }
@@ -124,7 +124,7 @@ class Mat {
     return result;
   }
 
-  inline const std::array<t, n> &GetColumn(int j) const {
+  inline std::array<t, n> GetColumn(int j) const {
     if (j < 0 || j >= m) {
       throw std::out_of_range("Index out of range");
     }
@@ -136,9 +136,43 @@ class Mat {
     return column;
   }
 
+  inline Vec<n, t> GetColumnVector(int j) const {
+    if (j < 0 || j >= m) {
+      throw std::out_of_range("Index out of range");
+    }
+
+    Vec<n, t> column;
+    for (int i = 0; i < n; i++) {
+      column[i] = data[i][j];
+    }
+    return column;
+  }
+
   inline void SetColumn(int j, const Vec<n, t> &vec) {
     for (int i = 0; i < n; i++) {
       data[i][j] = vec[i];
+    }
+  }
+
+  inline const std::array<t, n> &GetRow(int i) const {
+    if (i < 0 || i >= n) {
+      throw std::out_of_range("Index out of range");
+    }
+
+    return data[i];
+  }
+
+  inline const Vec<m, t> &GetRowVector(int i) const {
+    return Vec<m, t>(GetRow(i));
+  }
+
+  inline void SetRow(int i, const Vec<m, t> &vec) {
+    if (i < 0 || i >= n) {
+      throw std::out_of_range("Index out of range");
+    }
+
+    for (int j = 0; j < m; j++) {
+      data[i][j] = vec[j];
     }
   }
 
