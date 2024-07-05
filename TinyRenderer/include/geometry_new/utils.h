@@ -42,7 +42,7 @@ inline Vec<3, float> Reflect(const Vec<3, float>& incident,
   return (incident - normal * 2 * (incident * normal)) * (-1);
 }
 
-template <int n, class t>
+template <size_t n, class t>
 inline Mat<n, n, t> GetIdentityMat() {
   Mat<n, n, t> identity;
   for (int i = 0; i < n; i++) {
