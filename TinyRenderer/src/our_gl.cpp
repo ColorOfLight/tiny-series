@@ -133,11 +133,11 @@ void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
   }
 }
 
-void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
+void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
                   const IShader& shader, TGAImage& image, TGAImage& z_buffer) {
-  const geometry::Vec<3, float>& p0 = vertices[0].position;
-  const geometry::Vec<3, float>& p1 = vertices[1].position;
-  const geometry::Vec<3, float>& p2 = vertices[2].position;
+  const geometry::Vec<3, float>& p0 = gl_Positions[0];
+  const geometry::Vec<3, float>& p1 = gl_Positions[1];
+  const geometry::Vec<3, float>& p2 = gl_Positions[2];
 
   // Give some margin to avoid the edge of the triangle
   int min_x = std::min(p0[0], std::min(p1[0], p2[0])) - 1;
@@ -173,22 +173,7 @@ void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           static_cast<float>(z_buffer.get(x, y).bgra[0]) < z) {
-        geometry::Vec<3, float> position =
-            vertices[0].position * barycentric[0] +
-            vertices[1].position * barycentric[1] +
-            vertices[2].position * barycentric[2];
-
-        geometry::Vec<3, float> normal = vertices[0].normal * barycentric[0] +
-                                         vertices[1].normal * barycentric[1] +
-                                         vertices[2].normal * barycentric[2];
-
-        geometry::Vec<2, float> st =
-            vertices[0].texture_coords * barycentric[0] +
-            vertices[1].texture_coords * barycentric[1] +
-            vertices[2].texture_coords * barycentric[2];
-
-        TGAColor fragment_color =
-            shader.ShadeFragment(our_gl::Vertex{position, normal, st});
+        TGAColor fragment_color = shader.ShadeFragment(barycentric);
 
         z_buffer.set(x, y,
                      TGAColor(static_cast<int>(z), static_cast<int>(z),

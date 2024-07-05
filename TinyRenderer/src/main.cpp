@@ -59,28 +59,41 @@ class Shader : public our_gl::IShader {
   geometry::Vec<3, float> u_view_vector;
   TGAImage u_texture;
 
-  our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const override {
+  our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
+                                  int vertex_index) override {
     geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
         {model_vertex.position[0], model_vertex.position[1],
          model_vertex.position[2], 1});
 
-    geometry::Vec<3, float> new_position =
-        GetNDC(g_viewport_mat * u_vpm_mat * pos_4);
+    geometry::Vec<4, float> new_position = u_vpm_mat * pos_4;
 
-    return {new_position, model_vertex.normal, model_vertex.texture_coords};
+    varying_positions.SetColumn(vertex_index, geometry::GetNDC(new_position));
+    varying_texcoords.SetColumn(vertex_index, model_vertex.texture_coords);
+    varying_normals.SetColumn(vertex_index, model_vertex.normal);
+
+    return geometry::GetNDC(g_viewport_mat * new_position);
   }
-  TGAColor ShadeFragment(const our_gl::Vertex& vertex) const override {
-    geometry::Vec<3, float> normal = vertex.normal;
+  our_gl::gl_Fragment ShadeFragment(
+      const geometry::Vec<3, float> barycentric) const override {
+    geometry::Vec<3, float> normal = varying_normals * barycentric;
+    normal.Normalize();
+
+    geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
     geometry::Vec<3, float> light_dir = u_light_dir;
 
     TGAColor texture_color =
-        our_gl::FindNearestTextureColor(vertex.texture_coords, u_texture);
+        our_gl::FindNearestTextureColor(texture_coords, u_texture);
 
     TGAColor phong_color =
         our_gl::GetPhongColor(normal, u_view_vector, light_dir, texture_color);
 
     return phong_color;
   }
+
+ private:
+  geometry::Mat<3, 3, float> varying_positions;
+  geometry::Mat<2, 3, float> varying_texcoords;
+  geometry::Mat<3, 3, float> varying_normals;
 };
 
 int main() {
@@ -105,12 +118,12 @@ int main() {
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
 
-    std::vector<our_gl::Vertex> vertices = std::vector<our_gl::Vertex>(3);
+    std::array<our_gl::gl_Position, 3> gl_Positions;
     for (int v_idx = 0; v_idx != 3; ++v_idx) {
-      vertices[v_idx] = shader.ShadeVertex(face[v_idx]);
+      gl_Positions[v_idx] = shader.ShadeVertex(face[v_idx], v_idx);
     }
 
-    our_gl::DrawTriangle(vertices, shader, image, z_buffer);
+    our_gl::DrawTriangle(gl_Positions, shader, image, z_buffer);
   }
 
   image.write_tga_file("output.tga");

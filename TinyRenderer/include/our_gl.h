@@ -32,16 +32,16 @@
 #include "./tgaimage.h"
 
 namespace our_gl {
-struct Vertex {
-  geometry::Vec<3, float> position;
-  geometry::Vec<3, float> normal;
-  geometry::Vec<2, float> texture_coords;
-};
+
+typedef geometry::Vec<3, float> gl_Position;
+typedef TGAColor gl_Fragment;
 
 class IShader {
  public:
-  virtual our_gl::Vertex ShadeVertex(model::Vertex model_vertex) const = 0;
-  virtual TGAColor ShadeFragment(const our_gl::Vertex& vertex) const = 0;
+  virtual gl_Position ShadeVertex(model::Vertex model_vertex,
+                                  int vertex_index) = 0;
+  virtual TGAColor ShadeFragment(
+      const geometry::Vec<3, float> barycentric) const = 0;
 };
 
 geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
@@ -64,6 +64,6 @@ TGAColor FindNearestTextureColor(const geometry::Vec<2, float>& st,
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
 
-void DrawTriangle(const std::vector<our_gl::Vertex>& vertices,
+void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
                   const IShader& shader, TGAImage& image, TGAImage& z_buffer);
 }  // namespace our_gl
