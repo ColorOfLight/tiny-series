@@ -58,6 +58,7 @@ class Shader : public our_gl::IShader {
   geometry::Vec<3, float> u_light_dir;
   geometry::Vec<3, float> u_view_vector;
   TGAImage u_texture;
+  TGAImage u_tangent_normal_map;
 
   our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
                                   int vertex_index) override {
@@ -79,13 +80,48 @@ class Shader : public our_gl::IShader {
     normal.Normalize();
 
     geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
-    geometry::Vec<3, float> light_dir = u_light_dir;
+
+    // Get Darboux Basis
+    geometry::Mat<3, 3, float> darboux_basis_matrix;
+    darboux_basis_matrix.SetRow(0, varying_positions.GetColumnVector(1) -
+                                       varying_positions.GetColumnVector(0));
+    darboux_basis_matrix.SetRow(1, varying_positions.GetColumnVector(2) -
+                                       varying_positions.GetColumnVector(0));
+    darboux_basis_matrix.SetRow(2, normal);
+
+    geometry::Mat<3, 3, float> darboux_matrix_inverse =
+        geometry::Inverse(darboux_basis_matrix);
+
+    geometry::Vec<3, float> darboux_i =
+        (darboux_matrix_inverse *
+         geometry::Vec<3, float>(
+             {varying_texcoords[0][1] - varying_texcoords[0][0],
+              varying_texcoords[0][2] - varying_texcoords[0][0], 0}))
+            .GetNormalized();
+    geometry::Vec<3, float> darboux_j =
+        (darboux_matrix_inverse *
+         geometry::Vec<3, float>(
+             {varying_texcoords[1][1] - varying_texcoords[1][0],
+              varying_texcoords[1][2] - varying_texcoords[1][0], 0}))
+            .GetNormalized();
+
+    TGAColor tangent_normal_color =
+        our_gl::FindNearestTextureColor(texture_coords, u_tangent_normal_map);
+    geometry::Vec<3, float> tangent_normal =
+        our_gl::ConvertColorToVec(tangent_normal_color);
+
+    geometry::Vec<3, float> real_normal = darboux_i * tangent_normal[0] +
+                                          darboux_j * tangent_normal[1] +
+                                          normal * tangent_normal[2];
+    real_normal.Normalize();
+
+        geometry::Vec<3, float> light_dir = u_light_dir;
 
     TGAColor texture_color =
         our_gl::FindNearestTextureColor(texture_coords, u_texture);
 
-    TGAColor phong_color =
-        our_gl::GetPhongColor(normal, u_view_vector, light_dir, texture_color);
+    TGAColor phong_color = our_gl::GetPhongColor(real_normal, u_view_vector,
+                                                 light_dir, texture_color);
 
     return phong_color;
   }
@@ -103,6 +139,10 @@ int main() {
   texture.read_tga_file("./assets/african_head_diffuse.tga");
   texture.flip_vertically();
 
+  TGAImage tangent_normal_map;
+  tangent_normal_map.read_tga_file("./assets/african_head_nm_tangent.tga");
+  tangent_normal_map.flip_vertically();
+
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
 
@@ -112,8 +152,9 @@ int main() {
 
   shader.u_vpm_mat = perspective_mat * view_mat;
   shader.u_light_dir = light_dir;
-  shader.u_texture = texture;
   shader.u_view_vector = eye - center;
+  shader.u_texture = texture;
+  shader.u_tangent_normal_map = tangent_normal_map;
 
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
