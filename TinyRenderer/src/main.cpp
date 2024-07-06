@@ -50,7 +50,7 @@ const geometry::Mat<4, 4, float> view_mat =
     geometry::ViewMatrix(eye, center, up);
 const geometry::Mat<4, 4, float> perspective_mat = geometry::Perspective(3);
 const geometry::Mat<4, 4, float> viewport_mat =
-    geometry::Viewport(0, 0, width, height, 255);
+    geometry::Viewport(0, 0, width, height, 1);
 
 int main() {
   model::Model model("./assets/african_head.obj");
