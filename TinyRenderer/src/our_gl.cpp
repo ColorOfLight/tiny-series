@@ -33,6 +33,20 @@
 
 namespace our_gl {
 
+void OurGL::DrawModel(const model::Model& model, IShader& shader,
+                      TGAImage& image, TGAImage& z_buffer) {
+  for (int i = 0; i != model.size(); ++i) {
+    auto face = model.get(i);
+
+    std::array<our_gl::gl_Position, 3> gl_Positions;
+    for (int v_idx = 0; v_idx != 3; ++v_idx) {
+      gl_Positions[v_idx] = shader.ShadeVertex(*this, face[v_idx], v_idx);
+    }
+
+    DrawTriangle(gl_Positions, shader, image, z_buffer);
+  }
+}
+
 geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
                                        const geometry::Vec<2, float>& p0,
                                        const geometry::Vec<2, float>& p1,
@@ -133,8 +147,8 @@ void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
   }
 }
 
-void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
-                  const IShader& shader, TGAImage& image, TGAImage& z_buffer) {
+void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
+                         IShader& shader, TGAImage& image, TGAImage& z_buffer) {
   const geometry::Vec<3, float>& p0 = gl_Positions[0];
   const geometry::Vec<3, float>& p1 = gl_Positions[1];
   const geometry::Vec<3, float>& p2 = gl_Positions[2];
@@ -173,7 +187,7 @@ void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           static_cast<float>(z_buffer.get(x, y).bgra[0]) < z) {
-        TGAColor fragment_color = shader.ShadeFragment(barycentric);
+        TGAColor fragment_color = shader.ShadeFragment(*this, barycentric);
 
         z_buffer.set(x, y,
                      TGAColor(static_cast<int>(z), static_cast<int>(z),

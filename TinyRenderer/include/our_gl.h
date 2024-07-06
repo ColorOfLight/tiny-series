@@ -32,16 +32,38 @@
 #include "./tgaimage.h"
 
 namespace our_gl {
-
 typedef geometry::Vec<3, float> gl_Position;
 typedef TGAColor gl_Fragment;
 
+class OurGL;
+
 class IShader {
  public:
-  virtual gl_Position ShadeVertex(model::Vertex model_vertex,
+  virtual gl_Position ShadeVertex(const OurGL& gl, model::Vertex model_vertex,
                                   int vertex_index) = 0;
   virtual gl_Fragment ShadeFragment(
-      const geometry::Vec<3, float> barycentric) const = 0;
+      const OurGL& gl, const geometry::Vec<3, float> barycentric) const = 0;
+};
+
+class OurGL {
+ public:
+  geometry::Mat<4, 4, float> g_viewport_mat;
+
+  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  geometry::Mat<4, 4, float> u_light_vpm_mat;
+  geometry::Mat<4, 4, float> u_shadow_vpm_mat;
+  geometry::Vec<3, float> u_light_dir;
+  geometry::Vec<3, float> u_view_vector;
+  TGAImage u_texture;
+  TGAImage u_tangent_normal_map;
+  TGAImage* u_shadow_depth_map;
+
+  void DrawModel(const model::Model& model, IShader& shader, TGAImage& image,
+                 TGAImage& z_buffer);
+
+ private:
+  void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
+                    IShader& shader, TGAImage& image, TGAImage& z_buffer);
 };
 
 geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
@@ -66,6 +88,4 @@ geometry::Vec<3, float> ConvertColorToVec(const TGAColor& color);
 
 void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color);
 
-void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
-                  const IShader& shader, TGAImage& image, TGAImage& z_buffer);
 }  // namespace our_gl

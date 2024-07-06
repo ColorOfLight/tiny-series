@@ -53,31 +53,23 @@ const geometry::Mat<4, 4, float> viewport_mat =
 
 class Shader : public our_gl::IShader {
  public:
-  geometry::Mat<4, 4, float> g_viewport_mat;
-
-  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
-  geometry::Mat<4, 4, float> u_light_vpm_mat;
-  geometry::Vec<3, float> u_light_dir;
-  geometry::Vec<3, float> u_view_vector;
-  TGAImage u_texture;
-  TGAImage u_tangent_normal_map;
-  TGAImage* u_shadow_depth_map;
-
-  our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
+                                  model::Vertex model_vertex,
                                   int vertex_index) override {
     geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
         {model_vertex.position[0], model_vertex.position[1],
          model_vertex.position[2], 1});
 
-    geometry::Vec<4, float> new_position = u_vpm_mat * pos_4;
+    geometry::Vec<4, float> new_position = gl.u_vpm_mat * pos_4;
 
     varying_positions.SetColumn(vertex_index, geometry::GetNDC(pos_4));
     varying_texcoords.SetColumn(vertex_index, model_vertex.texture_coords);
     varying_normals.SetColumn(vertex_index, model_vertex.normal);
 
-    return geometry::GetNDC(g_viewport_mat * new_position);
+    return geometry::GetNDC(gl.g_viewport_mat * new_position);
   }
   our_gl::gl_Fragment ShadeFragment(
+      const our_gl::OurGL& gl,
       const geometry::Vec<3, float> barycentric) const override {
     geometry::Vec<3, float> position = varying_positions * barycentric;
     geometry::Vec<3, float> normal = varying_normals * barycentric;
@@ -108,8 +100,8 @@ class Shader : public our_gl::IShader {
               varying_texcoords[1][2] - varying_texcoords[1][0], 0}))
             .GetNormalized();
 
-    TGAColor tangent_normal_color =
-        our_gl::FindNearestTextureColor(texture_coords, u_tangent_normal_map);
+    TGAColor tangent_normal_color = our_gl::FindNearestTextureColor(
+        texture_coords, gl.u_tangent_normal_map);
     geometry::Vec<3, float> tangent_normal =
         our_gl::ConvertColorToVec(tangent_normal_color);
 
@@ -118,12 +110,12 @@ class Shader : public our_gl::IShader {
                                           normal * tangent_normal[2];
     real_normal.Normalize();
 
-    geometry::Vec<3, float> light_dir = u_light_dir;
+    geometry::Vec<3, float> light_dir = gl.u_light_dir;
 
     TGAColor texture_color =
-        our_gl::FindNearestTextureColor(texture_coords, u_texture);
+        our_gl::FindNearestTextureColor(texture_coords, gl.u_texture);
 
-    TGAColor phong_color = our_gl::GetPhongColor(real_normal, u_view_vector,
+    TGAColor phong_color = our_gl::GetPhongColor(real_normal, gl.u_view_vector,
                                                  light_dir, texture_color);
 
     // Get shadow
@@ -131,14 +123,14 @@ class Shader : public our_gl::IShader {
         geometry::Viewport(0.f, 0.f, 1.f, 1.f, 255.f);
 
     geometry::Vec<4, float> screen_coord_from_light =
-        (shadow_depth_viewport * u_light_vpm_mat *
+        (shadow_depth_viewport * gl.u_light_vpm_mat *
          geometry::Vec<4, float>({position[0], position[1], position[2], 1}));
 
     TGAColor shadow_depth = our_gl::FindNearestTextureColor(
         geometry::Vec<2, float>(
             {screen_coord_from_light[0] / screen_coord_from_light[3],
              screen_coord_from_light[1] / screen_coord_from_light[3]}),
-        *u_shadow_depth_map);
+        *gl.u_shadow_depth_map);
 
     if (screen_coord_from_light[2] + 0.01 * 255 < shadow_depth.bgra[0]) {
       return phong_color * 0.1;
@@ -155,22 +147,20 @@ class Shader : public our_gl::IShader {
 
 class DepthShader : public our_gl::IShader {
  public:
-  geometry::Mat<4, 4, float> g_viewport_mat;
-
-  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
-
-  our_gl::gl_Position ShadeVertex(model::Vertex model_vertex,
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
+                                  model::Vertex model_vertex,
                                   int vertex_index) override {
     geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
         {model_vertex.position[0], model_vertex.position[1],
          model_vertex.position[2], 1});
 
-    geometry::Vec<4, float> new_position = u_vpm_mat * pos_4;
+    geometry::Vec<4, float> new_position = gl.u_shadow_vpm_mat * pos_4;
 
-    return geometry::GetNDC(g_viewport_mat * new_position);
+    return geometry::GetNDC(gl.g_viewport_mat * new_position);
   }
 
   our_gl::gl_Fragment ShadeFragment(
+      const our_gl::OurGL& gl,
       const geometry::Vec<3, float> barycentric) const override {
     return TGAColor(255, 255, 255, 255);
   }
@@ -203,42 +193,22 @@ int main() {
   geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(2);
   geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
-  shader.g_viewport_mat = viewport_mat;
+  our_gl::OurGL gl;
 
-  shader.u_vpm_mat = perspective_mat * view_mat;
-  shader.u_light_vpm_mat = light_vpm;
-  shader.u_light_dir = light_dir;
-  shader.u_view_vector = eye - center;
-  shader.u_texture = texture;
-  shader.u_tangent_normal_map = tangent_normal_map;
-  shader.u_shadow_depth_map = &shadow_depth_buffer;
+  gl.g_viewport_mat = viewport_mat;
 
-  depth_shader.g_viewport_mat = viewport_mat;
+  gl.u_vpm_mat = perspective_mat * view_mat;
+  gl.u_light_vpm_mat = light_vpm;
+  gl.u_light_dir = light_dir;
+  gl.u_view_vector = eye - center;
+  gl.u_texture = texture;
+  gl.u_tangent_normal_map = tangent_normal_map;
+  gl.u_shadow_depth_map = &shadow_depth_buffer;
 
-  depth_shader.u_vpm_mat = light_vpm;
+  gl.u_shadow_vpm_mat = light_vpm;
 
-  for (int i = 0; i != model.size(); ++i) {
-    auto face = model.get(i);
-
-    std::array<our_gl::gl_Position, 3> gl_Positions;
-    for (int v_idx = 0; v_idx != 3; ++v_idx) {
-      gl_Positions[v_idx] = depth_shader.ShadeVertex(face[v_idx], v_idx);
-    }
-
-    our_gl::DrawTriangle(gl_Positions, depth_shader, null_image,
-                         shadow_depth_buffer);
-  }
-
-  for (int i = 0; i != model.size(); ++i) {
-    auto face = model.get(i);
-
-    std::array<our_gl::gl_Position, 3> gl_Positions;
-    for (int v_idx = 0; v_idx != 3; ++v_idx) {
-      gl_Positions[v_idx] = shader.ShadeVertex(face[v_idx], v_idx);
-    }
-
-    our_gl::DrawTriangle(gl_Positions, shader, image, z_buffer);
-  }
+  gl.DrawModel(model, depth_shader, null_image, shadow_depth_buffer);
+  gl.DrawModel(model, shader, image, z_buffer);
 
   image.write_tga_file("output.tga");
   z_buffer.write_tga_file("z_buffer.tga");
