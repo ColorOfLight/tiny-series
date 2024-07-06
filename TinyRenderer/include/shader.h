@@ -32,7 +32,7 @@ class MainShader : public our_gl::IShader {
                                   model::Vertex model_vertex,
                                   int vertex_index) override;
   our_gl::gl_Fragment ShadeFragment(
-      const our_gl::OurGL& gl,
+      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
       const geometry::Vec<3, float> barycentric) const override;
 
  private:
@@ -48,7 +48,7 @@ class DepthShader : public our_gl::IShader {
                                   int vertex_index) override;
 
   our_gl::gl_Fragment ShadeFragment(
-      const our_gl::OurGL& gl,
+      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
       const geometry::Vec<3, float> barycentric) const override {
     return TGAColor(255, 255, 255, 255);
   }

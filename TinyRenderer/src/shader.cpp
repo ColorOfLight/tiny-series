@@ -45,7 +45,8 @@ our_gl::gl_Position MainShader::ShadeVertex(const our_gl::OurGL& gl,
 }
 
 our_gl::gl_Fragment MainShader::ShadeFragment(
-    const our_gl::OurGL& gl, const geometry::Vec<3, float> barycentric) const {
+    const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
+    const geometry::Vec<3, float> barycentric) const {
   geometry::Vec<3, float> position = varying_positions * barycentric;
   geometry::Vec<3, float> normal = varying_normals * barycentric;
   normal.Normalize();

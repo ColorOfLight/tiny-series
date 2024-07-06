@@ -187,7 +187,16 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           static_cast<float>(z_buffer.get(x, y).bgra[0]) < z) {
-        TGAColor fragment_color = shader.ShadeFragment(*this, barycentric);
+        geometry::Vec<3, float> gl_FragCoord({
+            barycentric[0] * p0[0] + barycentric[1] * p1[0] +
+                barycentric[2] * p2[0],
+            barycentric[0] * p0[1] + barycentric[1] * p1[1] +
+                barycentric[2] * p2[1],
+            z,
+        });
+
+        TGAColor fragment_color =
+            shader.ShadeFragment(*this, gl_FragCoord, barycentric);
 
         z_buffer.set(x, y,
                      TGAColor(static_cast<int>(z), static_cast<int>(z),

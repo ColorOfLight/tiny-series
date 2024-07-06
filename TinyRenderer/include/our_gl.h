@@ -42,7 +42,8 @@ class IShader {
   virtual gl_Position ShadeVertex(const OurGL& gl, model::Vertex model_vertex,
                                   int vertex_index) = 0;
   virtual gl_Fragment ShadeFragment(
-      const OurGL& gl, const geometry::Vec<3, float> barycentric) const = 0;
+      const OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
+      const geometry::Vec<3, float> barycentric) const = 0;
 };
 
 class OurGL {
