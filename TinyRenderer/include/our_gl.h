@@ -58,6 +58,7 @@ class OurGL {
   TGAImage u_texture;
   TGAImage u_tangent_normal_map;
   TGAImage* u_shadow_depth_map;
+  TGAImage* u_ao_texture;
 
   void DrawModel(const model::Model& model, IShader& shader, TGAImage& image,
                  TGAImage& z_buffer);

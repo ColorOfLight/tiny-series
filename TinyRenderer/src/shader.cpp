@@ -126,3 +126,30 @@ our_gl::gl_Position DepthShader::ShadeVertex(const our_gl::OurGL& gl,
 
   return geometry::GetNDC(gl.g_viewport_mat * new_position);
 }
+
+our_gl::gl_Position AOShader::ShadeVertex(const our_gl::OurGL& gl,
+                                          model::Vertex model_vertex,
+                                          int vertex_index) {
+  geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
+      {model_vertex.position[0], model_vertex.position[1],
+       model_vertex.position[2], 1});
+
+  geometry::Vec<4, float> new_position = gl.u_shadow_vpm_mat * pos_4;
+
+  varying_texcoords.SetColumn(vertex_index, model_vertex.texture_coords);
+
+  return geometry::GetNDC(gl.g_viewport_mat * new_position);
+}
+
+our_gl::gl_Fragment AOShader::ShadeFragment(
+    const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
+    const geometry::Vec<3, float> barycentric) const {
+  geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
+
+  (*gl.u_ao_texture)
+      .set(texture_coords[0] * gl.u_ao_texture->width(),
+           texture_coords[1] * gl.u_ao_texture->height(),
+           TGAColor(255, 255, 255, 255));
+
+  return TGAColor(255, 255, 255, 255);
+}
