@@ -68,5 +68,6 @@ class AOShader : public our_gl::IShader {
       const geometry::Vec<3, float> barycentric) const override;
 
  private:
+  geometry::Mat<3, 3, float> varying_positions;
   geometry::Mat<2, 3, float> varying_texcoords;
 };

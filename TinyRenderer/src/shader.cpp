@@ -136,6 +136,7 @@ our_gl::gl_Position AOShader::ShadeVertex(const our_gl::OurGL& gl,
 
   geometry::Vec<4, float> new_position = gl.u_shadow_vpm_mat * pos_4;
 
+  varying_positions.SetColumn(vertex_index, geometry::GetNDC(pos_4));
   varying_texcoords.SetColumn(vertex_index, model_vertex.texture_coords);
 
   return geometry::GetNDC(gl.g_viewport_mat * new_position);
@@ -144,12 +145,28 @@ our_gl::gl_Position AOShader::ShadeVertex(const our_gl::OurGL& gl,
 our_gl::gl_Fragment AOShader::ShadeFragment(
     const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
     const geometry::Vec<3, float> barycentric) const {
-  geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
+  geometry::Vec<3, float> position = varying_positions * barycentric;
 
-  (*gl.u_ao_texture)
-      .set(texture_coords[0] * gl.u_ao_texture->width(),
-           texture_coords[1] * gl.u_ao_texture->height(),
-           TGAColor(255, 255, 255, 255));
+  geometry::Mat<4, 4, float> shadow_depth_viewport =
+      geometry::Viewport(0.f, 0.f, 1.f, 1.f, 255.f);
+
+    TGAColor shadow_depth = our_gl::FindNearestTextureColor(
+      geometry::Vec<2, float>(
+          {gl_FragCoord[0] / gl.g_width, gl_FragCoord[1] / gl.g_height}),
+      *gl.u_shadow_depth_map);
+
+  if (gl_FragCoord[2] + 0.01 * 255 < shadow_depth.bgra[0]) {
+    geometry::Vec<2, float> texture_coords = varying_texcoords * barycentric;
+
+    int ao_map_x =
+        std::min(static_cast<int>(texture_coords[0] * gl.u_ao_map_width),
+                 gl.u_ao_map_width - 1);
+    int ao_map_y =
+        std::min(static_cast<int>(texture_coords[1] * gl.u_ao_map_height),
+                 gl.u_ao_map_height - 1);
+
+    gl.u_ao_map->at(ao_map_y)[ao_map_x] = true;
+  }
 
   return TGAColor(255, 255, 255, 255);
 }

@@ -49,6 +49,8 @@ class IShader {
 class OurGL {
  public:
   geometry::Mat<4, 4, float> g_viewport_mat;
+  int g_width;
+  int g_height;
 
   geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
   geometry::Mat<4, 4, float> u_light_vpm_mat;
@@ -58,7 +60,10 @@ class OurGL {
   TGAImage u_texture;
   TGAImage u_tangent_normal_map;
   TGAImage* u_shadow_depth_map;
-  TGAImage* u_ao_texture;
+
+  std::vector<std::vector<bool>>* u_ao_map;
+  int u_ao_map_width;
+  int u_ao_map_height;
 
   void DrawModel(const model::Model& model, IShader& shader, TGAImage& image,
                  TGAImage& z_buffer);

@@ -22,9 +22,12 @@
  * SOFTWARE.
  */
 
+#include <cmath>
 #include <filesystem>
 #include <iostream>
+#include <random>
 #include <string>
+#include <vector>
 
 #include "./geometry/mat.h"
 #include "./geometry/utils.h"
@@ -52,11 +55,120 @@ const geometry::Mat<4, 4, float> perspective_mat = geometry::Perspective(3);
 const geometry::Mat<4, 4, float> viewport_mat =
     geometry::Viewport(0, 0, width, height, 1);
 
+const int ao_phi_step = 10;
+const int ao_theta_step = 10;
+
+std::vector<geometry::Vec<3, float>> GeneratePointsOnSphere(float radius,
+                                                            int phi_step,
+                                                            int theta_step) {
+  if (radius < 0) {
+    throw std::runtime_error("Radius must be positive");
+  }
+
+  if (phi_step < 2) {
+    throw std::runtime_error("Phi step must be more than 1");
+  }
+
+  if (theta_step < 2) {
+    throw std::runtime_error("Theta step must be more than 1");
+  }
+
+  std::vector<geometry::Vec<3, float>> points;
+  points.resize((phi_step - 1) * theta_step + 2);
+
+  int points_idx = 0;
+  for (int phi_idx = 0; phi_idx != phi_step + 1; ++phi_idx) {
+    if (phi_idx == 0) {
+      points[points_idx++] = geometry::Vec<3, float>({0, 0, radius});
+    } else if (phi_idx == phi_step) {
+      points[points_idx++] = geometry::Vec<3, float>({0, 0, -radius});
+    } else {
+      for (int theta_idx = 0; theta_idx != theta_step; ++theta_idx) {
+        float phi = M_PI * phi_idx / phi_step;
+        float theta = 2 * M_PI * theta_idx / theta_step;
+
+        float x = radius * sin(phi) * cos(theta);
+        float y = radius * sin(phi) * sin(theta);
+        float z = radius * cos(phi);
+
+        points[points_idx++] = geometry::Vec<3, float>({x, y, z});
+      }
+    }
+  }
+
+  return points;
+}
+
+TGAImage GenerateAOMap(const model::Model& model, our_gl::OurGL& gl,
+                       DepthShader& depth_shader, AOShader& ao_shader,
+                       TGAImage& null_image, TGAImage& z_buffer,
+                       TGAImage& shadow_depth_buffer) {
+  std::vector<std::vector<int>> final_ao_map;
+  final_ao_map.resize(height * width);
+  for (int i = 0; i != height; ++i) {
+    final_ao_map[i].resize(width);
+  }
+
+  auto ao_points = GeneratePointsOnSphere(2, ao_phi_step, ao_theta_step);
+
+  for (int i = 0; i != ao_points.size(); ++i) {
+    // get random eye
+    geometry::Vec<3, float> random_eye = ao_points[i] * (-1);
+
+    gl.u_shadow_vpm_mat =
+        geometry::Perspective(3) * geometry::ViewMatrix(random_eye, center, up);
+
+    gl.DrawModel(model, depth_shader, null_image, shadow_depth_buffer);
+    gl.DrawModel(model, ao_shader, null_image, z_buffer);
+
+    for (int y = 0; y != height; ++y) {
+      for (int x = 0; x != width; ++x) {
+        if (gl.u_ao_map->at(y)[x]) {
+          final_ao_map[y][x] += 1;
+        }
+      }
+    }
+
+    for (int y = 0; y != height; ++y) {
+      for (int x = 0; x != width; ++x) {
+        gl.u_ao_map->at(y)[x] = false;
+      }
+    }
+
+    if (i == ao_points.size() - 1) {
+      z_buffer.write_tga_file("z_buffer.tga");
+      shadow_depth_buffer.write_tga_file("shadow_depth_buffer.tga");
+    }
+
+    for (int y = 0; y != height; ++y) {
+      for (int x = 0; x != width; ++x) {
+        z_buffer.set(x, y, TGAColor(0, 0, 0, 255, 1));
+      }
+    }
+
+    std::cout << i << std::endl;
+  }
+
+  TGAImage final_ao_image(width, height, TGAImage::GRAYSCALE);
+
+  for (int y = 0; y != height; ++y) {
+    for (int x = 0; x != width; ++x) {
+      int8_t color_value =
+          static_cast<int8_t>(final_ao_map[y][x] * 255 / ao_points.size());
+      final_ao_image.set(x, y,
+                         TGAColor(color_value, color_value, color_value, 255));
+    }
+  }
+
+  return final_ao_image;
+}
+
 int main() {
   model::Model model("./assets/african_head.obj");
 
   TGAImage texture;
-  texture.read_tga_file("./assets/african_head_diffuse.tga");
+  // texture.read_tga_file("./assets/african_head_diffuse.tga");
+  texture.read_tga_file("./final_ao.tga");
   texture.flip_vertically();
 
   TGAImage tangent_normal_map;
@@ -68,8 +180,16 @@ int main() {
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
   TGAImage shadow_depth_buffer(width, height, TGAImage::GRAYSCALE);
 
+  std::vector<std::vector<bool>> ao_map{false};
+
+  ao_map.resize(height);
+  for (int i = 0; i != height; ++i) {
+    ao_map[i].resize(width);
+  }
+
   MainShader shader;
   DepthShader depth_shader;
+  AOShader ao_shader;
 
   geometry::Mat<4, 4, float> light_view_matrix =
       geometry::ViewMatrix(light_position - light_dir, light_position, up);
@@ -79,6 +199,8 @@ int main() {
   our_gl::OurGL gl;
 
   gl.g_viewport_mat = viewport_mat;
+  gl.g_width = width;
+  gl.g_height = height;
 
   gl.u_vpm_mat = perspective_mat * view_mat;
   gl.u_light_vpm_mat = light_vpm;
@@ -90,12 +212,22 @@ int main() {
 
   gl.u_shadow_vpm_mat = light_vpm;
 
-  gl.DrawModel(model, depth_shader, null_image, shadow_depth_buffer);
+  gl.u_ao_map = &ao_map;
+  gl.u_ao_map_width = width;
+  gl.u_ao_map_height = height;
+
+  // TGAImage final_ao_image =
+  //     GenerateAOMap(model, gl, depth_shader, ao_shader, null_image, z_buffer,
+  //                   shadow_depth_buffer);
+
+  // final_ao_image.write_tga_file("final_ao.tga");
+
+  // gl.DrawModel(model, depth_shader, null_image, shadow_depth_buffer);
   gl.DrawModel(model, shader, image, z_buffer);
 
   image.write_tga_file("output.tga");
-  z_buffer.write_tga_file("z_buffer.tga");
-  shadow_depth_buffer.write_tga_file("shadow_depth_buffer.tga");
+  // z_buffer.write_tga_file("z_buffer.tga");
+  // shadow_depth_buffer.write_tga_file("shadow_depth_buffer.tga");
 
   return 0;
 }

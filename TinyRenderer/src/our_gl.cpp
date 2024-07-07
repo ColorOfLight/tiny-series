@@ -188,11 +188,16 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
                    barycentric[2] * p2[2];
           // TODO(Seongho Park): Make 255.f as a constant
           static_cast<float>(z_buffer.get(x, y).bgra[0]) / 255.f < z) {
+        float bar_x = std::max(barycentric[0] * p0[0] + barycentric[1] * p1[0] +
+                                   barycentric[2] * p2[0],
+                               0.f);
+        float bar_y = std::max(barycentric[0] * p0[1] + barycentric[1] * p1[1] +
+                                   barycentric[2] * p2[1],
+                               0.f);
+
         geometry::Vec<3, float> gl_FragCoord({
-            barycentric[0] * p0[0] + barycentric[1] * p1[0] +
-                barycentric[2] * p2[0],
-            barycentric[0] * p0[1] + barycentric[1] * p1[1] +
-                barycentric[2] * p2[1],
+            bar_x,
+            bar_y,
             z,
         });
 
