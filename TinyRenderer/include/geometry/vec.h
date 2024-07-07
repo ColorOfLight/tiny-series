@@ -80,7 +80,7 @@ class Vec {
   }
   inline Vec<n, t> &operator/=(t f) {
     if (f == 0) {
-      throw std::runtime_error("Division by zero");
+      throw std::runtime_error("Vec /=: Division by zero");
     }
 
     for (int i = 0; i < n; i++) {
@@ -144,7 +144,7 @@ class Vec {
   Vec<n, t> &Normalize() {
     float len = length();
     if (len == 0) {
-      throw std::runtime_error("Division by zero");
+      throw std::runtime_error("Normalize: length cannot be zero!");
     }
 
     for (int i = 0; i < n; i++) {

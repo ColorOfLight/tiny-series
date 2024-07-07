@@ -147,7 +147,7 @@ struct Vec4 {
 
   Vec3<t> ToNDC() const {
     if (w == 0) {
-      throw std::runtime_error("Division by zero");
+      throw std::runtime_error("ToNDC: Division by zero");
     }
     return Vec3<t>(x / w, y / w, z / w);
   }
@@ -291,7 +291,7 @@ inline Mat4x4f Identity() {
 
 inline Mat4x4f Perspective(float distance) {
   if (distance == 0) {
-    throw std::runtime_error("Division by zero");
+    throw std::runtime_error("Perspective: Division by zero");
   }
 
   Mat4x4f result;

@@ -31,7 +31,7 @@ namespace geometry {
 
 inline Vec<3, float> GetNDC(const Vec<4, float>& vec) {
   if (vec[3] == 0) {
-    throw std::runtime_error("Division by zero");
+    throw std::runtime_error("GetNDC: Division by zero");
   }
 
   return Vec<3, float>({vec[0] / vec[3], vec[1] / vec[3], vec[2] / vec[3]});
