@@ -71,3 +71,19 @@ class AOShader : public our_gl::IShader {
   geometry::Mat<3, 3, float> varying_positions;
   geometry::Mat<2, 3, float> varying_texcoords;
 };
+
+class ZShader : public our_gl::IShader {
+ public:
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
+                                  model::Vertex model_vertex,
+                                  int vertex_index) override;
+
+  inline our_gl::gl_Fragment ShadeFragment(
+      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
+      const geometry::Vec<3, float> barycentric) const override {
+    return TGAColor(0, 0, 0, 0);
+  }
+
+ private:
+  geometry::Mat<3, 3, float> varying_positions;
+};

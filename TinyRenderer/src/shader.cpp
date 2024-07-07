@@ -150,7 +150,7 @@ our_gl::gl_Fragment AOShader::ShadeFragment(
   geometry::Mat<4, 4, float> shadow_depth_viewport =
       geometry::Viewport(0.f, 0.f, 1.f, 1.f, 255.f);
 
-    TGAColor shadow_depth = our_gl::FindNearestTextureColor(
+  TGAColor shadow_depth = our_gl::FindNearestTextureColor(
       geometry::Vec<2, float>(
           {gl_FragCoord[0] / gl.g_width, gl_FragCoord[1] / gl.g_height}),
       *gl.u_shadow_depth_map);
@@ -169,4 +169,16 @@ our_gl::gl_Fragment AOShader::ShadeFragment(
   }
 
   return TGAColor(255, 255, 255, 255);
+}
+
+our_gl::gl_Position ZShader::ShadeVertex(const our_gl::OurGL& gl,
+                                         model::Vertex model_vertex,
+                                         int vertex_index) {
+  geometry::Vec<4, float> pos_4 = geometry::Vec<4, float>(
+      {model_vertex.position[0], model_vertex.position[1],
+       model_vertex.position[2], 1});
+
+  geometry::Vec<4, float> new_position = gl.u_vpm_mat * pos_4;
+
+  return geometry::GetNDC(gl.g_viewport_mat * new_position);
 }
