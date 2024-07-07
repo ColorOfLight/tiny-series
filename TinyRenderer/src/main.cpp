@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <iostream>
@@ -57,6 +58,13 @@ const geometry::Mat<4, 4, float> viewport_mat =
 
 const int ao_phi_step = 10;
 const int ao_theta_step = 10;
+
+float smoothstep(float edge0, float edge1, float x) {
+  // Clamp x to the [0, 1] range
+  x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+  // Evaluate the smoothstep function
+  return x * x * (3 - 2 * x);
+}
 
 std::vector<geometry::Vec<3, float>> GeneratePointsOnSphere(float radius,
                                                             int phi_step,
@@ -164,21 +172,23 @@ TGAImage GenerateAOMap(const model::Model& model, our_gl::OurGL& gl,
 }
 
 int main() {
-  model::Model model("./assets/african_head.obj");
+  model::Model model("./assets/diablo3_pose.obj");
 
   TGAImage texture;
-  // texture.read_tga_file("./assets/african_head_diffuse.tga");
+  // texture.read_tga_file("./assets/diablo3_pose_diffuse.tga");
   texture.read_tga_file("./final_ao.tga");
   texture.flip_vertically();
 
   TGAImage tangent_normal_map;
-  tangent_normal_map.read_tga_file("./assets/african_head_nm_tangent.tga");
+  tangent_normal_map.read_tga_file("./assets/diablo3_pose_nm_tangent.tga");
   tangent_normal_map.flip_vertically();
 
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage null_image(width, height, TGAImage::RGB);
   TGAImage z_buffer(width, height, TGAImage::GRAYSCALE);
   TGAImage shadow_depth_buffer(width, height, TGAImage::GRAYSCALE);
+
+  TGAImage ssao_frame_buffer(width, height, TGAImage::GRAYSCALE);
 
   std::vector<std::vector<bool>> ao_map{false};
 
@@ -190,6 +200,7 @@ int main() {
   MainShader shader;
   DepthShader depth_shader;
   AOShader ao_shader;
+  ZShader z_shader;
 
   geometry::Mat<4, 4, float> light_view_matrix =
       geometry::ViewMatrix(light_position - light_dir, light_position, up);
@@ -223,11 +234,47 @@ int main() {
   // final_ao_image.write_tga_file("final_ao.tga");
 
   // gl.DrawModel(model, depth_shader, null_image, shadow_depth_buffer);
-  gl.DrawModel(model, shader, image, z_buffer);
+  gl.DrawModel(model, z_shader, null_image, z_buffer);
 
-  image.write_tga_file("output.tga");
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      int z_value = static_cast<int>(z_buffer.get(x, y)[0]);
+
+      if (z_value <= 0) continue;
+
+      float total = 0;
+
+      for (int dx = -1; dx <= 1; dx++) {
+        if (x + dx < 0 || x + dx >= width) continue;
+
+        for (int dy = -1; dy <= 1; dy++) {
+          if (y + dy < 0 || y + dy >= height) continue;
+          if (dx == 0 && dy == 0) continue;
+
+          float distance = sqrt(dx * dx + dy * dy);
+          int delta_z = z_buffer.get(x + dx, y + dy)[0] - z_value;
+
+          float exposed_angle = std::max(
+              0.f, atan2f(static_cast<float>(delta_z) / 255.f, distance));
+
+          total += geometry::kPi / 2 - exposed_angle;
+        }
+      }
+
+      total /= (geometry::kPi / 2) * 8;
+      total = pow(total, 100);
+      total = smoothstep(0.05, 0.95, total);
+
+      int color_value = static_cast<int>(total * 255);
+      ssao_frame_buffer.set(
+          x, y, TGAColor(color_value, color_value, color_value, 255));
+    }
+  }
+
+  // image.write_tga_file("output.tga");
   // z_buffer.write_tga_file("z_buffer.tga");
   // shadow_depth_buffer.write_tga_file("shadow_depth_buffer.tga");
+  ssao_frame_buffer.write_tga_file("ssao.tga");
 
   return 0;
 }
