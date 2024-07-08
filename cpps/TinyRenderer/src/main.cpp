@@ -175,8 +175,8 @@ int main() {
   model::Model model("./assets/diablo3_pose.obj");
 
   TGAImage texture;
-  // texture.read_tga_file("./assets/diablo3_pose_diffuse.tga");
-  texture.read_tga_file("./final_ao.tga");
+  texture.read_tga_file("./assets/diablo3_pose_diffuse.tga");
+  // texture.read_tga_file("./final_ao.tga");
   texture.flip_vertically();
 
   TGAImage tangent_normal_map;
