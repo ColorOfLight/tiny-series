@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
-import reactLogo from "./assets/react.svg";
+import reactLogo from "../assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
-import useEmscriptenModule from "./hooks/useEmscriptenModule";
+import useEmscriptenModule from "../hooks/useEmscriptenModule";
 
-import Module from "./wasm/test_exe";
-import wasmBinary from "./wasm/test_exe_wasm.wasm?url";
+import Module from "../wasm/test_exe";
+import wasmBinary from "../wasm/test_exe_wasm.wasm?url";
 
 function App() {
   const [dice, setDice] = useState(0);
