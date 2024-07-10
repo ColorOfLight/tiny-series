@@ -6,3 +6,6 @@
 
 # Windows thumbnail cache files
 Thumbs.db
+
+# Test for PoC
+test
