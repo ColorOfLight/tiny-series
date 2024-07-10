@@ -124,3 +124,6 @@ assets/
 
 # Result TGA files
 *.tga
+
+# emsdk
+emsdk/
