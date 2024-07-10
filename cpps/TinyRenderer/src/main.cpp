@@ -172,15 +172,15 @@ TGAImage GenerateAOMap(const model::Model& model, our_gl::OurGL& gl,
 }
 
 int main() {
-  model::Model model("./assets/diablo3_pose.obj");
+  model::Model model("../assets/diablo3_pose.obj");
 
   TGAImage texture;
-  texture.read_tga_file("./assets/diablo3_pose_diffuse.tga");
+  texture.read_tga_file("../assets/diablo3_pose_diffuse.tga");
   // texture.read_tga_file("./final_ao.tga");
   texture.flip_vertically();
 
   TGAImage tangent_normal_map;
-  tangent_normal_map.read_tga_file("./assets/diablo3_pose_nm_tangent.tga");
+  tangent_normal_map.read_tga_file("../assets/diablo3_pose_nm_tangent.tga");
   tangent_normal_map.flip_vertically();
 
   TGAImage image(width, height, TGAImage::RGB);
