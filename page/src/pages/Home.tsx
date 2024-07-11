@@ -1,49 +1,25 @@
-import { useState, useCallback } from "react";
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import TitleGroup from "../components/TitleGroup";
+import SelectRenderType from "../components/SelectRenderType";
+import FieldSetRenderOptions from "../components/FieldSetRenderOptions";
 
-import useEmscriptenModule from "../hooks/useEmscriptenModule";
-
-import Module from "../wasm/test_exe";
-import wasmBinary from "../wasm/test_exe_wasm.wasm?url";
+import useResizeCanvas from "../hooks/useResizeCanvas";
 
 function App() {
-  const [dice, setDice] = useState(0);
-  const { isLoaded, moduleFunctions } = useEmscriptenModule(Module, wasmBinary);
-
-  const rollDice = useCallback(() => {
-    if (isLoaded && moduleFunctions) {
-      const results = moduleFunctions.simulate_dice_trials(1);
-      const keys = results.keys();
-
-      setDice(keys.get(0));
-    } else {
-      throw new Error("Wasm Module not loaded");
-    }
-  }, [isLoaded, moduleFunctions]);
+  const { canvasRef } = useResizeCanvas();
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <main className="p-8 flex flex-col items-center">
+      <div className="max-w-2xl w-full shrink-0">
+        <TitleGroup />
+        <div className="mt-6 flex gap-8 flex-col">
+          <div className="flex flex-col">
+            <SelectRenderType />
+            <canvas className="w-full border bg-slate-200" ref={canvasRef} />
+          </div>
+          <FieldSetRenderOptions />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={rollDice}>Roll dice! : {dice}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </main>
   );
 }
 
