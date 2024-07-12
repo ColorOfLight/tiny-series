@@ -30,7 +30,6 @@
 #include "./geometry/vec.h"
 #include "./image.h"
 #include "./model.h"
-#include "./tgaimage.h"
 
 namespace our_gl {
 typedef geometry::Vec<3, float> gl_Position;

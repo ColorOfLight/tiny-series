@@ -26,7 +26,6 @@
 
 #include "./geometry/utils.h"
 #include "./geometry/vec.h"
-#include "./tgaimage.h"
 
 our_gl::gl_Position MainShader::ShadeVertex(const our_gl::OurGL& gl,
                                             model::Vertex model_vertex,
