@@ -34,7 +34,8 @@
 namespace our_gl {
 
 void OurGL::DrawModel(const model::Model& model, IShader& shader,
-                      TGAImage& image, TGAImage& z_buffer) {
+                      Image<RgbaColor>& image,
+                      Image<GrayscaleColor>& z_buffer) {
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
 
@@ -96,59 +97,29 @@ bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
   return false;
 }
 
-TGAColor FindNearestTextureColor(const geometry::Vec<2, float>& st,
-                                 const TGAImage& texture) {
-  if (st[0] < 0 || st[0] > 1 || st[1] < 0 || st[1] > 1) {
-    throw std::out_of_range("st should be in range [0, 1]");
-  }
-
-  int width = texture.width();
-  int height = texture.height();
-
-  int x = std::min(static_cast<int>(st[0] * width), width - 1);
-  int y = std::min(static_cast<int>(st[1] * height), height - 1);
-
-  return texture.get(x, y);
-}
-
-TGAColor GetPhongColor(const geometry::Vec<3, float>& normal,
-                       const geometry::Vec<3, float>& view_vector,
-                       const geometry::Vec<3, float>& light_dir,
-                       const TGAColor& texture_color, float diffuse,
-                       float specular, float alpha) {
+RgbaColor GetPhongColor(const geometry::Vec<3, float>& normal,
+                        const geometry::Vec<3, float>& view_vector,
+                        const geometry::Vec<3, float>& light_dir,
+                        const RgbaColor& texture_color, float diffuse,
+                        float specular, float alpha) {
   geometry::Vec<3, float> light_vec =
       geometry::Vec<3, float>(light_dir).Normalize() * (-1);
   geometry::Vec<3, float> reflection = geometry::Reflect(light_vec, normal);
   geometry::Vec<3, float> normalized_view =
       geometry::Vec<3, float>(view_vector).Normalize();
 
-  TGAColor diffuse_color =
+  RgbaColor diffuse_color =
       texture_color * (diffuse * std::max(0.f, normal * light_vec));
-  TGAColor specular_color =
-      TGAColor(255, 255, 255, 255) *
+  RgbaColor specular_color =
+      RgbaColor(255, 255, 255, 255) *
       (specular * pow(std::max(0.f, reflection * normalized_view), alpha));
 
   return diffuse_color + specular_color;
 }
 
-void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor color) {
-  int x_diff = abs(x1 - x0);
-  int y_diff = abs(y1 - y0);
-
-  int larger_diff = std::max(x_diff, y_diff);
-
-  for (int i = 0; i <= larger_diff; ++i) {
-    float t = larger_diff == 0
-                  ? 0.0f
-                  : static_cast<float>(i) / static_cast<float>(larger_diff);
-    int x = x0 + (x1 - x0) * t;
-    int y = y0 + (y1 - y0) * t;
-    image.set(x, y, color);
-  }
-}
-
 void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
-                         IShader& shader, TGAImage& image, TGAImage& z_buffer) {
+                         IShader& shader, Image<RgbaColor>& image,
+                         Image<GrayscaleColor>& z_buffer) {
   const geometry::Vec<3, float>& p0 = gl_Positions[0];
   const geometry::Vec<3, float>& p1 = gl_Positions[1];
   const geometry::Vec<3, float>& p2 = gl_Positions[2];
@@ -159,8 +130,8 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
   int min_y = std::min(p0[1], std::min(p1[1], p2[1])) - 1;
   int max_y = std::max(p0[1], std::max(p1[1], p2[1])) + 1;
 
-  const int z_buffer_width = z_buffer.width();
-  const int z_buffer_height = z_buffer.height();
+  const int z_buffer_width = z_buffer.GetWidth();
+  const int z_buffer_height = z_buffer.GetHeight();
 
   // To handle the case where the coord is same with width or height
   min_x = std::clamp(min_x, 0, z_buffer_width - 1);
@@ -187,7 +158,8 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           // TODO(Seongho Park): Make 255.f as a constant
-          static_cast<float>(z_buffer.get(x, y).bgra[0]) / 255.f < z) {
+          static_cast<float>(z_buffer.at(x, y).value) / 255.f < z) {
+      std:;
         float bar_x = std::max(barycentric[0] * p0[0] + barycentric[1] * p1[0] +
                                    barycentric[2] * p2[0],
                                0.f);
@@ -201,24 +173,20 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
             z,
         });
 
-        TGAColor fragment_color =
+        RgbaColor fragment_color =
             shader.ShadeFragment(*this, gl_FragCoord, barycentric);
 
-        z_buffer.set(
-            x, y,
-            TGAColor(static_cast<int>(z * 255.f), static_cast<int>(z * 255.f),
-                     static_cast<int>(z * 255.f), 255, TGAImage::GRAYSCALE));
+        z_buffer.set(x, y, GrayscaleColor(static_cast<uint8_t>(z * 255.f)));
         image.set(x, y, fragment_color);
       }
     }
   }
 }
 
-geometry::Vec<3, float> ConvertColorToVec(const TGAColor& color) {
-  return geometry::Vec<3, float>(
-      {static_cast<float>(color.bgra[2]) / 255.f - .5f,
-       static_cast<float>(color.bgra[1]) / 255.f - .5f,
-       static_cast<float>(color.bgra[0]) / 255.f - .5f});
+geometry::Vec<3, float> ConvertColorToVec(const RgbaColor& color) {
+  return geometry::Vec<3, float>({static_cast<float>(color.r) / 255.f - .5f,
+                                  static_cast<float>(color.g) / 255.f - .5f,
+                                  static_cast<float>(color.b) / 255.f - .5f});
 }
 
 }  // namespace our_gl

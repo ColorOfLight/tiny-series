@@ -128,4 +128,11 @@ inline Mat<3, 3, float> Inverse(const Mat<3, 3, float> mat) {
   return result;
 }
 
+inline float smoothstep(float edge0, float edge1, float x) {
+  // Clamp x to the [0, 1] range
+  x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+  // Evaluate the smoothstep function
+  return x * x * (3 - 2 * x);
+}
+
 }  // namespace geometry
