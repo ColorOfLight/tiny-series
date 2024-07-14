@@ -158,8 +158,7 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
       if (auto z = barycentric[0] * p0[2] + barycentric[1] * p1[2] +
                    barycentric[2] * p2[2];
           // TODO(Seongho Park): Make 255.f as a constant
-          static_cast<float>(z_buffer.at(x, y).value) / 255.f < z) {
-      std:;
+          static_cast<float>(z_buffer.at(x, y).value) / 255.f < z && z <= 1) {
         float bar_x = std::max(barycentric[0] * p0[0] + barycentric[1] * p1[0] +
                                    barycentric[2] * p2[0],
                                0.f);
