@@ -57,15 +57,18 @@ inline Mat<4, 4, float> ViewMatrix(const Vec<3, float>& eye,
   Vec<3, float> z = (eye - center).Normalize();
   Vec<3, float> x = (up ^ z).Normalize();
   Vec<3, float> y = (z ^ x).Normalize();
-  Mat<4, 4, float> Minv = GetIdentityMat<4, float>();
-  Mat<4, 4, float> Tr = GetIdentityMat<4, float>();
+  Mat<4, 4, float> matrix = GetIdentityMat<4, float>();
   for (int i = 0; i < 3; i++) {
-    Minv[0][i] = x[i];
-    Minv[1][i] = y[i];
-    Minv[2][i] = z[i];
-    Tr[i][3] = -center[i];
+    matrix[0][i] = x[i];
+    matrix[1][i] = y[i];
+    matrix[2][i] = z[i];
   }
-  return Minv * Tr;
+
+  matrix[0][3] = -(x * (eye - center));
+  matrix[1][3] = -(y * (eye - center));
+  matrix[2][3] = -(z * (eye - center));
+
+  return matrix;
 }
 
 inline Mat<4, 4, float> Perspective(float distance) {
@@ -74,6 +77,7 @@ inline Mat<4, 4, float> Perspective(float distance) {
   }
 
   Mat<4, 4, float> perspective = GetIdentityMat<4, float>();
+  perspective[2][2] = 1.0f / distance;
   perspective[3][2] = -1.0f / distance;
   return perspective;
 }
