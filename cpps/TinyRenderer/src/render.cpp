@@ -47,7 +47,7 @@ RenderModelResult RenderModel(const model::Model& model,
   MainShader shader;
   DepthShader depth_shader;
 
-  geometry::Vec<3, float> light_position{0, 0, 0};
+  geometry::Vec<3, float> light_center{0, 0, 0};
   geometry::Vec<3, float> up{0, 1, 0};
   geometry::Vec<3, float> center{0, 0, 0};
 
@@ -57,8 +57,8 @@ RenderModelResult RenderModel(const model::Model& model,
   const geometry::Mat<4, 4, float> view_matrix =
       geometry::ViewMatrix(camera_position, center, up);
 
-  geometry::Mat<4, 4, float> light_view_matrix = geometry::ViewMatrix(
-      light_position - light_direction, light_position, up);
+  geometry::Mat<4, 4, float> light_view_matrix =
+      geometry::ViewMatrix(light_center - light_direction, light_center, up);
   geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(2);
   geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
