@@ -19,7 +19,7 @@ const TitleGroup = memo(
             href="https://github.com/ColorOfLight/tiny-series/"
             target="_blank"
           >
-            <img src="/logo-github.svg" width="32" height="32" />
+            <img src="/logos/github.svg" width="32" height="32" />
           </a>
         </div>
       );
