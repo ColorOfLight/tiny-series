@@ -154,7 +154,13 @@ Image<RgbaColor> ReadTga(const std::string& file_path) {
     throw std::runtime_error("Unsupported TGA format");
   }
 
-  return Image<RgbaColor>(width, height, data);
+  Image<RgbaColor> image = Image<RgbaColor>(width, height, data);
+
+  if (header.image_descriptor & 0x20) {
+    image.FlipY();
+  }
+
+  return image;
 }
 
 void WriteTga(const std::string& file_path, const Image<RgbaColor>& image) {
