@@ -95,6 +95,15 @@ class Image {
       data_[i] = Color();
     }
   }
+  void FlipY() {
+    std::vector<Color> temp(width_ * height_);
+    for (int y = 0; y < height_; y++) {
+      for (int x = 0; x < width_; x++) {
+        temp[(height_ - 1 - y) * width_ + x] = data_[y * width_ + x];
+      }
+    }
+    data_ = temp;
+  }
 
   Color at(int x, int y) const {
     if (x < 0 || x >= width_) {
