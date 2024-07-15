@@ -59,7 +59,7 @@ RenderModelResult RenderModel(const model::Model& model,
 
   geometry::Mat<4, 4, float> light_view_matrix =
       geometry::ViewMatrix(light_center - light_direction, light_center, up);
-  geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(2);
+  geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(4);
   geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
   our_gl::OurGL gl;

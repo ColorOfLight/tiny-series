@@ -107,7 +107,7 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
            screen_coord_from_light[1] / screen_coord_from_light[3]}),
       *gl.u_shadow_depth_map);
 
-  if (screen_coord_from_light[2] + 0.01 * 255 <
+  if (screen_coord_from_light[2] + 0.05 * 255 <
       static_cast<float>(shadow_depth.value)) {
     return phong_color * 0.1;
   }
