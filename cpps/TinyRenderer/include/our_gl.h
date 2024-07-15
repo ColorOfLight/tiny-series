@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <vector>
 
 #include "./geometry/mat.h"
@@ -90,15 +91,21 @@ RgbaColor GetPhongColor(const geometry::Vec<3, float>& normal,
 template <class Color>
 Color FindNearestTextureColor(const geometry::Vec<2, float>& st,
                               const Image<Color>& texture) {
-  if (st[0] < 0 || st[0] > 1 || st[1] < 0 || st[1] > 1) {
-    throw std::out_of_range("st should be in range [0, 1]");
+  float normalized_s = std::fmod(st[0], 1.f);
+  if (normalized_s < 0) {
+    normalized_s += 1;
+  }
+
+  float normalized_t = std::fmod(st[1], 1.f);
+  if (normalized_t < 0) {
+    normalized_t += 1;
   }
 
   int width = texture.GetWidth();
   int height = texture.GetHeight();
 
-  int x = std::min(static_cast<int>(st[0] * width), width - 1);
-  int y = std::min(static_cast<int>(st[1] * height), height - 1);
+  int x = std::min(static_cast<int>(normalized_s * width), width - 1);
+  int y = std::min(static_cast<int>(normalized_t * height), height - 1);
 
   return texture.at(x, y);
 }
