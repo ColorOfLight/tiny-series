@@ -227,6 +227,90 @@ void WriteTga(const std::string& file_path,
   }
 }
 
+Image<RgbaColor> ReadPng(const std::string& file_path) {
+  FILE* file = fopen(file_path.c_str(), "rb");
+  if (!file) {
+    throw std::runtime_error("Failed to open file: " + file_path);
+  }
+
+  png_structp png =
+      png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+  if (!png) {
+    fclose(file);
+    throw std::runtime_error("Failed to create PNG read struct");
+  }
+
+  png_infop info = png_create_info_struct(png);
+  if (!info) {
+    png_destroy_read_struct(&png, nullptr, nullptr);
+    fclose(file);
+    throw std::runtime_error("Failed to create PNG info struct");
+  }
+
+  if (setjmp(png_jmpbuf(png))) {
+    png_destroy_read_struct(&png, &info, nullptr);
+    fclose(file);
+    throw std::runtime_error("Error during PNG read");
+  }
+
+  png_init_io(png, file);
+  png_read_info(png, info);
+
+  png_uint_32 width = png_get_image_width(png, info);
+  png_uint_32 height = png_get_image_height(png, info);
+  png_byte color_type = png_get_color_type(png, info);
+  png_byte bit_depth = png_get_bit_depth(png, info);
+
+  if (bit_depth == 16) {
+    png_set_strip_16(png);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_PALETTE) {
+    png_set_palette_to_rgb(png);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
+    png_set_expand_gray_1_2_4_to_8(png);
+  }
+
+  if (png_get_valid(png, info, PNG_INFO_tRNS)) {
+    png_set_tRNS_to_alpha(png);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_PALETTE) {
+    png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
+  }
+
+  if (color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+    png_set_gray_to_rgb(png);
+  }
+
+  png_read_update_info(png, info);
+
+  std::vector<png_bytep> row_pointers(height);
+  std::vector<unsigned char> image_data(width * height * 4);
+  for (png_uint_32 y = 0; y < height; y++) {
+    row_pointers[y] = image_data.data() + y * width * 4;
+  }
+
+  png_read_image(png, row_pointers.data());
+
+  png_destroy_read_struct(&png, &info, nullptr);
+  fclose(file);
+
+  std::vector<RgbaColor> data(width * height);
+  for (png_uint_32 i = 0; i < width * height; i++) {
+    data[i] = RgbaColor{image_data[i * 4], image_data[i * 4 + 1],
+                        image_data[i * 4 + 2], image_data[i * 4 + 3]};
+  }
+
+  Image<RgbaColor> image = Image<RgbaColor>(width, height, data);
+  image.FlipY();  // Flip the image to correct the upside-down result
+  return image;
+}
+
 void WritePng(const std::string& file_path, const Image<RgbaColor>& image) {
   FILE* file = fopen(file_path.c_str(), "wb");
   if (!file) {

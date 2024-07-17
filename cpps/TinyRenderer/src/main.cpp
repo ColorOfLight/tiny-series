@@ -29,9 +29,9 @@
 int main() {
   model::Model model("../assets/shark.obj");
 
-  Image<RgbaColor> diffuse_texture = ReadTga("../assets/shark.tga");
+  Image<RgbaColor> diffuse_texture = ReadPng("../assets/shark.png");
 
-  Image<RgbaColor> normal_map = ReadTga("../assets/shark_nm.tga");
+  Image<RgbaColor> normal_map = ReadPng("../assets/shark_nm.png");
 
   int width = 800;
   int height = 800;
