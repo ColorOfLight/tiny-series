@@ -39,6 +39,6 @@ bin/TinyRenderer
 
 ```zsh
 mkdir build-wasm && cd build-wasm
-cmake -WASM=ON -DCMAKE_TOOLCHAIN_FILE=../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
+cmake -DWASM=ON -DCMAKE_TOOLCHAIN_FILE=../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
 make
 ````
