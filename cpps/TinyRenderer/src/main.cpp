@@ -27,25 +27,24 @@
 #include "./render.h"
 
 int main() {
-  model::Model model("../assets/diablo3_pose.obj");
+  model::Model model("../assets/shark.obj");
 
-  Image<RgbaColor> diffuse_texture =
-      ReadTga("../assets/diablo3_pose_diffuse.tga");
-  Image<RgbaColor> normal_map =
-      ReadTga("../assets/diablo3_pose_nm_tangent.tga");
+  Image<RgbaColor> diffuse_texture = ReadTga("../assets/shark.tga");
+
+  Image<RgbaColor> normal_map = ReadTga("../assets/shark_nm.tga");
 
   int width = 800;
   int height = 800;
 
-  geometry::Vec<3, float> light_direction = {0.0f, 0.0f, -1.0f};
+  geometry::Vec<3, float> light_direction = {0.0f, 0.0f, -2.0f};
   geometry::Vec<3, float> camera_position = {1.0f, 1.0f, 1.0f};
 
   RenderModelResult result =
       RenderModel(model, diffuse_texture, normal_map, width, height,
                   light_direction, camera_position);
 
-  WriteTga("../output.tga", result.frame);
-  WriteTga("../z_buffer.tga", result.z_buffer);
-  WriteTga("../shadow_map.tga", result.shadow_map_buffer);
-  WriteTga("../ao.tga", result.ao_buffer);
+  WritePng("../output.png", result.frame);
+  WritePng("../z_buffer.png", result.z_buffer);
+  WritePng("../shadow_map.png", result.shadow_map_buffer);
+  WritePng("../ao.png", result.ao_buffer);
 }

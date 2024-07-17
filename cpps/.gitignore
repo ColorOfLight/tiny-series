@@ -127,3 +127,6 @@ assets/
 
 # emsdk
 emsdk/
+
+# Result PNG files
+*.png
