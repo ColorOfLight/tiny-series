@@ -14,23 +14,13 @@ cd emsdk
 source ./emsdk_env.sh
 ```
 
-### VCpkg
-
-- Download & Install
-
-```zsh
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh
-```
-
 ## How to build
 
 ### Executable
 
 ```zsh
 mkdir build && cd build
-cmake ..
+cmake .. --preset=default
 make
 bin/TinyRenderer
 ```
@@ -39,6 +29,6 @@ bin/TinyRenderer
 
 ```zsh
 mkdir build-wasm && cd build-wasm
-cmake -DWASM=ON -DCMAKE_TOOLCHAIN_FILE=../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
+cmake .. --preset=wasm
 make
 ````

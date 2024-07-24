@@ -16,10 +16,6 @@ Makefile
 /build/
 /build-*/
 
-# vcpkg installed libraries
-vcpkg_installed/
-.vcpkg-root
-
 # IDEs and editors
 # CLion
 .idea/
@@ -113,7 +109,6 @@ __pycache__/
 *.py[cod]
 
 # Other
-.vcpkg-root
 !cmake-build-debug/
 
 # bin

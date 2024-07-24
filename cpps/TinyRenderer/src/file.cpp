@@ -1,36 +1,13 @@
-/*
- * MIT License
- *
- * Copyright (c) 2024 Seongho Park
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include "./file.h"
-
-#include <png.h>
 
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "./image.h"
+#include "./lodepng.h"
 
 // Helper function to read little-endian uint16_t
 std::uint16_t readUint16LE(std::ifstream& file) {
@@ -228,182 +205,83 @@ void WriteTga(const std::string& file_path,
 }
 
 Image<RgbaColor> ReadPng(const std::string& file_path) {
-  FILE* file = fopen(file_path.c_str(), "rb");
-  if (!file) {
-    throw std::runtime_error("Failed to open file: " + file_path);
+  std::vector<unsigned char> png;
+  std::vector<unsigned char> image;
+  unsigned width, height;
+
+  unsigned error = lodepng::load_file(png, file_path);
+  if (!error) {
+    error = lodepng::decode(image, width, height, png);
   }
 
-  png_structp png =
-      png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-  if (!png) {
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG read struct");
+  if (error) {
+    throw std::runtime_error("Decoder error " + std::to_string(error) + ": " +
+                             lodepng_error_text(error));
   }
-
-  png_infop info = png_create_info_struct(png);
-  if (!info) {
-    png_destroy_read_struct(&png, nullptr, nullptr);
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG info struct");
-  }
-
-  if (setjmp(png_jmpbuf(png))) {
-    png_destroy_read_struct(&png, &info, nullptr);
-    fclose(file);
-    throw std::runtime_error("Error during PNG read");
-  }
-
-  png_init_io(png, file);
-  png_read_info(png, info);
-
-  png_uint_32 width = png_get_image_width(png, info);
-  png_uint_32 height = png_get_image_height(png, info);
-  png_byte color_type = png_get_color_type(png, info);
-  png_byte bit_depth = png_get_bit_depth(png, info);
-
-  if (bit_depth == 16) {
-    png_set_strip_16(png);
-  }
-
-  if (color_type == PNG_COLOR_TYPE_PALETTE) {
-    png_set_palette_to_rgb(png);
-  }
-
-  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-    png_set_expand_gray_1_2_4_to_8(png);
-  }
-
-  if (png_get_valid(png, info, PNG_INFO_tRNS)) {
-    png_set_tRNS_to_alpha(png);
-  }
-
-  if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_GRAY ||
-      color_type == PNG_COLOR_TYPE_PALETTE) {
-    png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
-  }
-
-  if (color_type == PNG_COLOR_TYPE_GRAY ||
-      color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-    png_set_gray_to_rgb(png);
-  }
-
-  png_read_update_info(png, info);
-
-  std::vector<png_bytep> row_pointers(height);
-  std::vector<unsigned char> image_data(width * height * 4);
-  for (png_uint_32 y = 0; y < height; y++) {
-    row_pointers[y] = image_data.data() + y * width * 4;
-  }
-
-  png_read_image(png, row_pointers.data());
-
-  png_destroy_read_struct(&png, &info, nullptr);
-  fclose(file);
 
   std::vector<RgbaColor> data(width * height);
-  for (png_uint_32 i = 0; i < width * height; i++) {
-    data[i] = RgbaColor{image_data[i * 4], image_data[i * 4 + 1],
-                        image_data[i * 4 + 2], image_data[i * 4 + 3]};
+  for (size_t i = 0; i < data.size(); ++i) {
+    // Flip Y
+    data[i] = RgbaColor{
+        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 0],
+        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 1],
+        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 2],
+        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 3]};
   }
 
-  Image<RgbaColor> image = Image<RgbaColor>(width, height, data);
-  image.FlipY();  // Flip the image to correct the upside-down result
-  return image;
+  Image<RgbaColor> img(width, height, data);
+  return img;
 }
 
 void WritePng(const std::string& file_path, const Image<RgbaColor>& image) {
-  FILE* file = fopen(file_path.c_str(), "wb");
-  if (!file) {
-    throw std::runtime_error("Failed to open file for writing: " + file_path);
+  unsigned width = image.GetWidth();
+  unsigned height = image.GetHeight();
+  std::vector<unsigned char> png;
+  std::vector<unsigned char> image_data(width * height * 4);
+
+  const auto& data = image.GetData();
+  for (size_t i = 0; i < data.size(); ++i) {
+    // Flip Y data
+    image_data[4 * (height - 1 - i / width) * width + 4 * (i % width) + 0] =
+        data[i].r;
+    image_data[4 * (height - 1 - i / width) * width + 4 * (i % width) + 1] =
+        data[i].g;
+    image_data[4 * (height - 1 - i / width) * width + 4 * (i % width) + 2] =
+        data[i].b;
+    image_data[4 * (height - 1 - i / width) * width + 4 * (i % width) + 3] =
+        data[i].a;
   }
 
-  png_structp png =
-      png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-  if (!png) {
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG write struct");
+  unsigned error = lodepng::encode(png, image_data, width, height);
+  if (!error) {
+    lodepng::save_file(png, file_path);
   }
 
-  png_infop info = png_create_info_struct(png);
-  if (!info) {
-    png_destroy_write_struct(&png, nullptr);
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG info struct");
+  if (error) {
+    throw std::runtime_error("Encoder error " + std::to_string(error) + ": " +
+                             lodepng_error_text(error));
   }
-
-  if (setjmp(png_jmpbuf(png))) {
-    png_destroy_write_struct(&png, &info);
-    fclose(file);
-    throw std::runtime_error("Error during PNG write");
-  }
-
-  png_init_io(png, file);
-
-  png_set_IHDR(png, info, image.GetWidth(), image.GetHeight(), 8,
-               PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
-  png_write_info(png, info);
-
-  std::vector<png_bytep> row_pointers(image.GetHeight());
-  const std::vector<RgbaColor>& data = image.GetData();
-  for (int y = 0; y < image.GetHeight(); y++) {
-    row_pointers[image.GetHeight() - 1 - y] =
-        (png_bytep)&data[y * image.GetWidth()];  // Flip vertically
-  }
-
-  png_write_image(png, row_pointers.data());
-  png_write_end(png, nullptr);
-
-  png_destroy_write_struct(&png, &info);
-  fclose(file);
 }
 
 void WritePng(const std::string& file_path,
               const Image<GrayscaleColor>& image) {
-  FILE* file = fopen(file_path.c_str(), "wb");
-  if (!file) {
-    throw std::runtime_error("Failed to open file for writing: " + file_path);
+  unsigned width = image.GetWidth();
+  unsigned height = image.GetHeight();
+  std::vector<unsigned char> png;
+  std::vector<unsigned char> image_data(width * height);
+
+  const auto& data = image.GetData();
+  for (size_t i = 0; i < data.size(); ++i) {
+    // Flip Y-data
+    image_data[(height - 1 - i / width) * width + i % width] = data[i].value;
   }
 
-  png_structp png =
-      png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-  if (!png) {
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG write struct");
+  unsigned error = lodepng::encode(png, image_data, width, height, LCT_GREY, 8);
+  if (!error) {
+    lodepng::save_file(png, file_path);
   }
 
-  png_infop info = png_create_info_struct(png);
-  if (!info) {
-    png_destroy_write_struct(&png, nullptr);
-    fclose(file);
-    throw std::runtime_error("Failed to create PNG info struct");
+  if (error) {
+    throw std::runtime_error("Encoder error" + std::to_string(error));
   }
-
-  if (setjmp(png_jmpbuf(png))) {
-    png_destroy_write_struct(&png, &info);
-    fclose(file);
-    throw std::runtime_error("Error during PNG write");
-  }
-
-  png_init_io(png, file);
-
-  png_set_IHDR(png, info, image.GetWidth(), image.GetHeight(), 8,
-               PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
-  png_write_info(png, info);
-
-  std::vector<png_bytep> row_pointers(image.GetHeight());
-  const std::vector<GrayscaleColor>& data = image.GetData();
-  for (int y = 0; y < image.GetHeight(); y++) {
-    row_pointers[image.GetHeight() - 1 - y] =
-        (png_bytep)&data[y * image.GetWidth()];  // Flip vertically
-  }
-
-  png_write_image(png, row_pointers.data());
-  png_write_end(png, nullptr);
-
-  png_destroy_write_struct(&png, &info);
-  fclose(file);
 }
