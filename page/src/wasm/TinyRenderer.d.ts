@@ -1,7 +1,7 @@
 import { WasmModule } from "./_types";
 
 interface ModuleFunctions {
-  simulate_dice_trials: (numTrials: number) => EmMap<number, number>;
+  render: () => void;
 }
 
 declare const Module: WasmModule<ModuleFunctions>;

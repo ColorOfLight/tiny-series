@@ -5,9 +5,19 @@ interface ModuleOptions {
   ): WebAssembly.Imports;
 }
 
-export type WasmModule<ModuleFunctions> = (
+interface extendedFS extends Emscripten.FileSystemType {
+  writeFile: typeof FS.writeFile;
+  readFile: typeof FS.readFile;
+  mkdir: typeof FS.mkdir;
+}
+
+export interface ExtendedEmModule extends EmscriptenModule {
+  FS: extendedFS;
+}
+
+export type WasmModule<T> = (
   options: ModuleOptions
-) => Promise<ModuleFunctions>;
+) => Promise<ExtendedEmModule & T>;
 
 export interface EmVector<Value> {
   get: (key: number) => Value;

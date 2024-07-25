@@ -27,7 +27,7 @@ const FormRenderOptions = memo(
             <Field>
               <Label className="block">Model</Label>
               <Select className="mt-1 block min-w-32" name="country">
-                <option>Test</option>
+                <option>Shark</option>
               </Select>
             </Field>
             <Field>
