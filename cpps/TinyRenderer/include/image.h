@@ -33,12 +33,12 @@ struct RgbaColor {
   uint8_t b;
   uint8_t a;
 
-  RgbaColor() : r(0), g(0), b(0), a(0){};
+  RgbaColor() : r(0), g(0), b(0), a(0) {}
 
   RgbaColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-      : r(r), g(g), b(b), a(a){};
+      : r(r), g(g), b(b), a(a) {}
 
-  RgbaColor(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255){};
+  RgbaColor(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
 
   RgbaColor& operator+=(const RgbaColor& other) {
     r = std::min(r + other.r, 255);
@@ -70,19 +70,19 @@ struct RgbaColor {
 struct GrayscaleColor {
   uint8_t value;
 
-  GrayscaleColor() : value(0){};
+  GrayscaleColor() : value(0) {}
 
-  GrayscaleColor(uint8_t value) : value(value){};
+  explicit GrayscaleColor(uint8_t value) : value(value) {}
 };
 
 template <class Color>
 class Image {
  public:
-  Image() : width_(0), height_(0){};
+  Image() : width_(0), height_(0) {}
   Image(int width, int height)
-      : width_(width), height_(height), data_(width * height){};
+      : width_(width), height_(height), data_(width * height) {}
   Image(int width, int height, std::vector<Color> data)
-      : width_(width), height_(height), data_(data){};
+      : width_(width), height_(height), data_(data) {}
 
   int GetWidth() const { return width_; }
   int GetHeight() const { return height_; }
