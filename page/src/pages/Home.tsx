@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 
 import TitleGroup from "../modules/TitleGroup";
 import SelectRenderType from "../modules/SelectRenderType";
@@ -7,26 +7,10 @@ import FieldSetRenderOptions from "../modules/FormRenderOptions";
 import useFormRenderOptions from "../modules/FormRenderOptions.hook";
 import useEmscriptenModule from "../hooks/useEmscriptenModule";
 
-import { ExtendedEmModule } from "../wasm/_types";
 import TinyRendererModule from "../wasm/TinyRenderer";
 import TinyRendererWasm from "../wasm/TinyRenderer.wasm?url";
 
-const writeFileToFS = async (
-  emModule: ExtendedEmModule,
-  filePath: string,
-  writePath: string
-) => {
-  const file = await fetch(filePath);
-  const fileBuffer = await file.arrayBuffer();
-  const fileArray = new Uint8Array(fileBuffer);
-  emModule.FS.writeFile(writePath, fileArray);
-};
-
-const getUrlFromFS = (emModule: ExtendedEmModule, path: string): string => {
-  const data = emModule.FS.readFile(path);
-  const blob = new Blob([data], { type: "image/png" });
-  return URL.createObjectURL(blob);
-};
+import { writeFileToFS, getUrlFromFS } from "../utils/emscripten";
 
 function App() {
   const [outImageLink, setOutImageLink] = useState<string>();
@@ -34,6 +18,8 @@ function App() {
   const [shadowMapLink, setShadowMapLink] = useState<string>();
   const [aoMapLink, setAoMapLink] = useState<string>();
   const [renderType, setRenderType] = useState<string>("result");
+
+  const resultDivRef = useRef<HTMLDivElement>(null);
 
   const formHookResult = useFormRenderOptions();
 
@@ -46,29 +32,41 @@ function App() {
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      if (isLoaded && emModule) {
-        await Promise.all([
-          writeFileToFS(emModule, "/models/shark/shark.obj", "/model.obj"),
-          writeFileToFS(
-            emModule,
-            "/models/shark/shark_diffuse.png",
-            "/diffuse.png"
-          ),
-          writeFileToFS(emModule, "/models/shark/shark_nm.png", "/normal.png"),
-        ]);
-
-        const cameraPosition = [1, 1, 2];
-        const lightDirection = [0, 0, -1];
-
-        emModule.render(lightDirection, cameraPosition, 800, 800);
-
-        setOutImageLink(getUrlFromFS(emModule, "/output.png"));
-        setZBufferLink(getUrlFromFS(emModule, "/z_buffer.png"));
-        setShadowMapLink(getUrlFromFS(emModule, "/shadow_map.png"));
-        setAoMapLink(getUrlFromFS(emModule, "/ao.png"));
+      if (!isLoaded || !emModule) {
+        throw new Error("Emscripten module not loaded");
       }
+
+      if (!resultDivRef.current) {
+        throw new Error("Div tag for result is not found");
+      }
+
+      const { modelAsset, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
+        formHookResult;
+
+      await Promise.all([
+        writeFileToFS(emModule, modelAsset.obj, "/model.obj"),
+        writeFileToFS(emModule, modelAsset.diffuse, "/diffuse.png"),
+        writeFileToFS(emModule, modelAsset.normal, "/normal.png"),
+      ]);
+
+      const cameraPosition = [
+        Number(cameraX),
+        Number(cameraY),
+        Number(cameraZ),
+      ];
+      const lightDirection = [Number(lightX), Number(lightY), Number(lightZ)];
+
+      const width = resultDivRef.current.clientWidth;
+      const height = resultDivRef.current.clientHeight;
+
+      emModule.render(lightDirection, cameraPosition, width, height);
+
+      setOutImageLink(getUrlFromFS(emModule, "/output.png"));
+      setZBufferLink(getUrlFromFS(emModule, "/z_buffer.png"));
+      setShadowMapLink(getUrlFromFS(emModule, "/shadow_map.png"));
+      setAoMapLink(getUrlFromFS(emModule, "/ao.png"));
     },
-    [isLoaded, emModule]
+    [isLoaded, emModule, formHookResult]
   );
 
   const handleRenderTypeChange = useCallback(
@@ -94,7 +92,10 @@ function App() {
         <div className="mt-6 flex gap-8 flex-col">
           <div className="flex flex-col">
             <SelectRenderType onChange={handleRenderTypeChange} />
-            <div className="w-full bg-gray-300 aspect-square">
+            <div
+              className="w-full bg-gray-300 aspect-square"
+              ref={resultDivRef}
+            >
               {imageLink && <img src={imageLink} alt="result image" />}
             </div>
           </div>

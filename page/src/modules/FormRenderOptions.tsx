@@ -26,8 +26,13 @@ const FormRenderOptions = memo(
             </Legend>
             <Field>
               <Label className="block">Model</Label>
-              <Select className="mt-1 block min-w-32" name="country">
-                <option>Shark</option>
+              <Select
+                className="mt-1 block min-w-32"
+                name="country"
+                value={hookResult.model}
+                onChange={hookResult.onModelChange}
+              >
+                <option value="shark">Shark</option>
               </Select>
             </Field>
             <Field>
@@ -36,18 +41,21 @@ const FormRenderOptions = memo(
                 <Input
                   className="w-16"
                   name="cameraX"
+                  type="number"
                   value={hookResult.cameraX}
                   onChange={hookResult.onCameraXChange}
                 />
                 <Input
                   className="w-16"
                   name="cameraY"
+                  type="number"
                   value={hookResult.cameraY}
                   onChange={hookResult.onCameraYChange}
                 />
                 <Input
                   className="w-16"
                   name="cameraZ"
+                  type="number"
                   value={hookResult.cameraZ}
                   onChange={hookResult.onCameraZChange}
                 />
@@ -59,24 +67,31 @@ const FormRenderOptions = memo(
                 <Input
                   className="w-16"
                   name="lightX"
+                  type="number"
                   value={hookResult.lightX}
                   onChange={hookResult.onLightXChange}
                 />
                 <Input
                   className="w-16"
                   name="lightY"
+                  type="number"
                   value={hookResult.lightY}
                   onChange={hookResult.onLightYChange}
                 />
                 <Input
                   className="w-16"
                   name="lightZ"
+                  type="number"
                   value={hookResult.lightZ}
                   onChange={hookResult.onLightZChange}
                 />
               </div>
             </Field>
-            <Button className="self-end mt-8" type="submit">
+            <Button
+              className="self-end mt-8 disabled:opacity-50"
+              type="submit"
+              disabled={hookResult.isDisabled}
+            >
               Render Image
             </Button>
           </Fieldset>
