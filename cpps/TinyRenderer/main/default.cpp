@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <filesystem>
+
 #include "./file.h"
 #include "./geometry/vec.h"
 #include "./render.h"
@@ -36,15 +38,17 @@ int main() {
   int width = 800;
   int height = 800;
 
-  geometry::Vec<3, float> light_direction = {0.0f, 0.0f, -2.0f};
+  geometry::Vec<3, float> light_position = {0.0f, 0.0f, 2.0f};
   geometry::Vec<3, float> camera_position = {1.0f, 1.0f, 1.0f};
 
   RenderModelResult result =
       RenderModel(model, diffuse_texture, normal_map, width, height,
-                  light_direction, camera_position);
+                  light_position, camera_position);
 
-  WritePng("../output.png", result.frame);
-  WritePng("../z_buffer.png", result.z_buffer);
-  WritePng("../shadow_map.png", result.shadow_map_buffer);
-  WritePng("../ao.png", result.ao_buffer);
+  std::filesystem::create_directory("../result");
+
+  WritePng("../result/output.png", result.frame);
+  WritePng("../result/z_buffer.png", result.z_buffer);
+  WritePng("../result/shadow_map.png", result.shadow_map_buffer);
+  WritePng("../result/ao.png", result.ao_buffer);
 }

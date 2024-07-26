@@ -113,8 +113,8 @@ __pycache__/
 # bin
 bin/
 
-# Result TGA files
-*.tga
+# Result files
+result/
 
 # emsdk
 emsdk/
