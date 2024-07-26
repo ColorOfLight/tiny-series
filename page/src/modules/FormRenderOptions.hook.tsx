@@ -1,8 +1,7 @@
-import { useMemo } from "react";
+import React, { FormEvent, useMemo, useState, useCallback } from "react";
 
 import useInput from "../hooks/useInput";
 import useSelect from "../hooks/useSelect";
-import { canParseFloat } from "../utils/number";
 
 export interface UseFormRenderOptionsResult {
   model?: string;
@@ -19,10 +18,16 @@ export interface UseFormRenderOptionsResult {
   onLightYChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   lightZ?: string;
   onLightZChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  isDisabled: boolean;
+  errorMessage: string | null;
+  isDirty: boolean;
+  handleSubmit: (
+    onSubmit?: React.EventHandler<FormEvent>
+  ) => React.EventHandler<FormEvent>;
 }
 
 const useFormRenderOptions = (): UseFormRenderOptionsResult => {
+  const [isDirty, setIsDirty] = useState(false);
+
   const { value: model, onChange: onModelChange } = useSelect("shark");
 
   const { value: cameraX, onChange: onCameraXChange } = useInput("1");
@@ -33,16 +38,60 @@ const useFormRenderOptions = (): UseFormRenderOptionsResult => {
   const { value: lightY, onChange: onLightYChange } = useInput("0");
   const { value: lightZ, onChange: onLightZChange } = useInput("2");
 
-  const isDisabled = useMemo(() => {
-    return (
-      canParseFloat(cameraX) ||
-      canParseFloat(cameraY) ||
-      canParseFloat(cameraZ) ||
-      canParseFloat(lightX) ||
-      canParseFloat(lightY) ||
-      canParseFloat(lightZ)
-    );
+  const errorMessage = useMemo(() => {
+    if (cameraX === "") {
+      return "Camera X cannot be empty";
+    }
+
+    if (cameraY === "") {
+      return "Camera Y cannot be empty";
+    }
+
+    if (cameraZ === "") {
+      return "Camera Z cannot be empty";
+    }
+
+    if (lightX === "") {
+      return "Light X cannot be empty";
+    }
+
+    if (lightY === "") {
+      return "Light Y cannot be empty";
+    }
+
+    if (lightZ === "") {
+      return "Light Z cannot be empty";
+    }
+
+    if (cameraX === "0" && cameraY === "0" && cameraZ === "0") {
+      return "Camera position cannot be 0, 0, 0";
+    }
+
+    if (lightX === "0" && lightY === "0" && lightZ === "0") {
+      return "Light position cannot be 0, 0, 0";
+    }
+
+    return null;
   }, [cameraX, cameraY, cameraZ, lightX, lightY, lightZ]);
+
+  const handleSubmit = useCallback(
+    (onSubmit?: React.EventHandler<FormEvent>) => {
+      return (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        setIsDirty(true);
+
+        if (errorMessage) {
+          return;
+        }
+
+        setIsDirty(false);
+
+        onSubmit?.(e);
+      };
+    },
+    [errorMessage]
+  );
 
   return {
     model,
@@ -59,7 +108,9 @@ const useFormRenderOptions = (): UseFormRenderOptionsResult => {
     onLightYChange,
     lightZ,
     onLightZChange,
-    isDisabled,
+    errorMessage,
+    isDirty,
+    handleSubmit,
   };
 };
 

@@ -21,83 +21,78 @@ function App() {
 
   const formHookResult = useFormRenderOptions();
 
-  const handleSubmitOptions = useCallback(
-    async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-
-      try {
-        if (isRendering) {
-          throw new Error("Rendering is in progress");
-        }
-
-        if (!resultDivRef.current) {
-          throw new Error("Div tag for result is not found");
-        }
-
-        setIsRendering(true);
-
-        const { model, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
-          formHookResult;
-
-        if (model == null) {
-          throw new Error("Model is not set");
-        }
-
-        if (lightX == null || lightY == null || lightZ == null) {
-          throw new Error("Light position is not set");
-        }
-
-        if (cameraX == null || cameraY == null || cameraZ == null) {
-          throw new Error("Camera position is not set");
-        }
-
-        const lightPosition = [
-          Number.parseFloat(lightX),
-          Number.parseFloat(lightY),
-          Number.parseFloat(lightZ),
-        ];
-
-        const cameraPosition = [
-          Number.parseFloat(cameraX),
-          Number.parseFloat(cameraY),
-          Number.parseFloat(cameraZ),
-        ];
-
-        const width = resultDivRef.current.clientWidth;
-        const height = resultDivRef.current.clientHeight;
-
-        const worker = new RenderWorker();
-        worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
-          const data = e.data;
-
-          if (data.type === "initComplete" && data.success) {
-            worker.postMessage({
-              type: "render",
-              model,
-              lightPosition,
-              cameraPosition,
-              width,
-              height,
-            });
-          } else if (data.type === "renderComplete") {
-            setOutImageLink(generateUrlFromBuffer(data.outputPngData));
-            setZBufferLink(generateUrlFromBuffer(data.zBufferPngData));
-            setShadowMapLink(generateUrlFromBuffer(data.shadowMapPngData));
-            setAoMapLink(generateUrlFromBuffer(data.aoPngData));
-            setIsRendering(false);
-          }
-        };
-
-        worker.postMessage({
-          type: "init",
-        });
-      } catch (e) {
-        setIsRendering(false);
-        throw e;
+  const handleSubmitOptions = useCallback(async () => {
+    try {
+      if (isRendering) {
+        throw new Error("Rendering is in progress");
       }
-    },
-    [isRendering, formHookResult]
-  );
+
+      if (!resultDivRef.current) {
+        throw new Error("Div tag for result is not found");
+      }
+
+      setIsRendering(true);
+
+      const { model, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
+        formHookResult;
+
+      if (model == null) {
+        throw new Error("Model is not set");
+      }
+
+      if (lightX == null || lightY == null || lightZ == null) {
+        throw new Error("Light position is not set");
+      }
+
+      if (cameraX == null || cameraY == null || cameraZ == null) {
+        throw new Error("Camera position is not set");
+      }
+
+      const lightPosition = [
+        Number.parseFloat(lightX),
+        Number.parseFloat(lightY),
+        Number.parseFloat(lightZ),
+      ];
+
+      const cameraPosition = [
+        Number.parseFloat(cameraX),
+        Number.parseFloat(cameraY),
+        Number.parseFloat(cameraZ),
+      ];
+
+      const width = resultDivRef.current.clientWidth;
+      const height = resultDivRef.current.clientHeight;
+
+      const worker = new RenderWorker();
+      worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
+        const data = e.data;
+
+        if (data.type === "initComplete" && data.success) {
+          worker.postMessage({
+            type: "render",
+            model,
+            lightPosition,
+            cameraPosition,
+            width,
+            height,
+          });
+        } else if (data.type === "renderComplete") {
+          setOutImageLink(generateUrlFromBuffer(data.outputPngData));
+          setZBufferLink(generateUrlFromBuffer(data.zBufferPngData));
+          setShadowMapLink(generateUrlFromBuffer(data.shadowMapPngData));
+          setAoMapLink(generateUrlFromBuffer(data.aoPngData));
+          setIsRendering(false);
+        }
+      };
+
+      worker.postMessage({
+        type: "init",
+      });
+    } catch (e) {
+      setIsRendering(false);
+      throw e;
+    }
+  }, [isRendering, formHookResult]);
 
   const handleRenderTypeChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
