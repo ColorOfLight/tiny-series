@@ -91,7 +91,9 @@ function App() {
         <div className="mt-6 flex gap-8 flex-col">
           <div className="flex flex-col">
             <SelectRenderType onChange={handleRenderTypeChange} />
-            <img src={imageLink} alt="result image" />
+            <div className="w-full bg-gray-300 aspect-square">
+              {imageLink && <img src={imageLink} alt="result image" />}
+            </div>
           </div>
           <FieldSetRenderOptions
             hookResult={formHookResult}

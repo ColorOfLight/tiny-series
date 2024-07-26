@@ -8,13 +8,18 @@ const TitleGroup = memo(
     ({ className, ...restProps }, ref) => {
       return (
         <div
-          className={clsx("flex items-center justify-between", className)}
+          className={clsx("flex items-top justify-between", className)}
           {...restProps}
           ref={ref}
         >
-          <h1 className="text-2xl text-gray-900 font-bold tracking-wide">
-            TinyRenderer
-          </h1>
+          <div>
+            <h1 className="text-2xl text-gray-900 font-bold tracking-wide">
+              TinyRenderer
+            </h1>
+            <p className="mt-4 text-gray-500">
+              CPU-only model renderer written in C++
+            </p>
+          </div>
           <a
             href="https://github.com/ColorOfLight/tiny-series/"
             target="_blank"
