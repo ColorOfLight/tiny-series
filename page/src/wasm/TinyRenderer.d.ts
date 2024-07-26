@@ -1,6 +1,6 @@
 import { WasmModule } from "./_types";
 
-interface ModuleFunctions {
+export interface ModuleFunctions {
   render: (
     lightPosition: number[],
     cameraPosition: number[],

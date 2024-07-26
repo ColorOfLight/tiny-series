@@ -5,12 +5,9 @@ import SelectRenderType from "../modules/SelectRenderType";
 import FieldSetRenderOptions from "../modules/FormRenderOptions";
 
 import useFormRenderOptions from "../modules/FormRenderOptions.hook";
-import useEmscriptenModule from "../hooks/useEmscriptenModule";
 
-import TinyRendererModule from "../wasm/TinyRenderer";
-import TinyRendererWasm from "../wasm/TinyRenderer.wasm?url";
-
-import { writeFileToFS, getUrlFromFS } from "../utils/emscripten";
+import RenderWorker from "../workers/tiny-renderer?worker";
+import { generateUrlFromBuffer } from "../utils/image";
 
 function App() {
   const [outImageLink, setOutImageLink] = useState<string>();
@@ -23,31 +20,20 @@ function App() {
 
   const formHookResult = useFormRenderOptions();
 
-  const { isLoaded, emModule } = useEmscriptenModule(
-    TinyRendererModule,
-    TinyRendererWasm
-  );
-
   const handleSubmitOptions = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-
-      if (!isLoaded || !emModule) {
-        throw new Error("Emscripten module not loaded");
-      }
 
       if (!resultDivRef.current) {
         throw new Error("Div tag for result is not found");
       }
 
-      const { modelAsset, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
+      const { model, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
         formHookResult;
 
-      await Promise.all([
-        writeFileToFS(emModule, modelAsset.obj, "/model.obj"),
-        writeFileToFS(emModule, modelAsset.diffuse, "/diffuse.png"),
-        writeFileToFS(emModule, modelAsset.normal, "/normal.png"),
-      ]);
+      if (model == null) {
+        throw new Error("Model is not set");
+      }
 
       if (lightX == null || lightY == null || lightZ == null) {
         throw new Error("Light position is not set");
@@ -72,14 +58,32 @@ function App() {
       const width = resultDivRef.current.clientWidth;
       const height = resultDivRef.current.clientHeight;
 
-      emModule.render(lightPosition, cameraPosition, width, height);
+      const worker = new RenderWorker();
+      worker.onmessage = (e) => {
+        const data = e.data;
 
-      setOutImageLink(getUrlFromFS(emModule, "/output.png"));
-      setZBufferLink(getUrlFromFS(emModule, "/z_buffer.png"));
-      setShadowMapLink(getUrlFromFS(emModule, "/shadow_map.png"));
-      setAoMapLink(getUrlFromFS(emModule, "/ao.png"));
+        if (data.type === "initComplete" && data.success) {
+          worker.postMessage({
+            type: "render",
+            model,
+            lightPosition,
+            cameraPosition,
+            width,
+            height,
+          });
+        } else if (data.type === "renderComplete") {
+          setOutImageLink(generateUrlFromBuffer(data.outputPngData));
+          setZBufferLink(generateUrlFromBuffer(data.zBufferPngData));
+          setShadowMapLink(generateUrlFromBuffer(data.shadowMapPngData));
+          setAoMapLink(generateUrlFromBuffer(data.aoPngData));
+        }
+      };
+
+      worker.postMessage({
+        type: "init",
+      });
     },
-    [isLoaded, emModule, formHookResult]
+    [formHookResult]
   );
 
   const handleRenderTypeChange = useCallback(

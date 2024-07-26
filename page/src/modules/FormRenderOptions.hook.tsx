@@ -4,15 +4,8 @@ import useInput from "../hooks/useInput";
 import useSelect from "../hooks/useSelect";
 import { canParseFloat } from "../utils/number";
 
-interface ModelAsset {
-  obj: string;
-  diffuse: string;
-  normal: string;
-}
-
 export interface UseFormRenderOptionsResult {
-  model: string;
-  modelAsset: ModelAsset;
+  model?: string;
   onModelChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   cameraX?: string;
   onCameraXChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -29,30 +22,8 @@ export interface UseFormRenderOptionsResult {
   isDisabled: boolean;
 }
 
-const modelAssets: Record<string, ModelAsset> = {
-  shark: {
-    obj: "/models/shark/shark.obj",
-    diffuse: "/models/shark/shark_diffuse.png",
-    normal: "/models/shark/shark_nm.png",
-  },
-};
-
-const useModelAsset = () => {
-  const { value: model, onChange: onModelChange } = useSelect("shark");
-
-  if (model == null) {
-    throw new Error("Model is not selected");
-  }
-
-  return {
-    model,
-    modelAsset: modelAssets[model],
-    onModelChange,
-  };
-};
-
 const useFormRenderOptions = (): UseFormRenderOptionsResult => {
-  const { model, modelAsset, onModelChange } = useModelAsset();
+  const { value: model, onChange: onModelChange } = useSelect("shark");
 
   const { value: cameraX, onChange: onCameraXChange } = useInput("1");
   const { value: cameraY, onChange: onCameraYChange } = useInput("1");
@@ -60,7 +31,7 @@ const useFormRenderOptions = (): UseFormRenderOptionsResult => {
 
   const { value: lightX, onChange: onLightXChange } = useInput("0");
   const { value: lightY, onChange: onLightYChange } = useInput("0");
-  const { value: lightZ, onChange: onLightZChange } = useInput("-1");
+  const { value: lightZ, onChange: onLightZChange } = useInput("2");
 
   const isDisabled = useMemo(() => {
     return (
@@ -75,7 +46,6 @@ const useFormRenderOptions = (): UseFormRenderOptionsResult => {
 
   return {
     model,
-    modelAsset,
     onModelChange,
     cameraX,
     onCameraXChange,
