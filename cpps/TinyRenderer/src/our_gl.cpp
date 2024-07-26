@@ -31,15 +31,13 @@
 
 #include "./geometry/utils.h"
 
-namespace our_gl {
-
 void OurGL::DrawModel(const Model& model, IShader& shader,
                       Image<RgbaColor>& image,
                       Image<GrayscaleColor>& z_buffer) {
   for (int i = 0; i != model.size(); ++i) {
     auto face = model.get(i);
 
-    std::array<our_gl::gl_Position, 3> gl_Positions;
+    std::array<gl_Position, 3> gl_Positions;
     for (int v_idx = 0; v_idx != 3; ++v_idx) {
       gl_Positions[v_idx] = shader.ShadeVertex(*this, face[v_idx], v_idx);
     }
@@ -178,5 +176,3 @@ Vec<3, float> ConvertColorToVec(const RgbaColor& color) {
                         static_cast<float>(color.g) / 255.f - .5f,
                         static_cast<float>(color.b) / 255.f - .5f});
 }
-
-}  // namespace our_gl

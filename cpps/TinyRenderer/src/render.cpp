@@ -30,7 +30,7 @@
 #include "./our_gl.h"
 #include "./shader.h"
 
-Image<GrayscaleColor> GenerateSsaoImage(const Model& model, our_gl::OurGL& gl,
+Image<GrayscaleColor> GenerateSsaoImage(const Model& model, OurGL& gl,
                                         Image<GrayscaleColor>& z_buffer);
 
 RenderModelResult RenderModel(const Model& model,
@@ -69,7 +69,7 @@ RenderModelResult RenderModel(const Model& model,
   Mat<4, 4, float> light_proj_matrix = Orthographic(4, 4, 4);
   Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
-  our_gl::OurGL gl;
+  OurGL gl;
 
   gl.g_viewport_mat = viewport_matrix;
   gl.g_width = width;
@@ -96,7 +96,7 @@ RenderModelResult RenderModel(const Model& model,
 }
 
 // SSAO with simple angle calculation
-Image<GrayscaleColor> GenerateSsaoImage(const Model& model, our_gl::OurGL& gl,
+Image<GrayscaleColor> GenerateSsaoImage(const Model& model, OurGL& gl,
                                         Image<GrayscaleColor>& z_buffer) {
   Image<GrayscaleColor> ssao_image(gl.g_width, gl.g_height);
 

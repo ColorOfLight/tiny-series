@@ -27,9 +27,8 @@
 #include "./geometry/utils.h"
 #include "./geometry/vec.h"
 
-our_gl::gl_Position MainShader::ShadeVertex(const our_gl::OurGL& gl,
-                                            Vertex model_vertex,
-                                            int vertex_index) {
+gl_Position MainShader::ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                                    int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],
                      model_vertex.position[2], 1});
@@ -43,9 +42,9 @@ our_gl::gl_Position MainShader::ShadeVertex(const our_gl::OurGL& gl,
   return GetNDC(gl.g_viewport_mat * new_position);
 }
 
-our_gl::gl_Fragment MainShader::ShadeFragment(
-    const our_gl::OurGL& gl, Vec<3, float> gl_FragCoord,
-    const Vec<3, float> barycentric) const {
+gl_Fragment MainShader::ShadeFragment(const OurGL& gl,
+                                      Vec<3, float> gl_FragCoord,
+                                      const Vec<3, float> barycentric) const {
   Vec<3, float> position = varying_positions * barycentric;
   Vec<3, float> normal = varying_normals * barycentric;
   normal.Normalize();
@@ -73,9 +72,8 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
           .GetNormalized();
 
   RgbaColor tangent_normal_color =
-      our_gl::FindNearestTextureColor(texture_coords, gl.u_tangent_normal_map);
-  Vec<3, float> tangent_normal =
-      our_gl::ConvertColorToVec(tangent_normal_color);
+      FindNearestTextureColor(texture_coords, gl.u_tangent_normal_map);
+  Vec<3, float> tangent_normal = ConvertColorToVec(tangent_normal_color);
 
   Vec<3, float> real_normal = darboux_i * tangent_normal[0] +
                               darboux_j * tangent_normal[1] +
@@ -85,10 +83,10 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
   Vec<3, float> light_dir = gl.u_light_dir;
 
   RgbaColor texture_color =
-      our_gl::FindNearestTextureColor(texture_coords, gl.u_texture);
+      FindNearestTextureColor(texture_coords, gl.u_texture);
 
-  RgbaColor phong_color = our_gl::GetPhongColor(real_normal, gl.u_view_vector,
-                                                light_dir, texture_color);
+  RgbaColor phong_color =
+      GetPhongColor(real_normal, gl.u_view_vector, light_dir, texture_color);
 
   // Get shadow
   Mat<4, 4, float> shadow_depth_viewport = Viewport(0.f, 0.f, 1.f, 1.f, 255.f);
@@ -97,7 +95,7 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
       (shadow_depth_viewport * gl.u_light_vpm_mat *
        Vec<4, float>({position[0], position[1], position[2], 1}));
 
-  GrayscaleColor shadow_depth = our_gl::FindNearestTextureColor(
+  GrayscaleColor shadow_depth = FindNearestTextureColor(
       Vec<2, float>({screen_coord_from_light[0] / screen_coord_from_light[3],
                      screen_coord_from_light[1] / screen_coord_from_light[3]}),
       *gl.u_shadow_depth_map);
@@ -110,9 +108,8 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
   return phong_color;
 }
 
-our_gl::gl_Position DepthShader::ShadeVertex(const our_gl::OurGL& gl,
-                                             Vertex model_vertex,
-                                             int vertex_index) {
+gl_Position DepthShader::ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                                     int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],
                      model_vertex.position[2], 1});
@@ -122,9 +119,8 @@ our_gl::gl_Position DepthShader::ShadeVertex(const our_gl::OurGL& gl,
   return GetNDC(gl.g_viewport_mat * new_position);
 }
 
-our_gl::gl_Position ZShader::ShadeVertex(const our_gl::OurGL& gl,
-                                         Vertex model_vertex,
-                                         int vertex_index) {
+gl_Position ZShader::ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                                 int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],
                      model_vertex.position[2], 1});

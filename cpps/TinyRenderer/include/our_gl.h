@@ -33,7 +33,6 @@
 #include "./image.h"
 #include "./model.h"
 
-namespace our_gl {
 typedef Vec<3, float> gl_Position;
 typedef RgbaColor gl_Fragment;
 
@@ -109,5 +108,3 @@ Color FindNearestTextureColor(const Vec<2, float>& st,
 }
 
 Vec<3, float> ConvertColorToVec(const RgbaColor& color);
-
-}  // namespace our_gl
