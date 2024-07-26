@@ -1,44 +1,15 @@
 # Tiny Series
 
-Implementation for [ssoly's tiny series](https://github.com/ssloy)
+- C++ and WebAssembly Implementation for [ssoly's tiny series](https://github.com/ssloy)
 
-## Pre-requisite
+## Structure
 
-- [Install VC Package Manager](https://learn.microsoft.com/vcpkg/get_started/get-started)
-- Install CMake
-- Set up your `.bashrc` or `.zshrc`:
+- `/cpps` includes working c++ projects like tiny renderer
+- `/page` contains web application with wasm files compiled from `/cpps` projects
 
-```txt
-# rbenv
-export CURL_CA_BUNDLE=$(brew --prefix)/etc/ca-certificates/cert.pem
+## Instructions
 
-# vcpkg
-export VCPKG_ROOT=/Users/seongho/Documents/vcpkg
-export PATH=$VCPKG_ROOT:$PATH
-export CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
-```
+Follow READMEs in each folder:
 
-## How to run
-
-- Build executables with CMake
-
-```zsh
-cmake .
-make
-```
-
-- Run executables in `/bin` folder (ex. `bin/TinyRenderer`)
-
-## Profiling
-
-### Mac
-
-- You can use Xcode Instruments for various profiling.
-- You can profile the execution file.
-- If you need the further information, please refer to [this blog post](https://www.jviotti.com/2024/01/29/using-xcode-instruments-for-cpp-cpu-profiling.html).
-
-## Lint
-
-- Install [cpplint](https://github.com/cpplint/cpplint)
-- Set commands executable: `chmod +x commands/*.sh`
-- Run `lint-all.sh`: `commands/lint-all.sh`
+- [cpps](/cpps/README.md)
+- [page](/page/README.md)

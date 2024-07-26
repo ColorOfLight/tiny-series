@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  font-family: 'IBM Plex Mono', monospace, sans-serif;
+}
+
+input {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border-width: 1px;
+}
+
+select {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border-width: 1px;
+}
+
+label {
+  margin-bottom: 0.75rem;
+}
+
+button {
+  padding: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 0.25rem;
+  border-width: 1px;
+  cursor: pointer;
+}
