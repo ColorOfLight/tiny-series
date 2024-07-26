@@ -37,9 +37,8 @@ Image<GrayscaleColor> GenerateSsaoImage(const model::Model& model,
 RenderModelResult RenderModel(const model::Model& model,
                               const Image<RgbaColor>& diffuse_texture,
                               const Image<RgbaColor>& normal_map, int width,
-                              int height,
-                              const geometry::Vec<3, float>& light_position,
-                              const geometry::Vec<3, float>& camera_position) {
+                              int height, const Vec<3, float>& light_position,
+                              const Vec<3, float>& camera_position) {
   Image<RgbaColor> frame(width, height);
   Image<GrayscaleColor> z_buffer(width, height);
   Image<GrayscaleColor> shadow_map_buffer(width, height);
@@ -47,34 +46,29 @@ RenderModelResult RenderModel(const model::Model& model,
   MainShader shader;
   DepthShader depth_shader;
 
-  geometry::Vec<3, float> center{0, 0, 0};
+  Vec<3, float> center{0, 0, 0};
 
-  geometry::Vec<3, float> up{0, 1, 0};
+  Vec<3, float> up{0, 1, 0};
 
-  geometry::Vec<3, float> camera_up =
-      !geometry::IsParallel((camera_position - center), up)
-          ? up
-          : geometry::Vec<3, float>({0, 0, 1});
+  Vec<3, float> camera_up = !IsParallel((camera_position - center), up)
+                                ? up
+                                : Vec<3, float>({0, 0, 1});
 
-  geometry::Vec<3, float> light_up =
-      !geometry::IsParallel((light_position - center), up)
-          ? up
-          : geometry::Vec<3, float>({0, 0, 1});
+  Vec<3, float> light_up = !IsParallel((light_position - center), up)
+                               ? up
+                               : Vec<3, float>({0, 0, 1});
 
-  geometry::Vec<3, float> light_direction =
-      (center - light_position).Normalize();
+  Vec<3, float> light_direction = (center - light_position).Normalize();
 
-  geometry::Mat<4, 4, float> viewport_matrix =
-      geometry::Viewport(0, 0, width, height, 1);
-  geometry::Mat<4, 4, float> perspective_matrix = geometry::Perspective(3);
-  const geometry::Mat<4, 4, float> view_matrix =
-      geometry::ViewMatrix(camera_position, center, camera_up);
+  Mat<4, 4, float> viewport_matrix = Viewport(0, 0, width, height, 1);
+  Mat<4, 4, float> perspective_matrix = Perspective(3);
+  const Mat<4, 4, float> view_matrix =
+      ViewMatrix(camera_position, center, camera_up);
 
-  geometry::Mat<4, 4, float> light_view_matrix =
-      geometry::ViewMatrix(light_position, center, light_up);
-  geometry::Mat<4, 4, float> light_proj_matrix =
-      geometry::Orthographic(4, 4, 4);
-  geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
+  Mat<4, 4, float> light_view_matrix =
+      ViewMatrix(light_position, center, light_up);
+  Mat<4, 4, float> light_proj_matrix = Orthographic(4, 4, 4);
+  Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
   our_gl::OurGL gl;
 
@@ -135,13 +129,13 @@ Image<GrayscaleColor> GenerateSsaoImage(const model::Model& model,
           float exposed_angle = std::max(
               0.f, atan2f(static_cast<float>(delta_z) / 255.f, distance));
 
-          total += geometry::kPi / 2 - exposed_angle;
+          total += kPi / 2 - exposed_angle;
         }
       }
 
-      total /= (geometry::kPi / 2) * 8;
+      total /= (kPi / 2) * 8;
       total = pow(total, 100);
-      total = geometry::smoothstep(0.05, 0.95, total);
+      total = smoothstep(0.05, 0.95, total);
 
       int color_value = static_cast<int>(total * 255);
       ssao_image.set(x, y, GrayscaleColor{static_cast<uint8_t>(color_value)});

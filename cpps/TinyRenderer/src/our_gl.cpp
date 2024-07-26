@@ -48,37 +48,33 @@ void OurGL::DrawModel(const model::Model& model, IShader& shader,
   }
 }
 
-geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
-                                       const geometry::Vec<2, float>& p0,
-                                       const geometry::Vec<2, float>& p1,
-                                       const geometry::Vec<2, float>& p2) {
-  geometry::Vec<2, float> edge1 = p1 - p0;
-  geometry::Vec<2, float> edge2 = p2 - p0;
-  geometry::Vec<2, float> origin_from_point = p0 - target;
+Vec<3, float> GetBarycentric(const Vec<2, float>& target,
+                             const Vec<2, float>& p0, const Vec<2, float>& p1,
+                             const Vec<2, float>& p2) {
+  Vec<2, float> edge1 = p1 - p0;
+  Vec<2, float> edge2 = p2 - p0;
+  Vec<2, float> origin_from_point = p0 - target;
 
-  geometry::Vec<3, float> vec_x{edge1[0], edge2[0], origin_from_point[0]};
-  geometry::Vec<3, float> vec_y{edge1[1], edge2[1], origin_from_point[1]};
+  Vec<3, float> vec_x{edge1[0], edge2[0], origin_from_point[0]};
+  Vec<3, float> vec_y{edge1[1], edge2[1], origin_from_point[1]};
 
-  geometry::Vec<3, float> vec_crossed = vec_x ^ vec_y;
+  Vec<3, float> vec_crossed = vec_x ^ vec_y;
 
   if (vec_crossed[2] == 0) {
-    return geometry::Vec<3, float>({-1, 1, 1});
+    return Vec<3, float>({-1, 1, 1});
   }
 
-  return geometry::Vec<3, float>(
+  return Vec<3, float>(
       {1.f - (vec_crossed[0] + vec_crossed[1]) / vec_crossed[2],
        vec_crossed[0] / vec_crossed[2], vec_crossed[1] / vec_crossed[2]});
 }
 
-bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
-                       const geometry::Vec<2, int>& edge2,
-                       const geometry::Vec<2, int>& origin_from_point) {
-  geometry::Vec<3, int> vec_x =
-      geometry::Vec<3, int>({edge1[0], edge2[0], origin_from_point[0]});
-  geometry::Vec<3, int> vec_y =
-      geometry::Vec<3, int>({edge1[1], edge2[1], origin_from_point[1]});
+bool IsPointInTriangle(const Vec<2, int>& edge1, const Vec<2, int>& edge2,
+                       const Vec<2, int>& origin_from_point) {
+  Vec<3, int> vec_x = Vec<3, int>({edge1[0], edge2[0], origin_from_point[0]});
+  Vec<3, int> vec_y = Vec<3, int>({edge1[1], edge2[1], origin_from_point[1]});
 
-  geometry::Vec<3, int> vec_crossed = vec_x ^ vec_y;
+  Vec<3, int> vec_crossed = vec_x ^ vec_y;
 
   if (vec_crossed[2] == 0) {
     return false;
@@ -97,16 +93,14 @@ bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
   return false;
 }
 
-RgbaColor GetPhongColor(const geometry::Vec<3, float>& normal,
-                        const geometry::Vec<3, float>& view_vector,
-                        const geometry::Vec<3, float>& light_dir,
+RgbaColor GetPhongColor(const Vec<3, float>& normal,
+                        const Vec<3, float>& view_vector,
+                        const Vec<3, float>& light_dir,
                         const RgbaColor& texture_color, float diffuse,
                         float specular, float alpha) {
-  geometry::Vec<3, float> light_vec =
-      geometry::Vec<3, float>(light_dir).Normalize() * (-1);
-  geometry::Vec<3, float> reflection = geometry::Reflect(light_vec, normal);
-  geometry::Vec<3, float> normalized_view =
-      geometry::Vec<3, float>(view_vector).Normalize();
+  Vec<3, float> light_vec = Vec<3, float>(light_dir).Normalize() * (-1);
+  Vec<3, float> reflection = Reflect(light_vec, normal);
+  Vec<3, float> normalized_view = Vec<3, float>(view_vector).Normalize();
 
   RgbaColor diffuse_color =
       texture_color * (diffuse * std::max(0.f, normal * light_vec));
@@ -120,9 +114,9 @@ RgbaColor GetPhongColor(const geometry::Vec<3, float>& normal,
 void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
                          IShader& shader, Image<RgbaColor>& image,
                          Image<GrayscaleColor>& z_buffer) {
-  const geometry::Vec<3, float>& p0 = gl_Positions[0];
-  const geometry::Vec<3, float>& p1 = gl_Positions[1];
-  const geometry::Vec<3, float>& p2 = gl_Positions[2];
+  const Vec<3, float>& p0 = gl_Positions[0];
+  const Vec<3, float>& p1 = gl_Positions[1];
+  const Vec<3, float>& p2 = gl_Positions[2];
 
   // Give some margin to avoid the edge of the triangle
   int min_x = std::min(p0[0], std::min(p1[0], p2[0])) - 1;
@@ -141,15 +135,12 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
 
   for (int x = min_x; x != max_x; ++x) {
     for (int y = min_y; y != max_y; ++y) {
-      geometry::Vec<3, float> barycentric =
-          GetBarycentric(geometry::Vec<2, float>(
-                             {static_cast<float>(x), static_cast<float>(y)}),
-                         geometry::Vec<2, float>({static_cast<float>(p0[0]),
-                                                  static_cast<float>(p0[1])}),
-                         geometry::Vec<2, float>({static_cast<float>(p1[0]),
-                                                  static_cast<float>(p1[1])}),
-                         geometry::Vec<2, float>({static_cast<float>(p2[0]),
-                                                  static_cast<float>(p2[1])}));
+      Vec<3, float> barycentric = GetBarycentric(
+          Vec<2, float>({static_cast<float>(x), static_cast<float>(y)}),
+          Vec<2, float>({static_cast<float>(p0[0]), static_cast<float>(p0[1])}),
+          Vec<2, float>({static_cast<float>(p1[0]), static_cast<float>(p1[1])}),
+          Vec<2, float>(
+              {static_cast<float>(p2[0]), static_cast<float>(p2[1])}));
 
       if (barycentric[0] < 0 || barycentric[1] < 0 || barycentric[2] < 0) {
         continue;
@@ -166,7 +157,7 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
                                    barycentric[2] * p2[1],
                                0.f);
 
-        geometry::Vec<3, float> gl_FragCoord({
+        Vec<3, float> gl_FragCoord({
             bar_x,
             bar_y,
             z,
@@ -182,10 +173,10 @@ void OurGL::DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
   }
 }
 
-geometry::Vec<3, float> ConvertColorToVec(const RgbaColor& color) {
-  return geometry::Vec<3, float>({static_cast<float>(color.r) / 255.f - .5f,
-                                  static_cast<float>(color.g) / 255.f - .5f,
-                                  static_cast<float>(color.b) / 255.f - .5f});
+Vec<3, float> ConvertColorToVec(const RgbaColor& color) {
+  return Vec<3, float>({static_cast<float>(color.r) / 255.f - .5f,
+                        static_cast<float>(color.g) / 255.f - .5f,
+                        static_cast<float>(color.b) / 255.f - .5f});
 }
 
 }  // namespace our_gl

@@ -32,9 +32,9 @@
 namespace model {
 
 struct Vertex {
-  const geometry::Vec<3, float>& position;
-  const geometry::Vec<3, float>& normal;
-  const geometry::Vec<2, float>& texture_coords;
+  const Vec<3, float>& position;
+  const Vec<3, float>& normal;
+  const Vec<2, float>& texture_coords;
 };
 
 std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex);
@@ -49,8 +49,8 @@ class Model {
 
  private:
   std::vector<std::vector<Vertex>> faces_;
-  std::vector<geometry::Vec<3, float>> positions_;
-  std::vector<geometry::Vec<3, float>> normals_;
-  std::vector<geometry::Vec<2, float>> texture_coords_;
+  std::vector<Vec<3, float>> positions_;
+  std::vector<Vec<3, float>> normals_;
+  std::vector<Vec<2, float>> texture_coords_;
 };
 }  // namespace model
