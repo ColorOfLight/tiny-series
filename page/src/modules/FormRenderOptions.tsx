@@ -89,7 +89,7 @@ const FormRenderOptions = memo(
               </div>
             </Field>
             <Button
-              className="self-end mt-8 disabled:opacity-50"
+              className="self-end mt-8 disabled:bg-gray-100 disabled:text-gray-400"
               type="submit"
               disabled={hookResult.isDisabled || isRendering}
             >

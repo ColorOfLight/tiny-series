@@ -121,7 +121,10 @@ function App() {
         <TitleGroup />
         <div className="mt-6 flex gap-8 flex-col">
           <div className="flex flex-col">
-            <SelectRenderType onChange={handleRenderTypeChange} />
+            <SelectRenderType
+              onChange={handleRenderTypeChange}
+              disabled={imageLink == null}
+            />
             <div
               className="w-full bg-gray-300 aspect-square relative"
               ref={resultDivRef}
