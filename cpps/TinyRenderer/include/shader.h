@@ -27,49 +27,44 @@
 #include "./image.h"
 #include "./our_gl.h"
 
-class MainShader : public our_gl::IShader {
+class MainShader : public IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
-                                  int vertex_index) override;
-  our_gl::gl_Fragment ShadeFragment(
-      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
-      const geometry::Vec<3, float> barycentric) const override;
+  gl_Position ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                          int vertex_index) override;
+  gl_Fragment ShadeFragment(const OurGL& gl, Vec<3, float> gl_FragCoord,
+                            const Vec<3, float> barycentric) const override;
 
  private:
-  geometry::Mat<3, 3, float> varying_positions;
-  geometry::Mat<2, 3, float> varying_texcoords;
-  geometry::Mat<3, 3, float> varying_normals;
+  Mat<3, 3, float> varying_positions;
+  Mat<2, 3, float> varying_texcoords;
+  Mat<3, 3, float> varying_normals;
 };
 
-class DepthShader : public our_gl::IShader {
+class DepthShader : public IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
-                                  int vertex_index) override;
+  gl_Position ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                          int vertex_index) override;
 
-  our_gl::gl_Fragment ShadeFragment(
-      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
-      const geometry::Vec<3, float> barycentric) const override {
+  gl_Fragment ShadeFragment(const OurGL& gl, Vec<3, float> gl_FragCoord,
+                            const Vec<3, float> barycentric) const override {
     return RgbaColor(255, 255, 255);
   }
 
  private:
-  geometry::Mat<3, 3, float> varying_positions;
+  Mat<3, 3, float> varying_positions;
 };
 
-class ZShader : public our_gl::IShader {
+class ZShader : public IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
-                                  int vertex_index) override;
+  gl_Position ShadeVertex(const OurGL& gl, Vertex model_vertex,
+                          int vertex_index) override;
 
-  inline our_gl::gl_Fragment ShadeFragment(
-      const our_gl::OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
-      const geometry::Vec<3, float> barycentric) const override {
+  inline gl_Fragment ShadeFragment(
+      const OurGL& gl, Vec<3, float> gl_FragCoord,
+      const Vec<3, float> barycentric) const override {
     return RgbaColor(0, 0, 0, 0);
   }
 
  private:
-  geometry::Mat<3, 3, float> varying_positions;
+  Mat<3, 3, float> varying_positions;
 };

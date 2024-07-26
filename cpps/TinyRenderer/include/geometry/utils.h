@@ -27,8 +27,6 @@
 #include "./geometry/mat.h"
 #include "./geometry/vec.h"
 
-namespace geometry {
-
 inline Vec<3, float> GetNDC(const Vec<4, float>& vec) {
   if (vec[3] == 0) {
     throw std::runtime_error("GetNDC: Division by zero");
@@ -100,7 +98,7 @@ inline Mat<4, 4, float> Orthographic(float width, float height,
     throw std::runtime_error("Distance cannot be zero");
   }
 
-  Mat<4, 4, float> projection_matrix = geometry::GetIdentityMat<4, float>();
+  Mat<4, 4, float> projection_matrix = GetIdentityMat<4, float>();
 
   projection_matrix[0][0] = 2.0f / width;
   projection_matrix[1][1] = 2.0f / height;
@@ -153,5 +151,3 @@ inline float smoothstep(float edge0, float edge1, float x) {
   // Evaluate the smoothstep function
   return x * x * (3 - 2 * x);
 }
-
-}  // namespace geometry

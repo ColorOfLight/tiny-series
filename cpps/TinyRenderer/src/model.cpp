@@ -28,7 +28,6 @@
 #include <iostream>
 #include <sstream>
 
-namespace model {
 struct VertexIndex {
   int position_index;
   int texture_coords_index;
@@ -36,10 +35,10 @@ struct VertexIndex {
 };
 
 Model::Model(const std::string& file_name)
-    : positions_(std::vector<geometry::Vec<3, float>>()),
-      normals_(std::vector<geometry::Vec<3, float>>()),
-      texture_coords_(std::vector<geometry::Vec<2, float>>()),
-      faces_(std::vector<std::vector<model::Vertex>>()) {
+    : positions_(std::vector<Vec<3, float>>()),
+      normals_(std::vector<Vec<3, float>>()),
+      texture_coords_(std::vector<Vec<2, float>>()),
+      faces_(std::vector<std::vector<Vertex>>()) {
   std::ifstream file(file_name);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + file_name);
@@ -54,15 +53,15 @@ Model::Model(const std::string& file_name)
     iss >> prefix;
 
     if (prefix == "v") {
-      geometry::Vec<3, float> position;
+      Vec<3, float> position;
       iss >> position[0] >> position[1] >> position[2];
       positions_.push_back(position);
     } else if (prefix == "vn") {
-      geometry::Vec<3, float> normal;
+      Vec<3, float> normal;
       iss >> normal[0] >> normal[1] >> normal[2];
       normals_.push_back(normal);
     } else if (prefix == "vt") {
-      geometry::Vec<2, float> texture_coords;
+      Vec<2, float> texture_coords;
       iss >> texture_coords[0] >> texture_coords[1];
       texture_coords_.push_back(texture_coords);
     } else if (prefix == "f") {
@@ -107,11 +106,10 @@ Model::Model(const std::string& file_name)
             std::to_string(vertex_index.texture_coords_index));
       }
 
-      const geometry::Vec<3, float>& position =
+      const Vec<3, float>& position =
           positions_[vertex_index.position_index - 1];
-      const geometry::Vec<3, float>& normal =
-          normals_[vertex_index.normal_index - 1];
-      const geometry::Vec<2, float>& texture_coords =
+      const Vec<3, float>& normal = normals_[vertex_index.normal_index - 1];
+      const Vec<2, float>& texture_coords =
           texture_coords_[vertex_index.texture_coords_index - 1];
       vertices.push_back(Vertex{position, normal, texture_coords});
     }
@@ -121,13 +119,10 @@ Model::Model(const std::string& file_name)
 
 Model::~Model() {}
 
-const std::vector<model::Vertex>& Model::get(int index) const {
-  return faces_[index];
-}
+const std::vector<Vertex>& Model::get(int index) const { return faces_[index]; }
 
-std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex) {
+std::ostream& operator<<(std::ostream& os, const Vertex& vertex) {
   os << "Vertex(" << vertex.position << ", " << vertex.normal << ", "
      << vertex.texture_coords << ")";
   return os;
 }
-}  // namespace model

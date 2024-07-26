@@ -29,7 +29,7 @@
 #include "./render.h"
 
 int main() {
-  model::Model model("../assets/shark.obj");
+  Model model("../assets/shark.obj");
 
   Image<RgbaColor> diffuse_texture = ReadPng("../assets/shark.png");
 
@@ -38,8 +38,8 @@ int main() {
   int width = 800;
   int height = 800;
 
-  geometry::Vec<3, float> light_position = {0.0f, 0.0f, 2.0f};
-  geometry::Vec<3, float> camera_position = {1.0f, 1.0f, 1.0f};
+  Vec<3, float> light_position = {0.0f, 0.0f, 2.0f};
+  Vec<3, float> camera_position = {1.0f, 1.0f, 1.0f};
 
   RenderModelResult result =
       RenderModel(model, diffuse_texture, normal_map, width, height,

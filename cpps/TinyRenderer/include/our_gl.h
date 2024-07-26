@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -32,40 +33,38 @@
 #include "./image.h"
 #include "./model.h"
 
-namespace our_gl {
-typedef geometry::Vec<3, float> gl_Position;
+typedef Vec<3, float> gl_Position;
 typedef RgbaColor gl_Fragment;
 
 class OurGL;
 
 class IShader {
  public:
-  virtual gl_Position ShadeVertex(const OurGL& gl, model::Vertex model_vertex,
+  virtual gl_Position ShadeVertex(const OurGL& gl, Vertex model_vertex,
                                   int vertex_index) = 0;
-  virtual gl_Fragment ShadeFragment(
-      const OurGL& gl, geometry::Vec<3, float> gl_FragCoord,
-      const geometry::Vec<3, float> barycentric) const = 0;
+  virtual gl_Fragment ShadeFragment(const OurGL& gl, Vec<3, float> gl_FragCoord,
+                                    const Vec<3, float> barycentric) const = 0;
 };
 
 class OurGL {
  public:
-  geometry::Mat<4, 4, float> g_viewport_mat;
+  Mat<4, 4, float> g_viewport_mat;
   int g_width;
   int g_height;
 
-  geometry::Mat<4, 4, float> u_vpm_mat;  // view * projection * model
-  geometry::Mat<4, 4, float> u_light_vpm_mat;
-  geometry::Mat<4, 4, float> u_shadow_vpm_mat;
-  geometry::Vec<3, float> u_light_dir;
-  geometry::Vec<3, float> u_view_vector;
+  Mat<4, 4, float> u_vpm_mat;  // view * projection * model
+  Mat<4, 4, float> u_light_vpm_mat;
+  Mat<4, 4, float> u_shadow_vpm_mat;
+  Vec<3, float> u_light_dir;
+  Vec<3, float> u_view_vector;
   Image<RgbaColor> u_texture;
   Image<RgbaColor> u_tangent_normal_map;
   Image<GrayscaleColor>* u_shadow_depth_map;
 
   OurGL() : g_width(0), g_height(0) {}
 
-  void DrawModel(const model::Model& model, IShader& shader,
-                 Image<RgbaColor>& image, Image<GrayscaleColor>& z_buffer);
+  void DrawModel(const Model& model, IShader& shader, Image<RgbaColor>& image,
+                 Image<GrayscaleColor>& z_buffer);
 
  private:
   void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,
@@ -73,23 +72,21 @@ class OurGL {
                     Image<GrayscaleColor>& z_buffer);
 };
 
-geometry::Vec<3, float> GetBarycentric(const geometry::Vec<2, float>& target,
-                                       const geometry::Vec<2, float>& p0,
-                                       const geometry::Vec<2, float>& p1,
-                                       const geometry::Vec<2, float>& p2);
+Vec<3, float> GetBarycentric(const Vec<2, float>& target,
+                             const Vec<2, float>& p0, const Vec<2, float>& p1,
+                             const Vec<2, float>& p2);
 
-bool IsPointInTriangle(const geometry::Vec<2, int>& edge1,
-                       const geometry::Vec<2, int>& edge2,
-                       const geometry::Vec<2, int>& origin_from_point);
+bool IsPointInTriangle(const Vec<2, int>& edge1, const Vec<2, int>& edge2,
+                       const Vec<2, int>& origin_from_point);
 
-RgbaColor GetPhongColor(const geometry::Vec<3, float>& normal,
-                        const geometry::Vec<3, float>& view_vector,
-                        const geometry::Vec<3, float>& light_dir,
+RgbaColor GetPhongColor(const Vec<3, float>& normal,
+                        const Vec<3, float>& view_vector,
+                        const Vec<3, float>& light_dir,
                         const RgbaColor& texture_color, float diffuse = 1,
                         float specular = 0.5, float alpha = 16);
 
 template <class Color>
-Color FindNearestTextureColor(const geometry::Vec<2, float>& st,
+Color FindNearestTextureColor(const Vec<2, float>& st,
                               const Image<Color>& texture) {
   float normalized_s = std::fmod(st[0], 1.f);
   if (normalized_s < 0) {
@@ -110,6 +107,4 @@ Color FindNearestTextureColor(const geometry::Vec<2, float>& st,
   return texture.at(x, y);
 }
 
-geometry::Vec<3, float> ConvertColorToVec(const RgbaColor& color);
-
-}  // namespace our_gl
+Vec<3, float> ConvertColorToVec(const RgbaColor& color);

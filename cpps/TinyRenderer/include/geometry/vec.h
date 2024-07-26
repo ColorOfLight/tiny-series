@@ -30,8 +30,6 @@
 #include <initializer_list>
 #include <iostream>
 
-namespace geometry {
-
 const float kPi = 3.14159265358979323846f;
 
 template <size_t n, class t>
@@ -173,5 +171,3 @@ std::ostream &operator<<(std::ostream &s, const Vec<n, t> &v) {
 
   return s;
 }
-
-}  // namespace geometry

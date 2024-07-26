@@ -28,8 +28,6 @@
 
 #include "./geometry/vec.h"
 
-namespace geometry {
-
 template <size_t n, size_t m, class t>
 class Mat {
   // row-first order
@@ -217,5 +215,3 @@ std::ostream &operator<<(std::ostream &s, const Mat<n, m, t> &mat) {
 
   return s;
 }
-
-}  // namespace geometry
