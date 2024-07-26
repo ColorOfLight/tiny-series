@@ -29,15 +29,13 @@
 
 #include "./geometry/vec.h"
 
-namespace model {
-
 struct Vertex {
   const Vec<3, float>& position;
   const Vec<3, float>& normal;
   const Vec<2, float>& texture_coords;
 };
 
-std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex);
+std::ostream& operator<<(std::ostream& os, const Vertex& vertex);
 
 class Model {
  public:
@@ -53,4 +51,3 @@ class Model {
   std::vector<Vec<3, float>> normals_;
   std::vector<Vec<2, float>> texture_coords_;
 };
-}  // namespace model

@@ -41,7 +41,7 @@ class OurGL;
 
 class IShader {
  public:
-  virtual gl_Position ShadeVertex(const OurGL& gl, model::Vertex model_vertex,
+  virtual gl_Position ShadeVertex(const OurGL& gl, Vertex model_vertex,
                                   int vertex_index) = 0;
   virtual gl_Fragment ShadeFragment(const OurGL& gl, Vec<3, float> gl_FragCoord,
                                     const Vec<3, float> barycentric) const = 0;
@@ -64,8 +64,8 @@ class OurGL {
 
   OurGL() : g_width(0), g_height(0) {}
 
-  void DrawModel(const model::Model& model, IShader& shader,
-                 Image<RgbaColor>& image, Image<GrayscaleColor>& z_buffer);
+  void DrawModel(const Model& model, IShader& shader, Image<RgbaColor>& image,
+                 Image<GrayscaleColor>& z_buffer);
 
  private:
   void DrawTriangle(const std::array<gl_Position, 3>& gl_Positions,

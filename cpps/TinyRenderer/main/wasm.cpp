@@ -8,7 +8,7 @@
 
 void render(emscripten::val light_position_val,
             emscripten::val camera_position_val, int width, int height) {
-  model::Model model("model.obj");
+  Model model("model.obj");
   Image<RgbaColor> diffuse_texture = ReadPng("diffuse.png");
   Image<RgbaColor> normal_map = ReadPng("normal.png");
 

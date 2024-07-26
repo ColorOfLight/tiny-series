@@ -29,8 +29,7 @@
 
 class MainShader : public our_gl::IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl, Vertex model_vertex,
                                   int vertex_index) override;
   our_gl::gl_Fragment ShadeFragment(
       const our_gl::OurGL& gl, Vec<3, float> gl_FragCoord,
@@ -44,8 +43,7 @@ class MainShader : public our_gl::IShader {
 
 class DepthShader : public our_gl::IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl, Vertex model_vertex,
                                   int vertex_index) override;
 
   our_gl::gl_Fragment ShadeFragment(
@@ -60,8 +58,7 @@ class DepthShader : public our_gl::IShader {
 
 class ZShader : public our_gl::IShader {
  public:
-  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl,
-                                  model::Vertex model_vertex,
+  our_gl::gl_Position ShadeVertex(const our_gl::OurGL& gl, Vertex model_vertex,
                                   int vertex_index) override;
 
   inline our_gl::gl_Fragment ShadeFragment(

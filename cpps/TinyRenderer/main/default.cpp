@@ -29,7 +29,7 @@
 #include "./render.h"
 
 int main() {
-  model::Model model("../assets/shark.obj");
+  Model model("../assets/shark.obj");
 
   Image<RgbaColor> diffuse_texture = ReadPng("../assets/shark.png");
 

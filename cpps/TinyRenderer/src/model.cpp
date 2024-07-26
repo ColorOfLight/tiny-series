@@ -28,7 +28,6 @@
 #include <iostream>
 #include <sstream>
 
-namespace model {
 struct VertexIndex {
   int position_index;
   int texture_coords_index;
@@ -39,7 +38,7 @@ Model::Model(const std::string& file_name)
     : positions_(std::vector<Vec<3, float>>()),
       normals_(std::vector<Vec<3, float>>()),
       texture_coords_(std::vector<Vec<2, float>>()),
-      faces_(std::vector<std::vector<model::Vertex>>()) {
+      faces_(std::vector<std::vector<Vertex>>()) {
   std::ifstream file(file_name);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + file_name);
@@ -120,13 +119,10 @@ Model::Model(const std::string& file_name)
 
 Model::~Model() {}
 
-const std::vector<model::Vertex>& Model::get(int index) const {
-  return faces_[index];
-}
+const std::vector<Vertex>& Model::get(int index) const { return faces_[index]; }
 
-std::ostream& operator<<(std::ostream& os, const model::Vertex& vertex) {
+std::ostream& operator<<(std::ostream& os, const Vertex& vertex) {
   os << "Vertex(" << vertex.position << ", " << vertex.normal << ", "
      << vertex.texture_coords << ")";
   return os;
 }
-}  // namespace model

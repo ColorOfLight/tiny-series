@@ -30,11 +30,10 @@
 #include "./our_gl.h"
 #include "./shader.h"
 
-Image<GrayscaleColor> GenerateSsaoImage(const model::Model& model,
-                                        our_gl::OurGL& gl,
+Image<GrayscaleColor> GenerateSsaoImage(const Model& model, our_gl::OurGL& gl,
                                         Image<GrayscaleColor>& z_buffer);
 
-RenderModelResult RenderModel(const model::Model& model,
+RenderModelResult RenderModel(const Model& model,
                               const Image<RgbaColor>& diffuse_texture,
                               const Image<RgbaColor>& normal_map, int width,
                               int height, const Vec<3, float>& light_position,
@@ -97,8 +96,7 @@ RenderModelResult RenderModel(const model::Model& model,
 }
 
 // SSAO with simple angle calculation
-Image<GrayscaleColor> GenerateSsaoImage(const model::Model& model,
-                                        our_gl::OurGL& gl,
+Image<GrayscaleColor> GenerateSsaoImage(const Model& model, our_gl::OurGL& gl,
                                         Image<GrayscaleColor>& z_buffer) {
   Image<GrayscaleColor> ssao_image(gl.g_width, gl.g_height);
 

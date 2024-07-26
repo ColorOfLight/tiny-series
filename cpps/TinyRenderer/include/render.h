@@ -35,7 +35,7 @@ struct RenderModelResult {
   Image<GrayscaleColor> ao_buffer;
 };
 
-RenderModelResult RenderModel(const model::Model &model,
+RenderModelResult RenderModel(const Model &model,
                               const Image<RgbaColor> &diffuse_texture,
                               const Image<RgbaColor> &normal_map, int width,
                               int height, const Vec<3, float> &light_direction,

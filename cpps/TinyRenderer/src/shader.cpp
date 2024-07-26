@@ -28,7 +28,7 @@
 #include "./geometry/vec.h"
 
 our_gl::gl_Position MainShader::ShadeVertex(const our_gl::OurGL& gl,
-                                            model::Vertex model_vertex,
+                                            Vertex model_vertex,
                                             int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],
@@ -111,7 +111,7 @@ our_gl::gl_Fragment MainShader::ShadeFragment(
 }
 
 our_gl::gl_Position DepthShader::ShadeVertex(const our_gl::OurGL& gl,
-                                             model::Vertex model_vertex,
+                                             Vertex model_vertex,
                                              int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],
@@ -123,7 +123,7 @@ our_gl::gl_Position DepthShader::ShadeVertex(const our_gl::OurGL& gl,
 }
 
 our_gl::gl_Position ZShader::ShadeVertex(const our_gl::OurGL& gl,
-                                         model::Vertex model_vertex,
+                                         Vertex model_vertex,
                                          int vertex_index) {
   Vec<4, float> pos_4 =
       Vec<4, float>({model_vertex.position[0], model_vertex.position[1],

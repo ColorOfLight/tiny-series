@@ -33,7 +33,7 @@
 
 namespace our_gl {
 
-void OurGL::DrawModel(const model::Model& model, IShader& shader,
+void OurGL::DrawModel(const Model& model, IShader& shader,
                       Image<RgbaColor>& image,
                       Image<GrayscaleColor>& z_buffer) {
   for (int i = 0; i != model.size(); ++i) {
