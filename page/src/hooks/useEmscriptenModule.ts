@@ -11,14 +11,12 @@ const useEmscriptenModule = <M extends WasmModule<MF>, MF>(
 
   useEffect(() => {
     const initModule = async () => {
-      const wasmBin = await fetch(wasmBinaryPath);
-
       const module = await wasmModule({
         instantiateWasm: (
           imports: WebAssembly.Imports,
           successCallback: (instance: WebAssembly.Instance) => void
         ) => {
-          WebAssembly.instantiateStreaming(wasmBin, imports)
+          WebAssembly.instantiateStreaming(fetch(wasmBinaryPath), imports)
             .then((instance) => {
               successCallback(instance.instance);
               setIsLoaded(true);
