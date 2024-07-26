@@ -35,7 +35,6 @@ Makefile
 Thumbs.db
 
 # Compiled object files
-*.obj
 *.o
 *.lo
 *.la
@@ -114,14 +113,8 @@ __pycache__/
 # bin
 bin/
 
-# Test Assets
-assets/
-
 # Result TGA files
 *.tga
 
 # emsdk
 emsdk/
-
-# Result PNG files
-*.png
