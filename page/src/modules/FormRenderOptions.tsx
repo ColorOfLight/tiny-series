@@ -13,11 +13,12 @@ import { UseFormRenderOptionsResult } from "./FormRenderOptions.hook";
 export interface FormRenderOptionsProps
   extends ComponentPropsWithoutRef<"form"> {
   hookResult: UseFormRenderOptionsResult;
+  isRendering: boolean;
 }
 
 const FormRenderOptions = memo(
   forwardRef<HTMLFormElement, FormRenderOptionsProps>(
-    ({ hookResult, ...restProps }, ref) => {
+    ({ hookResult, isRendering, ...restProps }, ref) => {
       return (
         <form {...restProps} ref={ref}>
           <Fieldset className="border px-8 py-6 flex flex-col gap-6">
@@ -90,7 +91,7 @@ const FormRenderOptions = memo(
             <Button
               className="self-end mt-8 disabled:opacity-50"
               type="submit"
-              disabled={hookResult.isDisabled}
+              disabled={hookResult.isDisabled || isRendering}
             >
               Render Image
             </Button>

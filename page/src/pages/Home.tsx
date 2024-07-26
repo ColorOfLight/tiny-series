@@ -3,12 +3,11 @@ import { useCallback, useMemo, useState, useRef } from "react";
 import TitleGroup from "../modules/TitleGroup";
 import SelectRenderType from "../modules/SelectRenderType";
 import FieldSetRenderOptions from "../modules/FormRenderOptions";
-
 import useFormRenderOptions from "../modules/FormRenderOptions.hook";
-
 import RenderWorker from "../workers/tiny-renderer?worker";
 import { WorkerResponse } from "../workers/tiny-renderer";
 import { generateUrlFromBuffer } from "../utils/image";
+import LoadingCover from "../components/LoadingCover";
 
 function App() {
   const [outImageLink, setOutImageLink] = useState<string>();
@@ -16,6 +15,7 @@ function App() {
   const [shadowMapLink, setShadowMapLink] = useState<string>();
   const [aoMapLink, setAoMapLink] = useState<string>();
   const [renderType, setRenderType] = useState<string>("result");
+  const [isRendering, setIsRendering] = useState<boolean>(false);
 
   const resultDivRef = useRef<HTMLDivElement>(null);
 
@@ -25,66 +25,78 @@ function App() {
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      if (!resultDivRef.current) {
-        throw new Error("Div tag for result is not found");
-      }
-
-      const { model, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
-        formHookResult;
-
-      if (model == null) {
-        throw new Error("Model is not set");
-      }
-
-      if (lightX == null || lightY == null || lightZ == null) {
-        throw new Error("Light position is not set");
-      }
-
-      if (cameraX == null || cameraY == null || cameraZ == null) {
-        throw new Error("Camera position is not set");
-      }
-
-      const lightPosition = [
-        Number.parseFloat(lightX),
-        Number.parseFloat(lightY),
-        Number.parseFloat(lightZ),
-      ];
-
-      const cameraPosition = [
-        Number.parseFloat(cameraX),
-        Number.parseFloat(cameraY),
-        Number.parseFloat(cameraZ),
-      ];
-
-      const width = resultDivRef.current.clientWidth;
-      const height = resultDivRef.current.clientHeight;
-
-      const worker = new RenderWorker();
-      worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
-        const data = e.data;
-
-        if (data.type === "initComplete" && data.success) {
-          worker.postMessage({
-            type: "render",
-            model,
-            lightPosition,
-            cameraPosition,
-            width,
-            height,
-          });
-        } else if (data.type === "renderComplete") {
-          setOutImageLink(generateUrlFromBuffer(data.outputPngData));
-          setZBufferLink(generateUrlFromBuffer(data.zBufferPngData));
-          setShadowMapLink(generateUrlFromBuffer(data.shadowMapPngData));
-          setAoMapLink(generateUrlFromBuffer(data.aoPngData));
+      try {
+        if (isRendering) {
+          throw new Error("Rendering is in progress");
         }
-      };
 
-      worker.postMessage({
-        type: "init",
-      });
+        if (!resultDivRef.current) {
+          throw new Error("Div tag for result is not found");
+        }
+
+        setIsRendering(true);
+
+        const { model, cameraX, cameraY, cameraZ, lightX, lightY, lightZ } =
+          formHookResult;
+
+        if (model == null) {
+          throw new Error("Model is not set");
+        }
+
+        if (lightX == null || lightY == null || lightZ == null) {
+          throw new Error("Light position is not set");
+        }
+
+        if (cameraX == null || cameraY == null || cameraZ == null) {
+          throw new Error("Camera position is not set");
+        }
+
+        const lightPosition = [
+          Number.parseFloat(lightX),
+          Number.parseFloat(lightY),
+          Number.parseFloat(lightZ),
+        ];
+
+        const cameraPosition = [
+          Number.parseFloat(cameraX),
+          Number.parseFloat(cameraY),
+          Number.parseFloat(cameraZ),
+        ];
+
+        const width = resultDivRef.current.clientWidth;
+        const height = resultDivRef.current.clientHeight;
+
+        const worker = new RenderWorker();
+        worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
+          const data = e.data;
+
+          if (data.type === "initComplete" && data.success) {
+            worker.postMessage({
+              type: "render",
+              model,
+              lightPosition,
+              cameraPosition,
+              width,
+              height,
+            });
+          } else if (data.type === "renderComplete") {
+            setOutImageLink(generateUrlFromBuffer(data.outputPngData));
+            setZBufferLink(generateUrlFromBuffer(data.zBufferPngData));
+            setShadowMapLink(generateUrlFromBuffer(data.shadowMapPngData));
+            setAoMapLink(generateUrlFromBuffer(data.aoPngData));
+            setIsRendering(false);
+          }
+        };
+
+        worker.postMessage({
+          type: "init",
+        });
+      } catch (e) {
+        setIsRendering(false);
+        throw e;
+      }
     },
-    [formHookResult]
+    [isRendering, formHookResult]
   );
 
   const handleRenderTypeChange = useCallback(
@@ -111,15 +123,23 @@ function App() {
           <div className="flex flex-col">
             <SelectRenderType onChange={handleRenderTypeChange} />
             <div
-              className="w-full bg-gray-300 aspect-square"
+              className="w-full bg-gray-300 aspect-square relative"
               ref={resultDivRef}
             >
+              {isRendering && (
+                <LoadingCover>
+                  <p className="text-gray-300">
+                    Rendering worker is running...
+                  </p>
+                </LoadingCover>
+              )}
               {imageLink && <img src={imageLink} alt="result image" />}
             </div>
           </div>
           <FieldSetRenderOptions
             hookResult={formHookResult}
             onSubmit={handleSubmitOptions}
+            isRendering={isRendering}
           />
         </div>
       </div>
