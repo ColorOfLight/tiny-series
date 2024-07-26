@@ -49,17 +49,30 @@ function App() {
         writeFileToFS(emModule, modelAsset.normal, "/normal.png"),
       ]);
 
-      const cameraPosition = [
-        Number(cameraX),
-        Number(cameraY),
-        Number(cameraZ),
+      if (lightX == null || lightY == null || lightZ == null) {
+        throw new Error("Light position is not set");
+      }
+
+      if (cameraX == null || cameraY == null || cameraZ == null) {
+        throw new Error("Camera position is not set");
+      }
+
+      const lightPosition = [
+        Number.parseFloat(lightX),
+        Number.parseFloat(lightY),
+        Number.parseFloat(lightZ),
       ];
-      const lightDirection = [Number(lightX), Number(lightY), Number(lightZ)];
+
+      const cameraPosition = [
+        Number.parseFloat(cameraX),
+        Number.parseFloat(cameraY),
+        Number.parseFloat(cameraZ),
+      ];
 
       const width = resultDivRef.current.clientWidth;
       const height = resultDivRef.current.clientHeight;
 
-      emModule.render(lightDirection, cameraPosition, width, height);
+      emModule.render(lightPosition, cameraPosition, width, height);
 
       setOutImageLink(getUrlFromFS(emModule, "/output.png"));
       setZBufferLink(getUrlFromFS(emModule, "/z_buffer.png"));

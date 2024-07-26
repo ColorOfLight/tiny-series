@@ -2,7 +2,7 @@ import { WasmModule } from "./_types";
 
 interface ModuleFunctions {
   render: (
-    lightDirection: number[],
+    lightPosition: number[],
     cameraPosition: number[],
     width: number,
     height: number

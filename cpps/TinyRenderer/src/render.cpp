@@ -38,7 +38,7 @@ RenderModelResult RenderModel(const model::Model& model,
                               const Image<RgbaColor>& diffuse_texture,
                               const Image<RgbaColor>& normal_map, int width,
                               int height,
-                              const geometry::Vec<3, float>& light_direction,
+                              const geometry::Vec<3, float>& light_position,
                               const geometry::Vec<3, float>& camera_position) {
   Image<RgbaColor> frame(width, height);
   Image<GrayscaleColor> z_buffer(width, height);
@@ -51,6 +51,9 @@ RenderModelResult RenderModel(const model::Model& model,
   geometry::Vec<3, float> up{0, 1, 0};
   geometry::Vec<3, float> center{0, 0, 0};
 
+  geometry::Vec<3, float> light_direction =
+      (light_center - light_position).Normalize();
+
   geometry::Mat<4, 4, float> viewport_matrix =
       geometry::Viewport(0, 0, width, height, 1);
   geometry::Mat<4, 4, float> perspective_matrix = geometry::Perspective(3);
@@ -58,7 +61,7 @@ RenderModelResult RenderModel(const model::Model& model,
       geometry::ViewMatrix(camera_position, center, up);
 
   geometry::Mat<4, 4, float> light_view_matrix =
-      geometry::ViewMatrix(light_center - light_direction, light_center, up);
+      geometry::ViewMatrix(light_position, light_center, up);
   geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(4);
   geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 

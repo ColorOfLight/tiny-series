@@ -62,7 +62,7 @@ const FormRenderOptions = memo(
               </div>
             </Field>
             <Field>
-              <Label className="block">Light Direction</Label>
+              <Label className="block">Light Position</Label>
               <div className="flex gap-2">
                 <Input
                   className="w-16"
