@@ -6,16 +6,23 @@
 #include "model.h"
 #include "render.h"
 
-void render() {
+void render(emscripten::val light_direction_val,
+            emscripten::val camera_position_val, int width, int height) {
   model::Model model("model.obj");
   Image<RgbaColor> diffuse_texture = ReadPng("diffuse.png");
   Image<RgbaColor> normal_map = ReadPng("normal.png");
 
-  int width = 800;
-  int height = 800;
+  std::vector<float> light_direction_vector =
+      emscripten::vecFromJSArray<float>(light_direction_val);
+  std::vector<float> camera_position_vector =
+      emscripten::vecFromJSArray<float>(camera_position_val);
 
-  geometry::Vec<3, float> light_direction = {0.0f, 0.0f, -2.0f};
-  geometry::Vec<3, float> camera_position = {1.0f, 1.0f, 1.0f};
+  geometry::Vec<3, float> light_direction = {light_direction_vector[0],
+                                             light_direction_vector[1],
+                                             light_direction_vector[2]};
+  geometry::Vec<3, float> camera_position = {camera_position_vector[0],
+                                             camera_position_vector[1],
+                                             camera_position_vector[2]};
 
   RenderModelResult result =
       RenderModel(model, diffuse_texture, normal_map, width, height,

@@ -57,7 +57,10 @@ function App() {
           writeFileToFS(emModule, "/models/shark/shark_nm.png", "/normal.png"),
         ]);
 
-        emModule.render();
+        const cameraPosition = [1, 1, 2];
+        const lightDirection = [0, 0, -1];
+
+        emModule.render(lightDirection, cameraPosition, 800, 800);
 
         setOutImageLink(getUrlFromFS(emModule, "/output.png"));
         setZBufferLink(getUrlFromFS(emModule, "/z_buffer.png"));
