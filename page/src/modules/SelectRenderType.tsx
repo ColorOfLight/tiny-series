@@ -11,7 +11,10 @@ const SelectRenderType = memo(
         <Select
           name="renderType"
           aria-label="Project status"
-          className={clsx("mb-4 self-end", className)}
+          className={clsx(
+            "mb-4 self-end disabled:bg-gray-100 disabled:text-gray-400",
+            className
+          )}
           {...restProps}
           ref={ref}
         >
