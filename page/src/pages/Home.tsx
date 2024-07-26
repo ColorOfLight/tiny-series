@@ -131,7 +131,7 @@ function App() {
             >
               {isRendering && (
                 <LoadingCover>
-                  <p className="text-gray-300">
+                  <p className="text-gray-300 text-sm sm:text-base">
                     Rendering worker is running...
                   </p>
                 </LoadingCover>
