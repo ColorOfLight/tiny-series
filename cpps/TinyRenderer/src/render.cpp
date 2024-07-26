@@ -47,22 +47,33 @@ RenderModelResult RenderModel(const model::Model& model,
   MainShader shader;
   DepthShader depth_shader;
 
-  geometry::Vec<3, float> light_center{0, 0, 0};
-  geometry::Vec<3, float> up{0, 1, 0};
   geometry::Vec<3, float> center{0, 0, 0};
 
+  geometry::Vec<3, float> up{0, 1, 0};
+
+  geometry::Vec<3, float> camera_up =
+      !geometry::IsParallel((camera_position - center), up)
+          ? up
+          : geometry::Vec<3, float>({0, 0, 1});
+
+  geometry::Vec<3, float> light_up =
+      !geometry::IsParallel((light_position - center), up)
+          ? up
+          : geometry::Vec<3, float>({0, 0, 1});
+
   geometry::Vec<3, float> light_direction =
-      (light_center - light_position).Normalize();
+      (center - light_position).Normalize();
 
   geometry::Mat<4, 4, float> viewport_matrix =
       geometry::Viewport(0, 0, width, height, 1);
   geometry::Mat<4, 4, float> perspective_matrix = geometry::Perspective(3);
   const geometry::Mat<4, 4, float> view_matrix =
-      geometry::ViewMatrix(camera_position, center, up);
+      geometry::ViewMatrix(camera_position, center, camera_up);
 
   geometry::Mat<4, 4, float> light_view_matrix =
-      geometry::ViewMatrix(light_position, light_center, up);
-  geometry::Mat<4, 4, float> light_proj_matrix = geometry::Orthographic(4);
+      geometry::ViewMatrix(light_position, center, light_up);
+  geometry::Mat<4, 4, float> light_proj_matrix =
+      geometry::Orthographic(4, 4, 4);
   geometry::Mat<4, 4, float> light_vpm = light_proj_matrix * light_view_matrix;
 
   our_gl::OurGL gl;

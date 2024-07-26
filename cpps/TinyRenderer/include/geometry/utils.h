@@ -42,6 +42,10 @@ inline Vec<3, float> Reflect(const Vec<3, float>& incident,
   return (incident - normal * 2 * (incident * normal)) * (-1);
 }
 
+inline bool IsParallel(const Vec<3, float>& a, const Vec<3, float>& b) {
+  return (a ^ b).length() == 0;
+}
+
 template <size_t n, class t>
 inline Mat<n, n, t> GetIdentityMat() {
   Mat<n, n, t> identity;
@@ -82,13 +86,24 @@ inline Mat<4, 4, float> Perspective(float distance) {
   return perspective;
 }
 
-inline Mat<4, 4, float> Orthographic(float distance) {
+inline Mat<4, 4, float> Orthographic(float width, float height,
+                                     float distance) {
+  if (width == 0) {
+    throw std::runtime_error("Width cannot be zero");
+  }
+
+  if (height == 0) {
+    throw std::runtime_error("Height cannot be zero");
+  }
+
   if (distance == 0) {
     throw std::runtime_error("Distance cannot be zero");
   }
 
   Mat<4, 4, float> projection_matrix = geometry::GetIdentityMat<4, float>();
 
+  projection_matrix[0][0] = 2.0f / width;
+  projection_matrix[1][1] = 2.0f / height;
   projection_matrix[2][2] = 2.0f / distance;
   projection_matrix[2][3] = 1.0f;
 
