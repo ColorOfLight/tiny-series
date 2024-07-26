@@ -7,6 +7,7 @@ import FieldSetRenderOptions from "../modules/FormRenderOptions";
 import useFormRenderOptions from "../modules/FormRenderOptions.hook";
 
 import RenderWorker from "../workers/tiny-renderer?worker";
+import { WorkerResponse } from "../workers/tiny-renderer";
 import { generateUrlFromBuffer } from "../utils/image";
 
 function App() {
@@ -59,7 +60,7 @@ function App() {
       const height = resultDivRef.current.clientHeight;
 
       const worker = new RenderWorker();
-      worker.onmessage = (e) => {
+      worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
         const data = e.data;
 
         if (data.type === "initComplete" && data.success) {

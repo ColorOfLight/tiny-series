@@ -19,13 +19,29 @@ interface RenderMessage {
   height: number;
 }
 
+type WorkerMessage = InitMessage | RenderMessage;
+
+interface InitCompleteMessage {
+  type: "initComplete";
+  success: boolean;
+  error?: Error;
+}
+
+interface RenderCompleteMessage {
+  type: "renderComplete";
+  outputPngData: ArrayBuffer;
+  zBufferPngData: ArrayBuffer;
+  shadowMapPngData: ArrayBuffer;
+  aoPngData: ArrayBuffer;
+}
+
+export type WorkerResponse = InitCompleteMessage | RenderCompleteMessage;
+
 interface ModelAsset {
   obj: string;
   diffuse: string;
   normal: string;
 }
-
-type WorkerMessage = InitMessage | RenderMessage;
 
 const modelAssets: Record<string, ModelAsset> = {
   shark: {
