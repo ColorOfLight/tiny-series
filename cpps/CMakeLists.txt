@@ -36,3 +36,4 @@ file(GLOB_RECURSE COMMON_SOURCES common/*.cpp common/*.h third-party/*.cpp third
 
 # Add subdirectories for each project
 add_subdirectory(TinyRenderer)
+add_subdirectory(TinyRaytracer)
