@@ -31,5 +31,8 @@ if(WASM)
     endif()
 endif()
 
+include_directories(common third-party)
+file(GLOB_RECURSE COMMON_SOURCES common/*.cpp common/*.h third-party/*.cpp third-parth/*.h)
+
 # Add subdirectories for each project
 add_subdirectory(TinyRenderer)
