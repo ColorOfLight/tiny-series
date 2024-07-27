@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -23,18 +22,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
+#include "image.h"
 
-#include "file.h"
-#include "render.h"
-
-int main() {
-  int width = 1280;
-  int height = 720;
-
-  Image<RgbaColor> result = render(width, height);
-
-  WritePng("../result/result.png", result);
-
-  return 0;
-}
+Image<RgbaColor> render(int width, int height);

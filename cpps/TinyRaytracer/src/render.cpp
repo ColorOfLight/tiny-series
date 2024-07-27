@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -23,18 +22,18 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
-#include "file.h"
 #include "render.h"
 
-int main() {
-  int width = 1280;
-  int height = 720;
+Image<RgbaColor> render(int width, int height) {
+  Image<RgbaColor> image(width, height);
 
-  Image<RgbaColor> result = render(width, height);
+  for (int j = 0; j != height; ++j) {
+    for (int i = 0; i != width; ++i) {
+      int r = (j + 1) * 255 / height;
+      int g = (i + 1) * 255 / width;
+      image.set(i, j, RgbaColor(r, g, 0));
+    }
+  }
 
-  WritePng("../result/result.png", result);
-
-  return 0;
+  return image;
 }
