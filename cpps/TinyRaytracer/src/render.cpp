@@ -41,7 +41,8 @@ RgbaColor cement_gray(static_cast<uint8_t>(255 * 0.5),
                       static_cast<uint8_t>(255 * 0.5));
 
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
-                  const std::vector<Sphere> &spheres, const Light &light,
+                  const std::vector<Sphere> &spheres,
+                  const std::vector<Light> &lights,
                   const RgbaColor &background_color) {
   float ray_length = std::numeric_limits<float>::max();
 
@@ -67,14 +68,21 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
 
   Vec<3, float> intersection_point = origin + direction * nearest_distance;
   Vec<3, float> normal = target_sphere.GetNormal(intersection_point);
-  Vec<3, float> light_direction =
-      (intersection_point - light.GetPosition()).Normalize();
-  float diffuse_intensity =
-      std::max(0.f, light.GetIntensity() * (light_direction * (-1) * normal));
 
   RgbaColor base_color = target_sphere.GetColor();
 
-  return base_color * diffuse_intensity;
+  float diffuse_intensity_sum = 0;
+
+  for (const Light &light : lights) {
+    Vec<3, float> light_direction =
+        (intersection_point - light.GetPosition()).Normalize();
+    float diffuse_intensity =
+        std::max(0.f, light.GetIntensity() * (light_direction * (-1) * normal));
+
+    diffuse_intensity_sum += diffuse_intensity;
+  }
+
+  return base_color * std::min(diffuse_intensity_sum, 1.f);
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
@@ -89,7 +97,9 @@ Image<RgbaColor> render(int width, int height, float y_fov,
   spheres.push_back(Sphere(coral_red, 0.5f, Vec<3, float>({0.125, 0, -2.5})));
   spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({1, 0.5, -1.5})));
 
-  Light light(Vec<3, float>({-1, 2, 0}));
+  std::vector<Light> lights;
+
+  lights.push_back(Light(Vec<3, float>({-1, 2, 0})));
 
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
@@ -104,7 +114,7 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
       image.set(
           i, j,
-          CastRay(camera_position, ray_direction, spheres, light, sky_blue));
+          CastRay(camera_position, ray_direction, spheres, lights, sky_blue));
     }
   }
 
