@@ -24,19 +24,38 @@
 
 #pragma once
 
+#include "./image.h"
 #include "geometry/vec.h"
 
 class Sphere {
  public:
-  Sphere() : _radius(1), _center(Vec<3, float>()) {}
-  explicit Sphere(float radius) : _radius(radius), _center(Vec<3, float>()) {}
-  Sphere(float radius, const Vec<3, float> &center)
-      : _radius(radius), _center(center) {}
+  Sphere()
+      : _color(RgbaColor(255, 255, 255)),
+        _radius(1),
+        _center(Vec<3, float>()) {}
+  explicit Sphere(const RgbaColor &color)
+      : _color(color), _radius(1), _center(Vec<3, float>()) {}
+  explicit Sphere(const RgbaColor &color, float radius)
+      : _color(color), _radius(radius), _center(Vec<3, float>()) {
+    if (radius < 0) {
+      throw new std::out_of_range("The radius must be positive.");
+    }
+  }
+  Sphere(const RgbaColor &color, float radius, const Vec<3, float> &center)
+      : _color(color), _radius(radius), _center(center) {
+    if (radius < 0) {
+      throw new std::out_of_range("The radius must be positive.");
+    }
+  }
 
-  bool GetIsIntersecting(const Vec<3, float> &origin,
-                         const Vec<3, float> &direction, float length) const;
+  RgbaColor GetColor() const { return _color; }
+
+  float GetIntersectionDistance(const Vec<3, float> &origin,
+                                const Vec<3, float> &direction,
+                                float rayLength) const;
 
  private:
   float _radius;
   Vec<3, float> _center;
+  RgbaColor _color;
 };

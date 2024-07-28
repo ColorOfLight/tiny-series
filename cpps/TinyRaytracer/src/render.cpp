@@ -29,10 +29,8 @@
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const Sphere &sphere) {
   float ray_length = std::numeric_limits<float>::max();
-  if (sphere.GetIsIntersecting(origin, direction, ray_length)) {
-    return RgbaColor(static_cast<uint8_t>(255 * 0.2),
-                     static_cast<uint8_t>(255 * 0.7),
-                     static_cast<uint8_t>(255 * 0.8));
+  if (sphere.GetIntersectionDistance(origin, direction, ray_length) >= 0) {
+    return sphere.GetColor();
   }
   return RgbaColor(0, 0, 0);
 }
@@ -41,7 +39,10 @@ Image<RgbaColor> render(int width, int height, float y_fov,
                         const Vec<3, float> camera_position) {
   Image<RgbaColor> image(width, height);
 
-  Sphere sphere(0.5f, Vec<3, float>({0.5, 0.5, 0}));
+  RgbaColor sphere_color(static_cast<uint8_t>(255 * 0.2),
+                         static_cast<uint8_t>(255 * 0.7),
+                         static_cast<uint8_t>(255 * 0.8));
+  Sphere sphere(sphere_color, 0.5f, Vec<3, float>({0.5, 0.5, 0}));
 
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
