@@ -105,6 +105,12 @@ class Image {
     data_ = temp;
   }
 
+  void Fill(const Color& color) {
+    for (int i = 0; i != data_.size(); ++i) {
+      data_[i] = color;
+    }
+  }
+
   Color at(int x, int y) const {
     if (x < 0 || x >= width_) {
       throw std::out_of_range("x: " + std::to_string(x) +
