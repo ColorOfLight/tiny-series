@@ -30,11 +30,10 @@
 #include "render.h"
 
 int main() {
-  int width = 1280;
+  int width = 1200;
   int height = 720;
 
-  Image<RgbaColor> result =
-      render(width, height, 120, Vec<3, float>({0, 0, 1}));
+  Image<RgbaColor> result = render(width, height, 50, Vec<3, float>({0, 0, 1}));
 
   WritePng("../result/result.png", result);
 
