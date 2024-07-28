@@ -26,13 +26,15 @@
 #include <iostream>
 
 #include "file.h"
+#include "geometry/vec.h"
 #include "render.h"
 
 int main() {
   int width = 1280;
   int height = 720;
 
-  Image<RgbaColor> result = render(width, height);
+  Image<RgbaColor> result =
+      render(width, height, 120, Vec<3, float>({0, 0, 1}));
 
   WritePng("../result/result.png", result);
 

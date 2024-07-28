@@ -24,8 +24,19 @@
 
 #pragma once
 
-#include "./geometry/vec.h"
-#include "./image.h"
+#include "geometry/vec.h"
 
-Image<RgbaColor> render(int width, int height, float y_fov,
-                        const Vec<3, float> camera_position);
+class Sphere {
+ public:
+  Sphere() : _radius(1), _center(Vec<3, float>()) {}
+  explicit Sphere(float radius) : _radius(radius), _center(Vec<3, float>()) {}
+  Sphere(float radius, const Vec<3, float> &center)
+      : _radius(radius), _center(center) {}
+
+  bool GetIsIntersecting(const Vec<3, float> &origin,
+                         const Vec<3, float> &direction, float length) const;
+
+ private:
+  float _radius;
+  Vec<3, float> _center;
+};

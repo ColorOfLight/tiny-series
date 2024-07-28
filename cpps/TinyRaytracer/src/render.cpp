@@ -22,16 +22,39 @@
  * SOFTWARE.
  */
 
-#include "render.h"
+#include "./render.h"
 
-Image<RgbaColor> render(int width, int height) {
+#include "./shape.h"
+
+RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
+                  const Sphere &sphere) {
+  float ray_length = std::numeric_limits<float>::max();
+  if (sphere.GetIsIntersecting(origin, direction, ray_length)) {
+    return RgbaColor(static_cast<uint8_t>(255 * 0.2),
+                     static_cast<uint8_t>(255 * 0.7),
+                     static_cast<uint8_t>(255 * 0.8));
+  }
+  return RgbaColor(0, 0, 0);
+}
+
+Image<RgbaColor> render(int width, int height, float y_fov,
+                        const Vec<3, float> camera_position) {
   Image<RgbaColor> image(width, height);
+
+  Sphere sphere(0.5f, Vec<3, float>({0.5, 0.5, 0}));
+
+  float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
   for (int j = 0; j != height; ++j) {
     for (int i = 0; i != width; ++i) {
-      int r = (j + 1) * 255 / height;
-      int g = (i + 1) * 255 / width;
-      image.set(i, j, RgbaColor(r, g, 0));
+      float x = (2 * (i + 0.5f) / static_cast<float>(width) - 1) *
+                tan_y_fov_half * width / height;
+      float y =
+          (2 * (j + 0.5f) / static_cast<float>(height) - 1) * tan_y_fov_half;
+
+      Vec<3, float> ray_direction = Vec<3, float>({x, y, -1.f}).Normalize();
+
+      image.set(i, j, CastRay(camera_position, ray_direction, sphere));
     }
   }
 
