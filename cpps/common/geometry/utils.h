@@ -39,7 +39,7 @@ inline Vec<3, float> GetNDC(const Vec<4, float>& vec) {
 
 inline Vec<3, float> Reflect(const Vec<3, float>& incident,
                              const Vec<3, float>& normal) {
-  return (incident - normal * 2 * (incident * normal)) * (-1);
+  return (incident - normal * 2 * (incident * normal));
 }
 
 inline bool IsParallel(const Vec<3, float>& a, const Vec<3, float>& b) {
