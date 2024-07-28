@@ -104,8 +104,8 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
   spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({-1, 0, -3.5})));
   spheres.push_back(
-      Sphere(coral_red, 0.5f, Vec<3, float>({-0.5, -0.375, -2.75})));
-  spheres.push_back(Sphere(coral_red, 0.5f, Vec<3, float>({0.125, 0, -2.5})));
+      Sphere(coral_red, 0.5f, Vec<3, float>({-0.5, -0.375, -2.5})));
+  spheres.push_back(Sphere(coral_red, 0.5f, Vec<3, float>({0.125, 0, -3})));
   spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({1, 0.5, -1.5})));
 
   std::vector<Light> lights;
