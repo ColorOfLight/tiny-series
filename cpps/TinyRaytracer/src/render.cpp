@@ -26,6 +26,13 @@
 
 #include "./shape.h"
 
+RgbaColor sky_blue(static_cast<uint8_t>(255 * 0.2),
+                   static_cast<uint8_t>(255 * 0.7),
+                   static_cast<uint8_t>(255 * 0.8));
+RgbaColor coral_red(static_cast<uint8_t>(255 * 0.8),
+                    static_cast<uint8_t>(255 * 0.2),
+                    static_cast<uint8_t>(255 * 0.2));
+
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const Sphere &sphere) {
   float ray_length = std::numeric_limits<float>::max();
@@ -38,11 +45,7 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
 Image<RgbaColor> render(int width, int height, float y_fov,
                         const Vec<3, float> camera_position) {
   Image<RgbaColor> image(width, height);
-
-  RgbaColor sphere_color(static_cast<uint8_t>(255 * 0.2),
-                         static_cast<uint8_t>(255 * 0.7),
-                         static_cast<uint8_t>(255 * 0.8));
-  Sphere sphere(sphere_color, 0.5f, Vec<3, float>({0.5, 0.5, 0}));
+  Sphere sphere(coral_red, 0.5f, Vec<3, float>({0.5, 0.5, 0}));
 
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
