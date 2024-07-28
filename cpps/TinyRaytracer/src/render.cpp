@@ -79,6 +79,30 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   for (const Light &light : lights) {
     Vec<3, float> light_direction =
         (intersection_point - light.GetPosition()).Normalize();
+
+    Vec<3, float> shadow_origin = light_direction * (-1) * normal >= 0
+                                      ? intersection_point + normal * kEpsilon
+                                      : intersection_point - normal * kEpsilon;
+
+    bool is_shadowed = false;
+    for (const Sphere &sphere : spheres) {
+      if (&sphere == &target_sphere) {
+        continue;
+      }
+
+      float shadow_distance = sphere.GetIntersectionDistance(
+          shadow_origin, light_direction * (-1),
+          (light.GetPosition() - shadow_origin).length());
+      if (shadow_distance >= 0) {
+        is_shadowed = true;
+        break;
+      }
+    }
+
+    if (is_shadowed) {
+      continue;
+    }
+
     float diffuse_intensity =
         std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
 
