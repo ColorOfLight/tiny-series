@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "./geometry/utils.h"
 #include "./light.h"
 #include "./shape.h"
 
@@ -39,6 +40,7 @@ RgbaColor coral_red(static_cast<uint8_t>(255 * 0.8),
 RgbaColor cement_gray(static_cast<uint8_t>(255 * 0.5),
                       static_cast<uint8_t>(255 * 0.5),
                       static_cast<uint8_t>(255 * 0.5));
+RgbaColor white(255, 255, 255);
 
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<Sphere> &spheres,
@@ -72,17 +74,26 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   RgbaColor base_color = target_sphere.GetColor();
 
   float diffuse_intensity_sum = 0;
+  float specular_intensity_sum = 0;
 
   for (const Light &light : lights) {
     Vec<3, float> light_direction =
         (intersection_point - light.GetPosition()).Normalize();
     float diffuse_intensity =
-        std::max(0.f, light.GetIntensity() * (light_direction * (-1) * normal));
+        std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
 
     diffuse_intensity_sum += diffuse_intensity;
+
+    Vec<3, float> reflection = Reflect(light_direction, normal);
+    float specular_intensity =
+        std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
+        light.GetIntensity() * 0.5;
+
+    specular_intensity_sum += specular_intensity;
   }
 
-  return base_color * std::min(diffuse_intensity_sum, 1.f);
+  return base_color * std::min(diffuse_intensity_sum, 1.f) +
+         white * std::min(specular_intensity_sum, 1.f);
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
