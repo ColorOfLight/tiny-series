@@ -27,6 +27,8 @@
 #include "./geometry/mat.h"
 #include "./geometry/vec.h"
 
+const float kEpsilon = 1e-5;
+
 inline Vec<3, float> GetNDC(const Vec<4, float>& vec) {
   if (vec[3] == 0) {
     throw std::runtime_error("GetNDC: Division by zero");
