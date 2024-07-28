@@ -111,6 +111,7 @@ Image<RgbaColor> render(int width, int height, float y_fov,
   std::vector<Light> lights;
 
   lights.push_back(Light(Vec<3, float>({-1, 2, 0})));
+  lights.push_back(Light(Vec<3, float>({3, 2, 0}), 0.5));
 
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
