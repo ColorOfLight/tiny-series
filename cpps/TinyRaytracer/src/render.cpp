@@ -24,8 +24,10 @@
 
 #include "./render.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "./light.h"
 #include "./shape.h"
 
 RgbaColor sky_blue(static_cast<uint8_t>(255 * 0.2),
@@ -39,22 +41,40 @@ RgbaColor cement_gray(static_cast<uint8_t>(255 * 0.5),
                       static_cast<uint8_t>(255 * 0.5));
 
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
-                  const std::vector<Sphere> &spheres,
+                  const std::vector<Sphere> &spheres, const Light &light,
                   const RgbaColor &background_color) {
   float ray_length = std::numeric_limits<float>::max();
 
-  RgbaColor result_color = background_color;
+  int target_sphere_index = -1;
   float nearest_distance = std::numeric_limits<float>::max();
 
-  for (const auto &sphere : spheres) {
+  for (int i = 0; i != spheres.size(); ++i) {
+    const Sphere &sphere = spheres[i];
+
     float current_distance =
         sphere.GetIntersectionDistance(origin, direction, ray_length);
     if (current_distance >= 0 && current_distance < nearest_distance) {
-      result_color = sphere.GetColor();
+      target_sphere_index = i;
       nearest_distance = current_distance;
     }
   }
-  return result_color;
+
+  if (target_sphere_index == -1) {
+    return background_color;
+  }
+
+  Sphere target_sphere = spheres[target_sphere_index];
+
+  Vec<3, float> intersection_point = origin + direction * nearest_distance;
+  Vec<3, float> normal = target_sphere.GetNormal(intersection_point);
+  Vec<3, float> light_direction =
+      (intersection_point - light.GetPosition()).Normalize();
+  float diffuse_intensity =
+      std::max(0.f, light.GetIntensity() * (light_direction * (-1) * normal));
+
+  RgbaColor base_color = target_sphere.GetColor();
+
+  return base_color * diffuse_intensity;
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
@@ -69,6 +89,8 @@ Image<RgbaColor> render(int width, int height, float y_fov,
   spheres.push_back(Sphere(coral_red, 0.5f, Vec<3, float>({0.125, 0, -2.5})));
   spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({1, 0.5, -1.5})));
 
+  Light light(Vec<3, float>({-1, 2, 0}));
+
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);
 
   for (int j = 0; j != height; ++j) {
@@ -80,8 +102,9 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
       Vec<3, float> ray_direction = Vec<3, float>({x, y, -1.f}).Normalize();
 
-      image.set(i, j,
-                CastRay(camera_position, ray_direction, spheres, sky_blue));
+      image.set(
+          i, j,
+          CastRay(camera_position, ray_direction, spheres, light, sky_blue));
     }
   }
 

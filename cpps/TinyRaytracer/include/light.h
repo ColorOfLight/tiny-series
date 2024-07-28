@@ -24,42 +24,23 @@
 
 #pragma once
 
-#include "./image.h"
 #include "geometry/vec.h"
 
-class Sphere {
+class Light {
  public:
-  Sphere()
-      : _color(RgbaColor(255, 255, 255)),
-        _radius(1),
-        _center(Vec<3, float>()) {}
-  explicit Sphere(const RgbaColor &color)
-      : _color(color), _radius(1), _center(Vec<3, float>()) {}
-  explicit Sphere(const RgbaColor &color, float radius)
-      : _color(color), _radius(radius), _center(Vec<3, float>()) {
-    if (radius < 0) {
-      throw new std::out_of_range("The radius must be positive.");
-    }
-  }
-  Sphere(const RgbaColor &color, float radius, const Vec<3, float> &center)
-      : _color(color), _radius(radius), _center(center) {
-    if (radius < 0) {
-      throw new std::out_of_range("The radius must be positive.");
+  explicit Light(const Vec<3, float> &position)
+      : _position(position), _intensity(1) {}
+  Light(const Vec<3, float> &position, float intensity)
+      : _position(position), _intensity(intensity) {
+    if (intensity < 0) {
+      throw new std::out_of_range("The intensity must be positive.");
     }
   }
 
-  RgbaColor GetColor() const { return _color; }
-
-  float GetIntersectionDistance(const Vec<3, float> &origin,
-                                const Vec<3, float> &direction,
-                                float rayLength) const;
-
-  Vec<3, float> GetNormal(const Vec<3, float> &point) const {
-    return (point - _center).Normalize();
-  }
+  Vec<3, float> GetPosition() const { return _position; }
+  float GetIntensity() const { return _intensity; }
 
  private:
-  float _radius;
-  Vec<3, float> _center;
-  RgbaColor _color;
+  Vec<3, float> _position;
+  float _intensity;
 };
