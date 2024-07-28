@@ -25,10 +25,12 @@
 #include "./render.h"
 
 #include <algorithm>
+#include <variant>
 #include <vector>
 
 #include "./geometry/utils.h"
 #include "./light.h"
+#include "./material.h"
 #include "./shape.h"
 
 RgbaColor sky_blue(static_cast<uint8_t>(255 * 0.2),
@@ -71,53 +73,62 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   Vec<3, float> intersection_point = origin + direction * nearest_distance;
   Vec<3, float> normal = target_sphere.GetNormal(intersection_point);
 
-  RgbaColor base_color = target_sphere.GetColor();
+  MaterialVariant target_material = target_sphere.GetMaterial();
 
-  float diffuse_intensity_sum = 0;
-  float specular_intensity_sum = 0;
+  if (const auto *solid_material =
+          std::get_if<SolidMaterial>(&target_material)) {
+    RgbaColor base_color = solid_material->color;
 
-  for (const Light &light : lights) {
-    Vec<3, float> light_direction =
-        (intersection_point - light.GetPosition()).Normalize();
+    float diffuse_intensity_sum = 0;
+    float specular_intensity_sum = 0;
 
-    Vec<3, float> shadow_origin = light_direction * (-1) * normal >= 0
-                                      ? intersection_point + normal * kEpsilon
-                                      : intersection_point - normal * kEpsilon;
+    for (const Light &light : lights) {
+      Vec<3, float> light_direction =
+          (intersection_point - light.GetPosition()).Normalize();
 
-    bool is_shadowed = false;
-    for (const Sphere &sphere : spheres) {
-      if (&sphere == &target_sphere) {
+      Vec<3, float> shadow_origin =
+          light_direction * (-1) * normal >= 0
+              ? intersection_point + normal * kEpsilon
+              : intersection_point - normal * kEpsilon;
+
+      bool is_shadowed = false;
+      for (const Sphere &sphere : spheres) {
+        if (&sphere == &target_sphere) {
+          continue;
+        }
+
+        float shadow_distance = sphere.GetIntersectionDistance(
+            shadow_origin, light_direction * (-1),
+            (light.GetPosition() - shadow_origin).length());
+        if (shadow_distance >= 0) {
+          is_shadowed = true;
+          break;
+        }
+      }
+
+      if (is_shadowed) {
         continue;
       }
 
-      float shadow_distance = sphere.GetIntersectionDistance(
-          shadow_origin, light_direction * (-1),
-          (light.GetPosition() - shadow_origin).length());
-      if (shadow_distance >= 0) {
-        is_shadowed = true;
-        break;
-      }
+      float diffuse_intensity =
+          std::max(0.f, (light_direction * (-1) * normal)) *
+          light.GetIntensity();
+
+      diffuse_intensity_sum += diffuse_intensity;
+
+      Vec<3, float> reflection = Reflect(light_direction, normal);
+      float specular_intensity =
+          std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
+          light.GetIntensity() * 0.5;
+
+      specular_intensity_sum += specular_intensity;
     }
 
-    if (is_shadowed) {
-      continue;
-    }
-
-    float diffuse_intensity =
-        std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
-
-    diffuse_intensity_sum += diffuse_intensity;
-
-    Vec<3, float> reflection = Reflect(light_direction, normal);
-    float specular_intensity =
-        std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
-        light.GetIntensity() * 0.5;
-
-    specular_intensity_sum += specular_intensity;
+    return base_color * std::min(diffuse_intensity_sum, 1.f) +
+           white * std::min(specular_intensity_sum, 1.f);
   }
 
-  return base_color * std::min(diffuse_intensity_sum, 1.f) +
-         white * std::min(specular_intensity_sum, 1.f);
+  throw std::runtime_error("Unsupported material type.");
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
@@ -126,11 +137,14 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
   std::vector<Sphere> spheres;
 
-  spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({-1, 0, -3.5})));
   spheres.push_back(
-      Sphere(coral_red, 0.5f, Vec<3, float>({-0.5, -0.375, -2.5})));
-  spheres.push_back(Sphere(coral_red, 0.5f, Vec<3, float>({0.125, 0, -3})));
-  spheres.push_back(Sphere(cement_gray, 0.5f, Vec<3, float>({1, 0.5, -1.5})));
+      Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({-1, 0, -3.5})));
+  spheres.push_back(Sphere(SolidMaterial(coral_red), 0.5f,
+                           Vec<3, float>({-0.5, -0.375, -2.5})));
+  spheres.push_back(
+      Sphere(SolidMaterial(coral_red), 0.5f, Vec<3, float>({0.125, 0, -3})));
+  spheres.push_back(
+      Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({1, 0.5, -1.5})));
 
   std::vector<Light> lights;
 
