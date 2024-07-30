@@ -48,6 +48,33 @@ RgbaColor cement_gray(static_cast<uint8_t>(255 * 0.5),
                       static_cast<uint8_t>(255 * 0.5));
 RgbaColor white(255, 255, 255);
 
+bool GetIsShadowed(const Vec<3, float> &intersection_point,
+                   const Vec<3, float> &normal,
+                   const std::vector<Sphere> &spheres,
+                   const Sphere &target_sphere, const Light &light) {
+  Vec<3, float> light_direction =
+      (intersection_point - light.GetPosition()).Normalize();
+
+  Vec<3, float> shadow_origin = light_direction * (-1) * normal >= 0
+                                    ? intersection_point + normal * kEpsilon
+                                    : intersection_point - normal * kEpsilon;
+
+  for (const Sphere &sphere : spheres) {
+    if (&sphere == &target_sphere) {
+      continue;
+    }
+
+    float shadow_distance = sphere.GetIntersectionDistance(
+        shadow_origin, light_direction * (-1),
+        (light.GetPosition() - shadow_origin).length());
+    if (shadow_distance >= 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<Sphere> &spheres,
                   const std::vector<Light> &lights,
@@ -116,24 +143,8 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
     Vec<3, float> light_direction =
         (intersection_point - light.GetPosition()).Normalize();
 
-    Vec<3, float> shadow_origin = light_direction * (-1) * normal >= 0
-                                      ? intersection_point + normal * kEpsilon
-                                      : intersection_point - normal * kEpsilon;
-
-    bool is_shadowed = false;
-    for (const Sphere &sphere : spheres) {
-      if (&sphere == &target_sphere) {
-        continue;
-      }
-
-      float shadow_distance = sphere.GetIntersectionDistance(
-          shadow_origin, light_direction * (-1),
-          (light.GetPosition() - shadow_origin).length());
-      if (shadow_distance >= 0) {
-        is_shadowed = true;
-        break;
-      }
-    }
+    bool is_shadowed = GetIsShadowed(intersection_point, normal, spheres,
+                                     target_sphere, light);
 
     if (is_shadowed) {
       continue;
