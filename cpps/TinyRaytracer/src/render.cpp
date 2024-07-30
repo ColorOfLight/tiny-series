@@ -33,6 +33,10 @@
 #include "./material.h"
 #include "./shape.h"
 
+struct CastRayOptions {
+  int current_reflection;
+};
+
 RgbaColor sky_blue(static_cast<uint8_t>(255 * 0.2),
                    static_cast<uint8_t>(255 * 0.7),
                    static_cast<uint8_t>(255 * 0.8));
@@ -47,7 +51,8 @@ RgbaColor white(255, 255, 255);
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<Sphere> &spheres,
                   const std::vector<Light> &lights,
-                  const RgbaColor &background_color) {
+                  const RgbaColor &background_color,
+                  const CastRayOptions options = {}) {
   float ray_length = std::numeric_limits<float>::max();
 
   int target_sphere_index = -1;
@@ -75,60 +80,86 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
 
   MaterialVariant target_material = target_sphere.GetMaterial();
 
-  if (const auto *solid_material =
+  RgbaColor base_color;
+  bool has_diffuse = false;
+  bool has_specular = false;
+
+  if (const auto &solid_material =
           std::get_if<SolidMaterial>(&target_material)) {
-    RgbaColor base_color = solid_material->color;
+    base_color = solid_material->color;
+    has_diffuse = true;
+    has_specular = true;
+  } else if (const auto *reflective_material =
+                 std::get_if<ReflectiveMaterial>(&target_material)) {
+    if (options.current_reflection >= reflective_material->max_reflection) {
+      base_color = background_color;
+    }
 
-    float diffuse_intensity_sum = 0;
-    float specular_intensity_sum = 0;
+    RgbaColor reflect_color = background_color;
+    Vec<3, float> reflect_direction = Reflect(direction, normal);
+    Vec<3, float> reflect_origin = reflect_direction * normal < 0
+                                       ? intersection_point - normal * kEpsilon
+                                       : intersection_point + normal * kEpsilon;
 
-    for (const Light &light : lights) {
-      Vec<3, float> light_direction =
-          (intersection_point - light.GetPosition()).Normalize();
+    reflect_color = CastRay(reflect_origin, reflect_direction, spheres, lights,
+                            background_color, {options.current_reflection + 1});
+    base_color = reflect_color * 0.9;
 
-      Vec<3, float> shadow_origin =
-          light_direction * (-1) * normal >= 0
-              ? intersection_point + normal * kEpsilon
-              : intersection_point - normal * kEpsilon;
+    has_diffuse = false;
+    has_specular = true;
+  }
 
-      bool is_shadowed = false;
-      for (const Sphere &sphere : spheres) {
-        if (&sphere == &target_sphere) {
-          continue;
-        }
+  float diffuse_intensity_sum = 0;
+  float specular_intensity_sum = 0;
 
-        float shadow_distance = sphere.GetIntersectionDistance(
-            shadow_origin, light_direction * (-1),
-            (light.GetPosition() - shadow_origin).length());
-        if (shadow_distance >= 0) {
-          is_shadowed = true;
-          break;
-        }
-      }
+  for (const Light &light : lights) {
+    Vec<3, float> light_direction =
+        (intersection_point - light.GetPosition()).Normalize();
 
-      if (is_shadowed) {
+    Vec<3, float> shadow_origin = light_direction * (-1) * normal >= 0
+                                      ? intersection_point + normal * kEpsilon
+                                      : intersection_point - normal * kEpsilon;
+
+    bool is_shadowed = false;
+    for (const Sphere &sphere : spheres) {
+      if (&sphere == &target_sphere) {
         continue;
       }
 
-      float diffuse_intensity =
-          std::max(0.f, (light_direction * (-1) * normal)) *
-          light.GetIntensity();
-
-      diffuse_intensity_sum += diffuse_intensity;
-
-      Vec<3, float> reflection = Reflect(light_direction, normal);
-      float specular_intensity =
-          std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
-          light.GetIntensity() * 0.5;
-
-      specular_intensity_sum += specular_intensity;
+      float shadow_distance = sphere.GetIntersectionDistance(
+          shadow_origin, light_direction * (-1),
+          (light.GetPosition() - shadow_origin).length());
+      if (shadow_distance >= 0) {
+        is_shadowed = true;
+        break;
+      }
     }
 
-    return base_color * std::min(diffuse_intensity_sum, 1.f) +
-           white * std::min(specular_intensity_sum, 1.f);
+    if (is_shadowed) {
+      continue;
+    }
+
+    float diffuse_intensity =
+        std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
+
+    diffuse_intensity_sum += diffuse_intensity;
+
+    Vec<3, float> reflection = Reflect(light_direction, normal);
+    float specular_intensity =
+        std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
+        light.GetIntensity() * 0.5;
+
+    specular_intensity_sum += specular_intensity;
   }
 
-  throw std::runtime_error("Unsupported material type.");
+  RgbaColor diffuse_color =
+      has_diffuse ? base_color * std::min(diffuse_intensity_sum, 1.f)
+                  : base_color;
+  RgbaColor specular_color = has_specular
+                                 ? white * std::min(specular_intensity_sum, 1.f)
+                                 : RgbaColor(0, 0, 0);
+
+  return diffuse_color + specular_color;
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
@@ -139,12 +170,12 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
   spheres.push_back(
       Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({-1, 0, -3.5})));
-  spheres.push_back(Sphere(SolidMaterial(coral_red), 0.5f,
-                           Vec<3, float>({-0.5, -0.375, -2.5})));
+  spheres.push_back(
+      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({-0.5, -0.375, -2.5})));
   spheres.push_back(
       Sphere(SolidMaterial(coral_red), 0.5f, Vec<3, float>({0.125, 0, -3})));
   spheres.push_back(
-      Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({1, 0.5, -1.5})));
+      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({1, 0.5, -1.5})));
 
   std::vector<Light> lights;
 
