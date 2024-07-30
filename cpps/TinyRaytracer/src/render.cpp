@@ -75,6 +75,28 @@ bool GetIsShadowed(const Vec<3, float> &intersection_point,
   return false;
 }
 
+float GetSpecularIntensity(const Vec<3, float> &intersection_point,
+                           const Vec<3, float> &direction,
+                           const Vec<3, float> &normal,
+                           const std::vector<Light> &lights) {
+  float specular_intensity_sum = 0;
+
+  for (const Light &light : lights) {
+    Vec<3, float> light_direction =
+        (intersection_point - light.GetPosition()).Normalize();
+
+    Vec<3, float> reflection = Reflect(light_direction, normal);
+
+    float specular_intensity =
+        std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
+        light.GetIntensity() * 0.5;
+
+    specular_intensity_sum += specular_intensity;
+  }
+
+  return specular_intensity_sum;
+}
+
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<Sphere> &spheres,
                   const std::vector<Light> &lights,
@@ -137,7 +159,8 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   }
 
   float diffuse_intensity_sum = 0;
-  float specular_intensity_sum = 0;
+  float specular_intensity =
+      GetSpecularIntensity(intersection_point, direction, normal, lights);
 
   for (const Light &light : lights) {
     Vec<3, float> light_direction =
@@ -154,20 +177,13 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
         std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
 
     diffuse_intensity_sum += diffuse_intensity;
-
-    Vec<3, float> reflection = Reflect(light_direction, normal);
-    float specular_intensity =
-        std::pow(std::max(0.f, reflection * (-1) * direction), 30) *
-        light.GetIntensity() * 0.5;
-
-    specular_intensity_sum += specular_intensity;
   }
 
   RgbaColor diffuse_color =
       has_diffuse ? base_color * std::min(diffuse_intensity_sum, 1.f)
                   : base_color;
   RgbaColor specular_color = has_specular
-                                 ? white * std::min(specular_intensity_sum, 1.f)
+                                 ? white * std::min(specular_intensity, 1.f)
                                  : RgbaColor(0, 0, 0);
 
   return diffuse_color + specular_color;
