@@ -160,15 +160,19 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   bool has_diffuse = false;
   bool has_specular = false;
 
+  RgbaColor material_color;
+
   if (const auto &solid_material =
           std::get_if<SolidMaterial>(&target_material)) {
-    base_color = solid_material->color;
-    has_diffuse = true;
-    has_specular = true;
+    RgbaColor base_color = solid_material->color;
+    float diffuse_intensity = GetDiffuseIntensity(
+        intersection_point, normal, target_sphere, spheres, lights);
+
+    material_color = base_color * std::min(diffuse_intensity, 1.f);
   } else if (const auto *reflective_material =
                  std::get_if<ReflectiveMaterial>(&target_material)) {
     if (options.current_reflection >= reflective_material->max_reflection) {
-      base_color = background_color;
+      material_color = background_color;
     }
 
     RgbaColor reflect_color = background_color;
@@ -179,24 +183,14 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
 
     reflect_color = CastRay(reflect_origin, reflect_direction, spheres, lights,
                             background_color, {options.current_reflection + 1});
-    base_color = reflect_color * 0.9;
-
-    has_diffuse = false;
-    has_specular = true;
+    material_color = reflect_color * 0.9;
   }
 
-  float diffuse_intensity = GetDiffuseIntensity(intersection_point, normal,
-                                                target_sphere, spheres, lights);
   float specular_intensity =
       GetSpecularIntensity(intersection_point, direction, normal, lights);
+  RgbaColor specular_color = white * std::min(specular_intensity, 1.f);
 
-  RgbaColor diffuse_color =
-      has_diffuse ? base_color * std::min(diffuse_intensity, 1.f) : base_color;
-  RgbaColor specular_color = has_specular
-                                 ? white * std::min(specular_intensity, 1.f)
-                                 : RgbaColor(0, 0, 0);
-
-  return diffuse_color + specular_color;
+  return material_color + specular_color;
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
