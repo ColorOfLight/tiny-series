@@ -97,6 +97,33 @@ float GetSpecularIntensity(const Vec<3, float> &intersection_point,
   return specular_intensity_sum;
 }
 
+float GetDiffuseIntensity(const Vec<3, float> &intersection_point,
+                          const Vec<3, float> &normal,
+                          const Sphere &target_sphere,
+                          const std::vector<Sphere> &spheres,
+                          const std::vector<Light> &lights) {
+  float diffuse_intensity_sum = 0;
+
+  for (const Light &light : lights) {
+    Vec<3, float> light_direction =
+        (intersection_point - light.GetPosition()).Normalize();
+
+    bool is_shadowed = GetIsShadowed(intersection_point, normal, spheres,
+                                     target_sphere, light);
+
+    if (is_shadowed) {
+      continue;
+    }
+
+    float diffuse_intensity =
+        std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
+
+    diffuse_intensity_sum += diffuse_intensity;
+  }
+
+  return diffuse_intensity_sum;
+}
+
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<Sphere> &spheres,
                   const std::vector<Light> &lights,
@@ -158,30 +185,13 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
     has_specular = true;
   }
 
-  float diffuse_intensity_sum = 0;
+  float diffuse_intensity = GetDiffuseIntensity(intersection_point, normal,
+                                                target_sphere, spheres, lights);
   float specular_intensity =
       GetSpecularIntensity(intersection_point, direction, normal, lights);
 
-  for (const Light &light : lights) {
-    Vec<3, float> light_direction =
-        (intersection_point - light.GetPosition()).Normalize();
-
-    bool is_shadowed = GetIsShadowed(intersection_point, normal, spheres,
-                                     target_sphere, light);
-
-    if (is_shadowed) {
-      continue;
-    }
-
-    float diffuse_intensity =
-        std::max(0.f, (light_direction * (-1) * normal)) * light.GetIntensity();
-
-    diffuse_intensity_sum += diffuse_intensity;
-  }
-
   RgbaColor diffuse_color =
-      has_diffuse ? base_color * std::min(diffuse_intensity_sum, 1.f)
-                  : base_color;
+      has_diffuse ? base_color * std::min(diffuse_intensity, 1.f) : base_color;
   RgbaColor specular_color = has_specular
                                  ? white * std::min(specular_intensity, 1.f)
                                  : RgbaColor(0, 0, 0);
