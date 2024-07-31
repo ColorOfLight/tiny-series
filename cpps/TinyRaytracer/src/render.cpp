@@ -25,6 +25,7 @@
 #include "./render.h"
 
 #include <algorithm>
+#include <functional>
 #include <variant>
 #include <vector>
 
@@ -50,8 +51,8 @@ RgbaColor white(255, 255, 255);
 
 bool GetIsShadowed(const Vec<3, float> &intersection_point,
                    const Vec<3, float> &normal,
-                   const std::vector<Sphere> &spheres,
-                   const Sphere &target_sphere, const Light &light) {
+                   const std::vector<std::reference_wrapper<Shape>> &shapes,
+                   const Shape &target_shape, const Light &light) {
   Vec<3, float> light_direction =
       (intersection_point - light.GetPosition()).Normalize();
 
@@ -59,12 +60,12 @@ bool GetIsShadowed(const Vec<3, float> &intersection_point,
                                     ? intersection_point + normal * kEpsilon
                                     : intersection_point - normal * kEpsilon;
 
-  for (const Sphere &sphere : spheres) {
-    if (&sphere == &target_sphere) {
+  for (const Shape &shape : shapes) {
+    if (&shape == &target_shape) {
       continue;
     }
 
-    float shadow_distance = sphere.GetIntersectionDistance(
+    float shadow_distance = shape.GetIntersectionDistance(
         shadow_origin, light_direction * (-1),
         (light.GetPosition() - shadow_origin).length());
     if (shadow_distance >= 0) {
@@ -97,19 +98,19 @@ float GetSpecularIntensity(const Vec<3, float> &intersection_point,
   return specular_intensity_sum;
 }
 
-float GetDiffuseIntensity(const Vec<3, float> &intersection_point,
-                          const Vec<3, float> &normal,
-                          const Sphere &target_sphere,
-                          const std::vector<Sphere> &spheres,
-                          const std::vector<Light> &lights) {
+float GetDiffuseIntensity(
+    const Vec<3, float> &intersection_point, const Vec<3, float> &normal,
+    const Shape &target_shape,
+    const std::vector<std::reference_wrapper<Shape>> &shapes,
+    const std::vector<Light> &lights) {
   float diffuse_intensity_sum = 0;
 
   for (const Light &light : lights) {
     Vec<3, float> light_direction =
         (intersection_point - light.GetPosition()).Normalize();
 
-    bool is_shadowed = GetIsShadowed(intersection_point, normal, spheres,
-                                     target_sphere, light);
+    bool is_shadowed =
+        GetIsShadowed(intersection_point, normal, shapes, target_shape, light);
 
     if (is_shadowed) {
       continue;
@@ -125,36 +126,36 @@ float GetDiffuseIntensity(const Vec<3, float> &intersection_point,
 }
 
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
-                  const std::vector<Sphere> &spheres,
+                  const std::vector<std::reference_wrapper<Shape>> &shapes,
                   const std::vector<Light> &lights,
                   const RgbaColor &background_color,
                   const CastRayOptions options = {}) {
   float ray_length = std::numeric_limits<float>::max();
 
-  int target_sphere_index = -1;
+  int target_shape_index = -1;
   float nearest_distance = std::numeric_limits<float>::max();
 
-  for (int i = 0; i != spheres.size(); ++i) {
-    const Sphere &sphere = spheres[i];
+  for (int i = 0; i != shapes.size(); ++i) {
+    const auto &shape = shapes[i].get();
 
     float current_distance =
-        sphere.GetIntersectionDistance(origin, direction, ray_length);
+        shape.GetIntersectionDistance(origin, direction, ray_length);
     if (current_distance >= 0 && current_distance < nearest_distance) {
-      target_sphere_index = i;
+      target_shape_index = i;
       nearest_distance = current_distance;
     }
   }
 
-  if (target_sphere_index == -1) {
+  if (target_shape_index == -1) {
     return background_color;
   }
 
-  Sphere target_sphere = spheres[target_sphere_index];
+  const auto &target_shape = shapes[target_shape_index].get();
 
   Vec<3, float> intersection_point = origin + direction * nearest_distance;
-  Vec<3, float> normal = target_sphere.GetNormal(intersection_point);
+  Vec<3, float> normal = target_shape.GetNormal(intersection_point);
 
-  MaterialVariant target_material = target_sphere.GetMaterial();
+  MaterialVariant target_material = target_shape.GetMaterial();
 
   RgbaColor base_color;
   bool has_diffuse = false;
@@ -165,8 +166,8 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   if (const auto &solid_material =
           std::get_if<SolidMaterial>(&target_material)) {
     RgbaColor base_color = solid_material->color;
-    float diffuse_intensity = GetDiffuseIntensity(
-        intersection_point, normal, target_sphere, spheres, lights);
+    float diffuse_intensity = GetDiffuseIntensity(intersection_point, normal,
+                                                  target_shape, shapes, lights);
 
     material_color = base_color * std::min(diffuse_intensity, 1.f);
   } else if (const auto *reflective_material =
@@ -181,7 +182,7 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                                        ? intersection_point - normal * kEpsilon
                                        : intersection_point + normal * kEpsilon;
 
-    reflect_color = CastRay(reflect_origin, reflect_direction, spheres, lights,
+    reflect_color = CastRay(reflect_origin, reflect_direction, shapes, lights,
                             background_color, {options.current_reflection + 1});
     material_color = reflect_color * 0.9;
   }
@@ -197,16 +198,21 @@ Image<RgbaColor> render(int width, int height, float y_fov,
                         const Vec<3, float> camera_position) {
   Image<RgbaColor> image(width, height);
 
-  std::vector<Sphere> spheres;
+  std::vector<std::reference_wrapper<Shape>> shapes;
 
-  spheres.push_back(
-      Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({-1, 0, -3.5})));
-  spheres.push_back(
-      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({-0.5, -0.375, -2.5})));
-  spheres.push_back(
-      Sphere(SolidMaterial(coral_red), 0.5f, Vec<3, float>({0.125, 0, -3})));
-  spheres.push_back(
-      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({1, 0.5, -1.5})));
+  Sphere sphere1 =
+      Sphere(SolidMaterial(cement_gray), 0.5f, Vec<3, float>({-1, 0, -3.5}));
+  Sphere sphere2 =
+      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({-0.5, -0.375, -2.5}));
+  Sphere sphere3 =
+      Sphere(SolidMaterial(coral_red), 0.5f, Vec<3, float>({0.125, 0, -3}));
+  Sphere sphere4 =
+      Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({1, 0.5, -1.5}));
+
+  shapes.push_back(sphere1);
+  shapes.push_back(sphere2);
+  shapes.push_back(sphere3);
+  shapes.push_back(sphere4);
 
   std::vector<Light> lights;
 
@@ -226,7 +232,7 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
       image.set(
           i, j,
-          CastRay(camera_position, ray_direction, spheres, lights, sky_blue));
+          CastRay(camera_position, ray_direction, shapes, lights, sky_blue));
     }
   }
 

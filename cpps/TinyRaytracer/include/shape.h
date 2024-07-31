@@ -28,37 +28,52 @@
 #include "./material.h"
 #include "geometry/vec.h"
 
-class Sphere {
+class Shape {
  public:
-  Sphere() : _material(SolidMaterial()), _radius(1), _center(Vec<3, float>()) {}
+  explicit Shape(const MaterialVariant &material) : _material(material) {}
+
+  MaterialVariant GetMaterial() const { return _material; }
+  virtual float GetIntersectionDistance(const Vec<3, float> &origin,
+                                        const Vec<3, float> &direction,
+                                        float rayLength) const {
+    throw std::runtime_error("GetIntersectionDistance is not implemented.");
+  }
+  virtual Vec<3, float> GetNormal(const Vec<3, float> &point) const {
+    throw std::runtime_error("GetNormal is not implemented.");
+  }
+
+ protected:
+  MaterialVariant _material;
+};
+
+class Sphere : public Shape {
+ public:
+  Sphere() : Shape(SolidMaterial()), _radius(1), _center(Vec<3, float>()) {}
   explicit Sphere(const MaterialVariant &material)
-      : _material(material), _radius(1), _center(Vec<3, float>()) {}
+      : Shape(material), _radius(1), _center(Vec<3, float>()) {}
   explicit Sphere(const MaterialVariant &material, float radius)
-      : _material(material), _radius(radius), _center(Vec<3, float>()) {
+      : Shape(material), _radius(radius), _center(Vec<3, float>()) {
     if (radius < 0) {
       throw new std::out_of_range("The radius must be positive.");
     }
   }
   Sphere(const MaterialVariant &material, float radius,
          const Vec<3, float> &center)
-      : _material(material), _radius(radius), _center(center) {
+      : Shape(material), _radius(radius), _center(center) {
     if (radius < 0) {
       throw new std::out_of_range("The radius must be positive.");
     }
   }
 
-  MaterialVariant GetMaterial() const { return _material; }
-
   float GetIntersectionDistance(const Vec<3, float> &origin,
                                 const Vec<3, float> &direction,
-                                float rayLength) const;
+                                float rayLength) const override;
 
-  Vec<3, float> GetNormal(const Vec<3, float> &point) const {
+  Vec<3, float> GetNormal(const Vec<3, float> &point) const override {
     return (point - _center).Normalize();
   }
 
  private:
   float _radius;
   Vec<3, float> _center;
-  MaterialVariant _material;
 };
