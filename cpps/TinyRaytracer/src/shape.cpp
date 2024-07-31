@@ -34,13 +34,13 @@ float Sphere::GetIntersectionDistance(const Vec<3, float> &origin,
         "The length of the direction vector must be 1.");
   }
 
-  // 1. If the ray is already inside the sphere, return true.
+  // 1. If the ray is already inside the sphere, return the value.
   float distance_between_origins = (origin - _center).length();
   if (distance_between_origins < _radius) {
     return distance_between_origins;
   }
 
-  // 2. If the ray direction is not pointing to the sphere, return false.
+  // 2. If the ray direction is not pointing to the sphere, return -1.
   Vec<3, float> origin_to_center = _center - origin;
   if (origin_to_center * direction <= 0) {
     return -1;
@@ -51,7 +51,7 @@ float Sphere::GetIntersectionDistance(const Vec<3, float> &origin,
   Vec<3, float> nearest_point = origin + direction * distance_to_nearest;
 
   // 4. If the distance between the nearest point and the sphere is more than
-  // the radius, return false.
+  // the radius, return -1.
   float distance_nearest_center = (nearest_point - _center).length();
   if (distance_nearest_center > _radius) {
     return -1;
