@@ -209,14 +209,19 @@ Image<RgbaColor> render(int width, int height, float y_fov,
   Sphere sphere4 =
       Sphere(ReflectiveMaterial(4), 0.5f, Vec<3, float>({1, 0.5, -1.5}));
 
+  Plane plane = Plane(SolidMaterial(white), Vec<3, float>({0, 1, 0}),
+                      Vec<3, float>({0, -1.25, -3}), 5, 5);
+
   shapes.push_back(sphere1);
   shapes.push_back(sphere2);
   shapes.push_back(sphere3);
   shapes.push_back(sphere4);
 
+  shapes.push_back(plane);
+
   std::vector<Light> lights;
 
-  lights.push_back(Light(Vec<3, float>({-1, 2, 0})));
+  lights.push_back(Light(Vec<3, float>({-1, 2, 0}), 0.75));
   lights.push_back(Light(Vec<3, float>({3, 2, 0}), 0.5));
 
   float tan_y_fov_half = std::tan((y_fov * kPi / 180) / 2);

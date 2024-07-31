@@ -69,3 +69,38 @@ float Sphere::GetIntersectionDistance(const Vec<3, float> &origin,
              ? -1
              : distance_origin_intersection;
 }
+
+float Plane::GetIntersectionDistance(const Vec<3, float> &origin,
+                                     const Vec<3, float> &direction,
+                                     float rayLength) const {
+  if (std::fabsf(direction.length() - 1.f) > kEpsilon) {
+    throw new std::out_of_range(
+        "The length of the direction vector must be 1.");
+  }
+
+  // 1. If the ray is parallel to the plane, return -1.
+  float denominator = _normal * direction;
+  if (std::fabsf(denominator) < kEpsilon) {
+    return -1;
+  }
+
+  // 2. Get the distance between the origin and the plane.
+  float distance = (_center - origin) * _normal / denominator;
+
+  // 3. If the distance is negative, return -1.
+  if (distance < 0) {
+    return -1;
+  }
+
+  // 4. Get the intersection point.
+  Vec<3, float> intersection_point = origin + direction * distance;
+
+  // 5. If the intersection point is inside the plane, return the distance.
+  if (std::fabsf(intersection_point[0] - _center[0]) <= _width / 2 &&
+      std::fabsf(intersection_point[2] - _center[2]) <= _height / 2) {
+    return distance;
+  }
+
+  // 6. Return -1.
+  return -1;
+}

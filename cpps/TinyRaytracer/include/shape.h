@@ -77,3 +77,52 @@ class Sphere : public Shape {
   float _radius;
   Vec<3, float> _center;
 };
+
+class Plane : public Shape {
+ public:
+  Plane()
+      : Shape(SolidMaterial()),
+        _normal(Vec<3, float>({0, 1, 0})),
+        _center(Vec<3, float>()),
+        _width(2.f),
+        _height(2.f) {}
+  explicit Plane(const MaterialVariant &material)
+      : Shape(material),
+        _normal(Vec<3, float>({0, 1, 0})),
+        _center(Vec<3, float>()),
+        _width(2.f),
+        _height(2.f) {}
+  explicit Plane(const MaterialVariant &material, const Vec<3, float> &normal,
+                 const Vec<3, float> &center, float width, float height)
+      : Shape(material),
+        _normal(normal),
+        _center(center),
+        _width(width),
+        _height(height) {
+    if (normal.length() != 1) {
+      throw new std::out_of_range("The length of the normal vector must be 1.");
+    }
+
+    if (width <= 0) {
+      throw new std::out_of_range("The width must be positive.");
+    }
+
+    if (height <= 0) {
+      throw new std::out_of_range("The height must be positive.");
+    }
+  }
+
+  float GetIntersectionDistance(const Vec<3, float> &origin,
+                                const Vec<3, float> &direction,
+                                float rayLength) const override;
+
+  Vec<3, float> GetNormal(const Vec<3, float> &point) const override {
+    return _normal;
+  }
+
+ private:
+  Vec<3, float> _normal;
+  Vec<3, float> _center;
+  float _width;
+  float _height;
+};
