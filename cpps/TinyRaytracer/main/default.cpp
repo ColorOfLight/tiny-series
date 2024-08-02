@@ -37,7 +37,7 @@ int main() {
       ReadJpg("../assets/rosendal_plains/rosendal_plains_2k.jpg");
 
   Image<RgbaColor> result =
-      render(width, height, 50, Vec<3, float>({0, 0, 1}), background_image);
+      Render(width, height, 50, Vec<3, float>({0, 0, 1}), background_image);
 
   WritePng("../result/result.png", result);
 

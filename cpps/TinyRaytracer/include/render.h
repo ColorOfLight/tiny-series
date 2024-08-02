@@ -27,6 +27,6 @@
 #include "./geometry/vec.h"
 #include "./image.h"
 
-Image<RgbaColor> render(int width, int height, float y_fov,
+Image<RgbaColor> Render(int width, int height, float y_fov,
                         const Vec<3, float> camera_position,
                         const Image<RgbaColor> &background_image);

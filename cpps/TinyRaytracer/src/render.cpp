@@ -232,7 +232,7 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   return material_color + specular_color;
 }
 
-Image<RgbaColor> render(int width, int height, float y_fov,
+Image<RgbaColor> Render(int width, int height, float y_fov,
                         const Vec<3, float> camera_position,
                         const Image<RgbaColor> &background_image) {
   Image<RgbaColor> image(width, height);
