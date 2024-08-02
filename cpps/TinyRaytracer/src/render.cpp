@@ -125,13 +125,40 @@ float GetDiffuseIntensity(
   return diffuse_intensity_sum;
 }
 
-RgbaColor GetBackgroundColorFromImage(
-    Vec<3, float> direction, const Image<RgbaColor> &background_image) {
+RgbaColor GetBackgroundColorFromImage(Vec<3, float> direction,
+                                      const Image<RgbaColor> &background_image,
+                                      bool is_bilinear_filtering = false) {
   float u = std::atan2(direction[0], -direction[2]) / (kPi * 2) + 0.5f;
   float v = 1.0f - std::acos(direction[1]) / (kPi);
 
-  int x = static_cast<int>(u * background_image.GetWidth());
-  int y = static_cast<int>(v * background_image.GetHeight());
+  if (is_bilinear_filtering) {
+    int width = background_image.GetWidth();
+    int height = background_image.GetHeight();
+
+    float x = u * (width - 1);
+    float y = v * (height - 1);
+
+    int x0 = static_cast<int>(x);
+    int y0 = static_cast<int>(y);
+    int x1 = (x0 + 1 + width) % width;
+    int y1 = (y0 + 1 + height) % height;
+
+    float x_ratio = 1 - (x - x0);
+    float y_ratio = 1 - (y - y0);
+
+    RgbaColor color00 = background_image.at(x0, y0);
+    RgbaColor color01 = background_image.at(x0, y1);
+    RgbaColor color10 = background_image.at(x1, y0);
+    RgbaColor color11 = background_image.at(x1, y1);
+
+    RgbaColor color0 = GetAverageColor(color00, color01, y_ratio);
+    RgbaColor color1 = GetAverageColor(color10, color11, y_ratio);
+
+    return GetAverageColor(color0, color1, x_ratio);
+  }
+
+  int x = static_cast<int>(u * (background_image.GetWidth() - 1));
+  int y = static_cast<int>(v * (background_image.GetHeight() - 1));
 
   return background_image.at(x, y);
 }
