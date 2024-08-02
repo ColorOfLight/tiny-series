@@ -135,11 +135,11 @@ RgbaColor GetBackgroundColorFromImage(Vec<3, float> direction,
     int width = background_image.GetWidth();
     int height = background_image.GetHeight();
 
-    float x = u * (width - 1);
-    float y = v * (height - 1);
+    float x = u * width;
+    float y = v * height;
 
-    int x0 = static_cast<int>(x);
-    int y0 = static_cast<int>(y);
+    int x0 = static_cast<int>(x) % width;
+    int y0 = static_cast<int>(y) % height;
     int x1 = (x0 + 1 + width) % width;
     int y1 = (y0 + 1 + height) % height;
 
