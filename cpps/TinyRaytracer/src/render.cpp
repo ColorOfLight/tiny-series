@@ -125,10 +125,21 @@ float GetDiffuseIntensity(
   return diffuse_intensity_sum;
 }
 
+RgbaColor GetBackgroundColorFromImage(
+    Vec<3, float> direction, const Image<RgbaColor> &background_image) {
+  float u = std::atan2(direction[0], -direction[2]) / (kPi * 2) + 0.5f;
+  float v = 1.0f - std::acos(direction[1]) / (kPi);
+
+  int x = static_cast<int>(u * background_image.GetWidth());
+  int y = static_cast<int>(v * background_image.GetHeight());
+
+  return background_image.at(x, y);
+}
+
 RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
                   const std::vector<std::reference_wrapper<Shape>> &shapes,
                   const std::vector<Light> &lights,
-                  const RgbaColor &background_color,
+                  const Image<RgbaColor> &background_image,
                   const CastRayOptions options = {}) {
   float ray_length = std::numeric_limits<float>::max();
 
@@ -147,7 +158,7 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   }
 
   if (target_shape_index == -1) {
-    return background_color;
+    return GetBackgroundColorFromImage(direction, background_image);
   }
 
   const auto &target_shape = shapes[target_shape_index].get();
@@ -173,17 +184,17 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
   } else if (const auto *reflective_material =
                  std::get_if<ReflectiveMaterial>(&target_material)) {
     if (options.current_reflection >= reflective_material->max_reflection) {
-      material_color = background_color;
+      material_color = GetBackgroundColorFromImage(direction, background_image);
     }
 
-    RgbaColor reflect_color = background_color;
     Vec<3, float> reflect_direction = Reflect(direction, normal);
     Vec<3, float> reflect_origin = reflect_direction * normal < 0
                                        ? intersection_point - normal * kEpsilon
                                        : intersection_point + normal * kEpsilon;
 
-    reflect_color = CastRay(reflect_origin, reflect_direction, shapes, lights,
-                            background_color, {options.current_reflection + 1});
+    RgbaColor reflect_color =
+        CastRay(reflect_origin, reflect_direction, shapes, lights,
+                background_image, {options.current_reflection + 1});
     material_color = reflect_color * 0.9;
   }
 
@@ -195,7 +206,8 @@ RgbaColor CastRay(const Vec<3, float> &origin, const Vec<3, float> &direction,
 }
 
 Image<RgbaColor> render(int width, int height, float y_fov,
-                        const Vec<3, float> camera_position) {
+                        const Vec<3, float> camera_position,
+                        const Image<RgbaColor> &background_image) {
   Image<RgbaColor> image(width, height);
 
   std::vector<std::reference_wrapper<Shape>> shapes;
@@ -235,9 +247,9 @@ Image<RgbaColor> render(int width, int height, float y_fov,
 
       Vec<3, float> ray_direction = Vec<3, float>({x, y, -1.f}).Normalize();
 
-      image.set(
-          i, j,
-          CastRay(camera_position, ray_direction, shapes, lights, sky_blue));
+      image.set(i, j,
+                CastRay(camera_position, ray_direction, shapes, lights,
+                        background_image));
     }
   }
 
