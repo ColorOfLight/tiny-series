@@ -47,6 +47,8 @@ Image<RgbaColor> ReadTga(const std::string &file_path);
 
 Image<RgbaColor> ReadPng(const std::string &file_path);
 
+Image<RgbaColor> ReadJpg(const std::string &file_path);
+
 void WriteTga(const std::string &file_path, const Image<RgbaColor> &image);
 
 void WriteTga(const std::string &file_path, const Image<GrayscaleColor> &image);

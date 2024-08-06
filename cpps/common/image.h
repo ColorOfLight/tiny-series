@@ -105,6 +105,12 @@ class Image {
     data_ = temp;
   }
 
+  void Fill(const Color& color) {
+    for (int i = 0; i != data_.size(); ++i) {
+      data_[i] = color;
+    }
+  }
+
   Color at(int x, int y) const {
     if (x < 0 || x >= width_) {
       throw std::out_of_range("x: " + std::to_string(x) +
@@ -124,3 +130,15 @@ class Image {
   int height_;
   std::vector<Color> data_;
 };
+
+inline RgbaColor GetAverageColor(const RgbaColor& color1,
+                                 const RgbaColor& color2, float ratio = 0.5) {
+  int r = static_cast<float>(color1.r) * (1 - ratio) +
+          static_cast<float>(color2.r) * ratio;
+  int g = static_cast<float>(color1.g) * (1 - ratio) +
+          static_cast<float>(color2.g) * ratio;
+  int b = static_cast<float>(color1.b) * (1 - ratio) +
+          static_cast<float>(color2.b) * ratio;
+
+  return RgbaColor(r, g, b);
+}

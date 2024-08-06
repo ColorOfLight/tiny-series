@@ -33,6 +33,9 @@
 #include "./image.h"
 #include "./lodepng.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "./stb_image.h"
+
 // Helper function to read little-endian uint16_t
 std::uint16_t readUint16LE(std::ifstream& file) {
   std::uint8_t low, high;
@@ -162,6 +165,31 @@ Image<RgbaColor> ReadTga(const std::string& file_path) {
   if (header.image_descriptor & 0x20) {
     image.FlipY();
   }
+
+  return image;
+}
+
+Image<RgbaColor> ReadJpg(const std::string& file_path) {
+  int width, height, channels;
+  unsigned char* data =
+      stbi_load(file_path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+  if (!data) {
+    throw std::runtime_error("Failed to load image: " + file_path);
+  }
+
+  std::vector<RgbaColor> image_data(width * height);
+  for (int i = 0; i < width * height; ++i) {
+    image_data[i] = RgbaColor{data[4 * i + 0], data[4 * i + 1], data[4 * i + 2],
+                              data[4 * i + 3]};
+  }
+
+  stbi_image_free(data);
+
+  Image<RgbaColor> image = Image<RgbaColor>(width, height, image_data);
+
+  // Make the left bottom point as the origin
+  image.FlipY();
 
   return image;
 }

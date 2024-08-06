@@ -97,7 +97,7 @@ RgbaColor GetPhongColor(const Vec<3, float>& normal,
                         const RgbaColor& texture_color, float diffuse,
                         float specular, float alpha) {
   Vec<3, float> light_vec = Vec<3, float>(light_dir).Normalize() * (-1);
-  Vec<3, float> reflection = Reflect(light_vec, normal);
+  Vec<3, float> reflection = Reflect(light_vec, normal) * (-1);
   Vec<3, float> normalized_view = Vec<3, float>(view_vector).Normalize();
 
   RgbaColor diffuse_color =
