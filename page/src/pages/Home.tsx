@@ -113,7 +113,10 @@ function App() {
   return (
     <main className="p-8 flex flex-col items-center">
       <div className="max-w-2xl w-full shrink-0">
-        <TitleGroup />
+        <TitleGroup
+          title="TinyRenderer"
+          description="CPU-only model renderer written in C++"
+        />
         <div className="mt-6 flex gap-8 flex-col">
           <div className="flex flex-col">
             <SelectRenderType
