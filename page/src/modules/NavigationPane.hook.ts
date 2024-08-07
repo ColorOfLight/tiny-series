@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 
 // TODO: Replace with the real value
-const PANE_WIDTH_LIMIT = 640;
+const PANE_WIDTH_LIMIT = 1024;
 
 const useNavigationPane = () => {
   const [isPaneOpen, setIsPaneOpen] = useState(false);

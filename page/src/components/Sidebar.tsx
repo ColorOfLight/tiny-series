@@ -16,7 +16,7 @@ const Sidebar = memo(
 
       return (
         <div
-          className={clsx(className, "w-full bg-gray-100 px-4 py-6")}
+          className={clsx(className, "w-full bg-white px-4 py-6")}
           {...restProps}
           ref={ref}
         >
