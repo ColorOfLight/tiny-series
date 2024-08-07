@@ -1,7 +1,7 @@
 import { memo, forwardRef, ComponentPropsWithoutRef } from "react";
 import clsx from "clsx";
-import HomeIcon from "@/icons/HomeIcon";
 import { Link } from "react-router-dom";
+import Divider from "@/components/Divider";
 
 export interface SidebarProps extends ComponentPropsWithoutRef<"div"> {
   onLinksClick?: React.EventHandler<React.MouseEvent>;
@@ -11,8 +11,8 @@ export interface SidebarProps extends ComponentPropsWithoutRef<"div"> {
 const Sidebar = memo(
   forwardRef<HTMLDivElement, SidebarProps>(
     ({ className, onLinksClick, currentPath, ...restProps }, ref) => {
-      const selected = "text-gray-900";
-      const unselected = "text-gray-400";
+      const selectedItemClass = "text-gray-900";
+      const unselectedItemClass = "text-gray-400 hover:text-gray-700";
 
       return (
         <div
@@ -20,19 +20,25 @@ const Sidebar = memo(
           {...restProps}
           ref={ref}
         >
-          <div className="flex mb-4">
-            <Link to="/" onClick={onLinksClick}>
-              <div className="p-1 grow-0">
-                <HomeIcon className="fill-gray-500" />
-              </div>
-            </Link>
-          </div>
           <ul>
+            <Link to="/" onClick={onLinksClick}>
+              <li
+                className={clsx(
+                  "py-0.5",
+                  currentPath === "/" ? selectedItemClass : unselectedItemClass
+                )}
+              >
+                Home
+              </li>
+            </Link>
+            <Divider className="my-1 bg-white" />
             <Link to="/tiny-renderer" onClick={onLinksClick}>
               <li
                 className={clsx(
                   "py-0.5",
-                  currentPath === "/tiny-renderer" ? selected : unselected
+                  currentPath === "/tiny-renderer"
+                    ? selectedItemClass
+                    : unselectedItemClass
                 )}
               >
                 Tiny Renderer
@@ -42,7 +48,9 @@ const Sidebar = memo(
               <li
                 className={clsx(
                   "py-0.5",
-                  currentPath === "/tiny-raytracer" ? selected : unselected
+                  currentPath === "/tiny-raytracer"
+                    ? selectedItemClass
+                    : unselectedItemClass
                 )}
               >
                 Tiny Raytracer
