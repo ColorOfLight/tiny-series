@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState, useRef } from "react";
 
-import TitleGroup from "../modules/TitleGroup";
 import SelectRenderType from "../modules/SelectRenderType";
 import FieldSetRenderOptions from "../modules/FormRenderOptions";
 import useFormRenderOptions from "../modules/FormRenderOptions.hook";
@@ -8,6 +7,7 @@ import RenderWorker from "../workers/tiny-renderer?worker";
 import { WorkerResponse } from "../workers/tiny-renderer";
 import { generateUrlFromBuffer } from "../utils/image";
 import LoadingCover from "../components/LoadingCover";
+import ContentLayout from "../layouts/ContentLayout";
 
 function App() {
   const [outImageLink, setOutImageLink] = useState<string>();
@@ -111,40 +111,34 @@ function App() {
   }, [outImageLink, zBufferLink, shadowMapLink, aoMapLink, renderType]);
 
   return (
-    <main className="p-8 flex flex-col items-center">
-      <div className="max-w-2xl w-full shrink-0">
-        <TitleGroup
-          title="TinyRenderer"
-          description="CPU-only model renderer written in C++"
-        />
-        <div className="mt-6 flex gap-8 flex-col">
-          <div className="flex flex-col">
-            <SelectRenderType
-              onChange={handleRenderTypeChange}
-              disabled={imageLink == null}
-            />
-            <div
-              className="w-full bg-gray-300 aspect-square relative"
-              ref={resultDivRef}
-            >
-              {isRendering && (
-                <LoadingCover>
-                  <p className="text-gray-300 text-sm sm:text-base">
-                    Rendering worker is running...
-                  </p>
-                </LoadingCover>
-              )}
-              {imageLink && <img src={imageLink} alt="result image" />}
-            </div>
-          </div>
-          <FieldSetRenderOptions
-            hookResult={formHookResult}
-            onSubmit={handleSubmitOptions}
-            isRendering={isRendering}
+    <ContentLayout title="TinyRenderer">
+      <div className="flex gap-8 flex-col">
+        <div className="flex flex-col">
+          <SelectRenderType
+            onChange={handleRenderTypeChange}
+            disabled={imageLink == null}
           />
+          <div
+            className="w-full bg-gray-300 aspect-square relative"
+            ref={resultDivRef}
+          >
+            {isRendering && (
+              <LoadingCover>
+                <p className="text-gray-300 text-sm sm:text-base">
+                  Rendering worker is running...
+                </p>
+              </LoadingCover>
+            )}
+            {imageLink && <img src={imageLink} alt="result image" />}
+          </div>
         </div>
+        <FieldSetRenderOptions
+          hookResult={formHookResult}
+          onSubmit={handleSubmitOptions}
+          isRendering={isRendering}
+        />
       </div>
-    </main>
+    </ContentLayout>
   );
 }
 
