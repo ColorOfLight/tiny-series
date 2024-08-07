@@ -1,7 +1,5 @@
 import { forwardRef, ComponentPropsWithoutRef, memo } from "react";
 import clsx from "clsx";
-import Divider from "../components/Divider";
-import Navigation from "./Navigation";
 
 export interface TitleGroupProps extends ComponentPropsWithoutRef<"div"> {
   title: string;
@@ -13,10 +11,6 @@ const TitleGroup = memo(
     ({ className, title, description, ...restProps }, ref) => {
       return (
         <div>
-          <Navigation title="Tiny Renderer" />
-
-          <Divider className="mt-4" />
-
           <div
             className={clsx("flex items-top justify-between", className)}
             {...restProps}
