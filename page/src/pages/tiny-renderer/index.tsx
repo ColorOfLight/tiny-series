@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState, useRef } from "react";
 
-import SelectRenderType from "../../modules/SelectRenderType";
-import FieldSetRenderOptions from "../../modules/FormRenderOptions";
-import useFormRenderOptions from "../../modules/FormRenderOptions.hook";
-import RenderWorker from "../../workers/tiny-renderer?worker";
-import { WorkerResponse } from "../../workers/tiny-renderer";
-import { generateUrlFromBuffer } from "../../utils/image";
-import LoadingCover from "../../components/LoadingCover";
-import ContentLayout from "../../layouts/ContentLayout";
+import SelectRenderType from "@/modules/SelectRenderType";
+import FieldSetRenderOptions from "@/modules/FormRenderOptions";
+import useFormRenderOptions from "@/modules/FormRenderOptions.hook";
+import RenderWorker from "@/workers/tiny-renderer?worker";
+import { WorkerResponse } from "@/workers/tiny-renderer";
+import { generateUrlFromBuffer } from "@/utils/image";
+import LoadingCover from "@/components/LoadingCover";
+import ContentLayout from "@/layouts/ContentLayout";
 
 const TinyRendererPage = () => {
   const [outImageLink, setOutImageLink] = useState<string>();

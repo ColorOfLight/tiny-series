@@ -1,7 +1,7 @@
 import { forwardRef, memo, ComponentPropsWithoutRef } from "react";
 import clsx from "clsx";
 
-import MenuIcon from "../components/MenuIcon";
+import MenuIcon from "@/components/MenuIcon";
 
 export interface NavigationProps extends ComponentPropsWithoutRef<"div"> {
   title: string;

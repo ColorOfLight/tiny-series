@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef, forwardRef, memo } from "react";
 import clsx from "clsx";
 
-import Spinner from "./Spinner";
+import Spinner from "@/components/Spinner";
 
 export interface LoadingCoverProps extends ComponentPropsWithoutRef<"div"> {}
 

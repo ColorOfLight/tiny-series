@@ -1,4 +1,4 @@
-import TitleGroup from "../modules/TitleGroup";
+import TitleGroup from "@/modules/TitleGroup";
 
 export interface ContentLayoutProps {
   title: string;
