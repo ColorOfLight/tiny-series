@@ -1,10 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Navigation from "@/modules/Navigation";
 import NavigationPane from "@/modules/NavigationPane";
 import useNavigationPane from "@/modules/NavigationPane.hook";
 
 const RootPage = () => {
   const { isPaneOpen, openPane, closePane } = useNavigationPane();
+  const { pathname } = useLocation();
 
   return (
     <div>
@@ -14,7 +15,13 @@ const RootPage = () => {
           <Outlet />
         </div>
       </main>
-      {isPaneOpen && <NavigationPane onOutsideClick={closePane} />}
+      {isPaneOpen && (
+        <NavigationPane
+          onOutsideClick={closePane}
+          onLinksClick={closePane}
+          currentPath={pathname}
+        />
+      )}
     </div>
   );
 };
