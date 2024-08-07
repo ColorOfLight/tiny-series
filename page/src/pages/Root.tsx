@@ -4,6 +4,12 @@ import NavigationPane from "@/modules/NavigationPane";
 import useNavigationPane from "@/modules/NavigationPane.hook";
 import Sidebar from "@/components/Sidebar";
 
+const navigationTitleSet: Record<string, string | undefined> = {
+  "/": undefined,
+  "/tiny-renderer": "Tiny Renderer",
+  "/tiny-raytracer": "Tiny Raytracer",
+};
+
 const RootPage = () => {
   const { isPaneOpen, openPane, closePane } = useNavigationPane();
   const { pathname } = useLocation();
@@ -12,7 +18,7 @@ const RootPage = () => {
     <div>
       <main className="flex flex-col items-center justify-center lg:flex-row lg:items-start">
         <Navigation
-          title="Tiny renderer"
+          title={navigationTitleSet[pathname]}
           onMenuClick={openPane}
           className="lg:hidden"
         />

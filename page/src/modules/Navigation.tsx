@@ -4,7 +4,7 @@ import clsx from "clsx";
 import MenuIcon from "@/icons/MenuIcon";
 
 export interface NavigationProps extends ComponentPropsWithoutRef<"div"> {
-  title: string;
+  title?: string;
   onMenuClick?: React.EventHandler<React.MouseEvent<HTMLButtonElement>>;
 }
 
@@ -25,8 +25,10 @@ const Navigation = memo(
           </button>
           <nav className="text-gray-400 ml-1 text-sm">
             <ul className="flex gap-1">
-              <li>Tiny Series</li>
-              <li className="text-gray-700">{title}</li>
+              <li className={title == null ? "text-gray-700" : ""}>
+                Tiny Series
+              </li>
+              {title ? <li className="text-gray-700">{title}</li> : null}
             </ul>
           </nav>
         </div>
