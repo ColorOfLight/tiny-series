@@ -8,6 +8,9 @@ export default {
     extend: {
       colors: {
         cover: '#00000055'
+      },
+      spacing: {
+        m2: "-0.5rem",
       }
     },
     
