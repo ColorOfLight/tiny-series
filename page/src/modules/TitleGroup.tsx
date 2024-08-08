@@ -22,12 +22,14 @@ const TitleGroup = memo(
               </h1>
               <p className="mt-4 text-gray-500">{description}</p>
             </div>
-            <a
-              href="https://github.com/ColorOfLight/tiny-series/"
-              target="_blank"
-            >
-              <img src="/logos/github.svg" width="32" height="32" />
-            </a>
+            <div className="shrink-0">
+              <a
+                href="https://github.com/ColorOfLight/tiny-series/"
+                target="_blank"
+              >
+                <img src="/logos/github.svg" width="28" height="28" />
+              </a>
+            </div>
           </div>
         </div>
       );
