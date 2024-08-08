@@ -31,7 +31,7 @@ const Sidebar = memo(
                 Home
               </li>
             </Link>
-            <Divider className="my-1 bg-white" />
+            <Divider className="!my-1 bg-white" />
             <Link to="/tiny-renderer" onClick={onLinksClick}>
               <li
                 className={clsx(
