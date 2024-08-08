@@ -111,7 +111,10 @@ const TinyRendererPage = () => {
   }, [outImageLink, zBufferLink, shadowMapLink, aoMapLink, renderType]);
 
   return (
-    <ContentLayout title="TinyRenderer">
+    <ContentLayout
+      title="TinyRenderer"
+      description="CPU-only model renderer written in C++"
+    >
       <div className="flex gap-8 flex-col">
         <div className="flex flex-col">
           <SelectRenderType

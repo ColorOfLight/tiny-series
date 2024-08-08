@@ -1,13 +1,11 @@
-import TitleGroup from "@/modules/TitleGroup";
+import ContentLayout from "@/layouts/ContentLayout";
 
 const HomePage = () => {
   return (
-    <div>
-      <TitleGroup
-        title="Tiny Series"
-        description="C++ and WebAssembly Implementation for ssoly's tiny series"
-      />
-    </div>
+    <ContentLayout
+      title="Tiny Series"
+      description="C++ and WebAssembly Implementation for ssoly's tiny series"
+    />
   );
 };
 
