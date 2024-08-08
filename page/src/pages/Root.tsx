@@ -3,6 +3,7 @@ import Navigation from "@/modules/Navigation";
 import NavigationPane from "@/modules/NavigationPane";
 import useNavigationPane from "@/modules/NavigationPane.hook";
 import Sidebar from "@/components/Sidebar";
+import Footer from "@/components/Footer";
 
 const navigationTitleSet: Record<string, string | undefined> = {
   "/": undefined,
@@ -26,6 +27,7 @@ const RootPage = () => {
           <div className="border rounded mt-8">
             <Sidebar currentPath={pathname} />
           </div>
+          <Footer className="text-center !text-gray-500" />
         </div>
         <div className="max-w-2xl w-full shrink-0 p-8">
           <Outlet />
