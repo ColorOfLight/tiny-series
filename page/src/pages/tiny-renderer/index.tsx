@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState, useRef } from "react";
 
 import SelectRenderType from "@/modules/SelectRenderType";
-import FieldSetRenderOptions from "@/modules/FormRenderOptions";
-import useFormRenderOptions from "@/modules/FormRenderOptions.hook";
+import FieldSetRenderOptions from "@/modules/tiny-renderer/FormRenderOptions";
+import useFormRenderOptions from "@/modules/tiny-renderer/FormRenderOptions.hook";
 import RenderWorker from "@/workers/tiny-renderer?worker";
 import { WorkerResponse } from "@/workers/tiny-renderer";
 import { generateUrlFromBuffer } from "@/utils/image";
-import LoadingCover from "@/components/LoadingCover";
 import ContentLayout from "@/layouts/ContentLayout";
+import ResultImage from "@/modules/ResultImage";
 
 const TinyRendererPage = () => {
   const [outImageLink, setOutImageLink] = useState<string>();
@@ -121,19 +121,11 @@ const TinyRendererPage = () => {
             onChange={handleRenderTypeChange}
             disabled={imageLink == null}
           />
-          <div
-            className="w-full bg-gray-300 aspect-square relative"
+          <ResultImage
+            isRendering={isRendering}
+            imageLink={imageLink}
             ref={resultDivRef}
-          >
-            {isRendering && (
-              <LoadingCover>
-                <p className="text-gray-300 text-sm sm:text-base">
-                  Rendering worker is running...
-                </p>
-              </LoadingCover>
-            )}
-            {imageLink && <img src={imageLink} alt="result image" />}
-          </div>
+          />
         </div>
         <FieldSetRenderOptions
           hookResult={formHookResult}
