@@ -25,7 +25,7 @@ const FormRenderOptions = memo(
           {...restProps}
           ref={ref}
         >
-          <Fieldset className="border px-8 py-6 flex flex-col gap-6">
+          <Fieldset className="border p-6 flex flex-col gap-6 md:px-8">
             <Legend className="text-lg font-semibold text-gray-800">
               Render Options
             </Legend>
