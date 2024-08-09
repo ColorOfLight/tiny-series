@@ -1,4 +1,4 @@
-import { ExtendedEmModule, WasmModule } from "../wasm/_types";
+import { ExtendedEmModule, WasmModule } from "@/wasm/_types";
 
 export const initModule = async <M extends WasmModule<MF>, MF>(
   wasmModule: M & WasmModule<MF>,

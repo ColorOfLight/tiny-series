@@ -1,10 +1,10 @@
 /// <reference lib="webworker" />
 
-import { ExtendedEmModule } from "../wasm/_types";
-import TinyRendererModule, { ModuleFunctions } from "../wasm/TinyRenderer";
-import TinyRendererWasm from "../wasm/TinyRenderer.wasm?url";
+import { ExtendedEmModule } from "@/wasm/_types";
+import TinyRendererModule, { ModuleFunctions } from "@/wasm/TinyRenderer";
+import TinyRendererWasm from "@/wasm/TinyRenderer.wasm?url";
 
-import { writeFileToFS, initModule } from "../utils/emscripten";
+import { writeFileToFS, initModule } from "@/utils/emscripten";
 
 interface InitMessage {
   type: "init";

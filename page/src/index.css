@@ -31,3 +31,8 @@ button {
   border-width: 1px;
   cursor: pointer;
 }
+
+nav li+li::before {
+  content: "\203A";
+  margin-right: 0.5rem;
+}

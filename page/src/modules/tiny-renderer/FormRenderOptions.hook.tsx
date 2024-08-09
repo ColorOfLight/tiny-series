@@ -1,7 +1,7 @@
 import React, { FormEvent, useMemo, useState, useCallback } from "react";
 
-import useInput from "../hooks/useInput";
-import useSelect from "../hooks/useSelect";
+import useInput from "@/hooks/useInput";
+import useSelect from "@/hooks/useSelect";
 
 export interface UseFormRenderOptionsResult {
   model?: string;
