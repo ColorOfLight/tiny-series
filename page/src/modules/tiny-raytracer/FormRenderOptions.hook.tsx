@@ -16,7 +16,7 @@ const useFormRenderOptions = (): UseFormRenderOptionsResult => {
   const [isDirty] = useState(false);
 
   const { value: background, onChange: onBackgroundChange } =
-    useSelect("Rosendal");
+    useSelect("rosendal");
 
   const handleSubmit = useCallback(
     (onSubmit?: React.EventHandler<FormEvent>) => {
