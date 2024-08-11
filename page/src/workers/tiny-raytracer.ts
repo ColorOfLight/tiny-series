@@ -34,6 +34,8 @@ export type WorkerResponse = InitCompleteMessage | RenderCompleteMessage;
 
 const backgroundAssets: Record<string, string> = {
   rosendal: "/backgrounds/rosendal_plains/rosendal_plains_2k.jpg",
+  church: "/backgrounds/church/church_2k.jpg",
+  estate: "/backgrounds/estate_square/estate_square_2k.jpg",
 };
 
 let wasmModule: ExtendedEmModule & ModuleFunctions;

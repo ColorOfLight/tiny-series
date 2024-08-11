@@ -37,6 +37,8 @@ const FormRenderOptions = memo(
                 onChange={hookResult.onBackgroundChange}
               >
                 <option value="rosendal">Rosendal</option>
+                <option value="church">Church</option>
+                <option value="estate">Estate On Square</option>
               </Select>
             </Field>
             <div className="self-end mt-2 text-right">
