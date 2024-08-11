@@ -31,10 +31,12 @@
 #include <vector>
 
 #include "./image.h"
-#include "./lodepng.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "./stb_image.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "./stb_image_write.h"
 
 // Helper function to read little-endian uint16_t
 std::uint16_t readUint16LE(std::ifstream& file) {
@@ -257,42 +259,37 @@ void WriteTga(const std::string& file_path,
 }
 
 Image<RgbaColor> ReadPng(const std::string& file_path) {
-  std::vector<unsigned char> png;
-  std::vector<unsigned char> image;
-  unsigned width, height;
+  int width, height, channels;
+  unsigned char* data =
+      stbi_load(file_path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
-  unsigned error = lodepng::load_file(png, file_path);
-  if (!error) {
-    error = lodepng::decode(image, width, height, png);
+  if (!data) {
+    throw std::runtime_error("Failed to load image: " + file_path);
   }
 
-  if (error) {
-    throw std::runtime_error("Decoder error " + std::to_string(error) + ": " +
-                             lodepng_error_text(error));
+  std::vector<RgbaColor> image_data(width * height);
+  for (int i = 0; i < width * height; ++i) {
+    image_data[i] = RgbaColor{data[4 * i + 0], data[4 * i + 1], data[4 * i + 2],
+                              data[4 * i + 3]};
   }
 
-  std::vector<RgbaColor> data(width * height);
-  for (size_t i = 0; i < data.size(); ++i) {
-    // Flip Y
-    data[i] = RgbaColor{
-        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 0],
-        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 1],
-        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 2],
-        image[4 * (height - 1 - i / width) * width + 4 * (i % width) + 3]};
-  }
+  stbi_image_free(data);
 
-  Image<RgbaColor> img(width, height, data);
-  return img;
+  Image<RgbaColor> image = Image<RgbaColor>(width, height, image_data);
+
+  // Make the left bottom point as the origin
+  image.FlipY();
+
+  return image;
 }
 
 void WritePng(const std::string& file_path, const Image<RgbaColor>& image) {
-  unsigned width = image.GetWidth();
-  unsigned height = image.GetHeight();
-  std::vector<unsigned char> png;
-  std::vector<unsigned char> image_data(width * height * 4);
+  int width = image.GetWidth();
+  int height = image.GetHeight();
+  const std::vector<RgbaColor>& data = image.GetData();
 
-  const auto& data = image.GetData();
-  for (size_t i = 0; i < data.size(); ++i) {
+  std::vector<unsigned char> image_data(width * height * 4);
+  for (int i = 0; i < width * height; ++i) {
     // Flip Y data
     image_data[4 * (height - 1 - i / width) * width + 4 * (i % width) + 0] =
         data[i].r;
@@ -304,36 +301,26 @@ void WritePng(const std::string& file_path, const Image<RgbaColor>& image) {
         data[i].a;
   }
 
-  unsigned error = lodepng::encode(png, image_data, width, height);
-  if (!error) {
-    lodepng::save_file(png, file_path);
-  }
-
-  if (error) {
-    throw std::runtime_error("Encoder error " + std::to_string(error) + ": " +
-                             lodepng_error_text(error));
+  if (!stbi_write_png(file_path.c_str(), width, height, 4, image_data.data(),
+                      width * 4)) {
+    throw std::runtime_error("Failed to write PNG file: " + file_path);
   }
 }
 
 void WritePng(const std::string& file_path,
               const Image<GrayscaleColor>& image) {
-  unsigned width = image.GetWidth();
-  unsigned height = image.GetHeight();
-  std::vector<unsigned char> png;
-  std::vector<unsigned char> image_data(width * height);
+  int width = image.GetWidth();
+  int height = image.GetHeight();
+  const std::vector<GrayscaleColor>& data = image.GetData();
 
-  const auto& data = image.GetData();
-  for (size_t i = 0; i < data.size(); ++i) {
+  std::vector<unsigned char> image_data(width * height);
+  for (int i = 0; i < width * height; ++i) {
     // Flip Y-data
     image_data[(height - 1 - i / width) * width + i % width] = data[i].value;
   }
 
-  unsigned error = lodepng::encode(png, image_data, width, height, LCT_GREY, 8);
-  if (!error) {
-    lodepng::save_file(png, file_path);
-  }
-
-  if (error) {
-    throw std::runtime_error("Encoder error" + std::to_string(error));
+  if (!stbi_write_png(file_path.c_str(), width, height, 1, image_data.data(),
+                      width)) {
+    throw std::runtime_error("Failed to write PNG file: " + file_path);
   }
 }
